@@ -513,48 +513,53 @@ def api_v1_login():
 @app.route("/api/v1/register", methods=["POST"])
 def api_v1_register():
     """Mobile app registration — mirrors the web /signup form."""
-    import secrets
-    ip = request.remote_addr or "unknown"
-    if _rate_limit_exceeded(f"register:{ip}", max_attempts=5, window_secs=3600):
-        return jsonify({"ok": False, "error": "Too many registration attempts. Please try again later."}), 429
-    data      = request.json or {}
-    username  = (data.get("username") or "").strip()
-    password  = data.get("password", "")
-    confirm   = data.get("confirm_password", "")
-    full_name = (data.get("full_name") or "").strip()
-    country   = (data.get("country") or "").strip()
-    email     = (data.get("email") or "").strip().lower()
-
-    if not email or "@" not in email or "." not in email.split("@")[-1]:
-        return jsonify({"ok": False, "error": "Please enter a valid email address."}), 400
-    if not USERNAME_RE.match(username):
-        return jsonify({"ok": False, "error": "Username: letters, numbers, underscores only (3–20 chars)."}), 400
-    if len(password) < 8:
-        return jsonify({"ok": False, "error": "Password must be at least 8 characters."}), 400
-    if password != confirm:
-        return jsonify({"ok": False, "error": "Passwords do not match."}), 400
-
-    conn = get_db_connection()
     try:
+        import secrets as _sec
+        ip = request.remote_addr or "unknown"
+        if _rate_limit_exceeded(f"register:{ip}", max_attempts=5, window_secs=3600):
+            return jsonify({"ok": False, "error": "Too many registration attempts. Please try again later."}), 429
+        data      = request.json or {}
+        username  = (data.get("username") or "").strip()
+        password  = data.get("password", "")
+        confirm   = data.get("confirm_password", "")
+        full_name = (data.get("full_name") or "").strip()
+        country   = (data.get("country") or "").strip()
+        email     = (data.get("email") or "").strip().lower()
+
+        if not email or "@" not in email or "." not in email.split("@")[-1]:
+            return jsonify({"ok": False, "error": "Please enter a valid email address."}), 400
+        if not USERNAME_RE.match(username):
+            return jsonify({"ok": False, "error": "Username: letters, numbers, underscores only (3–20 chars)."}), 400
+        if len(password) < 8:
+            return jsonify({"ok": False, "error": "Password must be at least 8 characters."}), 400
+        if password != confirm:
+            return jsonify({"ok": False, "error": "Passwords do not match."}), 400
+
+        conn = get_db_connection()
+        try:
+            conn.execute(
+                "INSERT INTO users (username, password_hash, email, full_name, country) VALUES (?, ?, ?, ?, ?)",
+                (username, generate_password_hash(password),
+                 b64_encode(email) or None, b64_encode(full_name) or None, b64_encode(country) or None),
+            )
+            conn.commit()
+        except sqlite3.IntegrityError:
+            conn.close()
+            return jsonify({"ok": False, "error": "That username is already taken."}), 409
+
+        token      = _sec.token_hex(32)
+        expires_at = (datetime.utcnow() + timedelta(days=30)).isoformat()
         conn.execute(
-            "INSERT INTO users (username, password_hash, email, full_name, country) VALUES (?, ?, ?, ?, ?)",
-            (username, generate_password_hash(password),
-             b64_encode(email) or None, b64_encode(full_name) or None, b64_encode(country) or None),
+            "UPDATE users SET auth_token=?, auth_token_expires=? WHERE username=?",
+            (token, expires_at, username),
         )
         conn.commit()
-    except sqlite3.IntegrityError:
         conn.close()
-        return jsonify({"ok": False, "error": "That username is already taken."}), 409
-
-    token      = secrets.token_hex(32)
-    expires_at = (datetime.utcnow() + timedelta(days=30)).isoformat()
-    conn.execute(
-        "UPDATE users SET auth_token=?, auth_token_expires=? WHERE username=?",
-        (token, expires_at, username),
-    )
-    conn.commit()
-    conn.close()
-    return jsonify({"ok": True, "token": token, "username": username})
+        return jsonify({"ok": True, "token": token, "username": username})
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        return jsonify({"ok": False, "error": f"Server error: {str(e)}"}), 500
 
 
 @app.route("/api/v1/logout", methods=["POST"])
