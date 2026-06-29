@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Too Good</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css"
+          rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='stylesabout.css') }}">      
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Courier+Prime:ital,wght@0,400;0,700;1,400&family=Special+Elite&display=swap" rel="stylesheet">
+          </head>
+
+<body>
+
+<!-- Navbar starts -->
+<nav class="navbar navbar-expand-md fixed-top custom-navbar">
+    <div class="container-fluid">
+
+    <a class="navbar-brand" href="{{ url_for('home') }}">
+    <img src="{{ url_for('static', filename='images/logo.svg') }}"
+         alt="Too Good Logo"
+         width="40"
+         height="40">
+</a>
+
+        <button class="navbar-toggler"
+                type="button"
+                data-bs-toggle="collapse"
+                data-bs-target="#navbarCollapse">
+
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="navbarCollapse">
+
+            <!-- Left side -->
+            <ul class="navbar-nav me-auto mb-2 mb-md-0">
+                <li class="nav-item">
+                    <a class="nav-link active" href="{{ url_for('home') }}">
+                        Home
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link active" href="{{ url_for('features') }}">
+                        Features
+                    </a>
+                </li>
+
+                <li class="nav-item">
+                    <a class="nav-link active" href="{{ url_for('about') }}">
+                        About
+                    </a>
+                </li>
+
+            </ul>
+
+            <!-- Right side -->
+            <ul class="navbar-nav">
+
+                <li class="nav-item">
+                    <a class="nav-link active" href="{{ url_for('login') }}">
+                        Login
+                    </a>
+                </li>
+
+                <li class="nav-item">
+                    <a class="nav-link active" href="{{ url_for('signup') }}">
+                        Sign Up
+                    </a>
+                </li>
+
+            </ul>
+
+        </div>
+    </div>
+</nav>
+
+<!-- Mission section -->
+<div class="p-5 mb-4 about-hero rounded-3">
+    <div class="container-fluid py-5">
+        <h1 class="display-5 fw-bold">Why Too Good?</h1>
+        <p class="col-md-8 fs-4">Most diet apps give you generic advice written for the average person. You are not average. Too Good was built to give you a plan that actually fits your body, your goals, and your life.</p>
+        <a href="{{ url_for('signup') }}" class="btn btn-outline-secondary btn-lg px-4 rounded-pill">
+            Get Started
+        </a>
+    </div>
+</div>
+
+<!-- How it works section -->
+<div class="p-5 mb-4 about-section rounded-3">
+    <div class="container-fluid py-5">
+        <h1 class="display-5 fw-bold">How It Works</h1>
+        <p class="col-md-8 fs-4">Tell us your goal — lose weight, build muscle, eat cleaner, or simply feel better. Our AI reads global nutrition data and builds a meal plan around what you actually need, not a template from 2009.</p>
+        <a href="{{ url_for('ai') }}" class="btn btn-outline-secondary btn-lg px-4 rounded-pill">
+            Try the AI
+        </a>
+    </div>
+</div>
+
+<!-- Two column row -->
+<div class="row align-items-md-stretch about-row">
+    <div class="col-md-6">
+        <div class="h-100 p-5 about-card-left rounded-3">
+            <h2>Built on Real Data</h2>
+            <p>Our AI is trained on nutrition research, dietary guidelines, and meal patterns from across the globe. Every suggestion is grounded in evidence, not trends.</p>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="h-100 p-5 about-card-right border rounded-3">
+            <h2>Private by Design</h2>
+            <p>Your health data belongs to you. We store only what is necessary to power your experience, and we never sell or share it. Your body, your records.</p>
+        </div>
+    </div>
+</div>
+
+<!-- Creator note -->
+<div class="p-5 mt-4 about-note rounded-3">
+    <div class="container-fluid py-4">
+        <h1 class="display-6 fw-bold">A Note from the Creator</h1>
+        <p class="col-md-8 fs-5">Too Good started as a personal project — a frustration with diet tools that felt cold, confusing, and one-size-fits-all. The goal was simple: build something that actually talks to you, understands your goals, and helps you get there without the noise. This is that tool.</p>
+    </div>
+</div>
+
+<!-- Values row -->
+<div class="row align-items-md-stretch about-row">
+    <div class="col-md-4">
+        <div class="h-100 p-5 about-card-left rounded-3">
+            <h2>Honesty</h2>
+            <p>We tell you what the evidence actually says — including when it is weak, conflicted, or just not there yet. No hype. No miracle claims. No fad diet cheerleading.</p>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="h-100 p-5 about-card-right border rounded-3">
+            <h2>Simplicity</h2>
+            <p>Nutrition is complicated. Explaining it does not have to be. We cut through the noise and give you plain, usable answers that respect your intelligence.</p>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="h-100 p-5 about-card-left rounded-3">
+            <h2>Privacy</h2>
+            <p>Your health data is sensitive. We treat it that way. We collect only what we need, never sell it, and make it easy to delete your account and everything in it.</p>
+        </div>
+    </div>
+</div>
+
+<!-- FAQ -->
+<div class="p-5 about-section rounded-3">
+    <div class="container-fluid py-5">
+        <p class="section-eyebrow">FAQ</p>
+        <h1 class="display-5 fw-bold">Questions we get a lot</h1>
+        <div class="faq-list">
+            <div class="faq-item">
+                <h3 class="faq-q">Is this actual medical advice?</h3>
+                <p class="faq-a">No. Too Good provides general nutrition information and personalised meal planning suggestions. It is not a substitute for a registered dietitian, doctor, or any healthcare professional. For any health condition, please consult a qualified clinician.</p>
+            </div>
+            <div class="faq-item">
+                <h3 class="faq-q">Is it free?</h3>
+                <p class="faq-a">Yes. Too Good is free to use. Create an account, start a conversation, and build as many meal plans as you need. There are no hidden tiers or premium paywalls at this time.</p>
+            </div>
+            <div class="faq-item">
+                <h3 class="faq-q">How accurate are the plans?</h3>
+                <p class="faq-a">Very good for general planning, but not perfect. AI-generated plans are based on established nutritional principles, but individual responses to diet vary. Use them as a strong starting point and adjust based on how your body responds.</p>
+            </div>
+            <div class="faq-item">
+                <h3 class="faq-q">Can I use it if I have a food allergy?</h3>
+                <p class="faq-a">Yes. Mention your allergy clearly when starting a conversation. The AI will factor it into every suggestion. That said, always double-check ingredients for serious allergies — no AI is infallible.</p>
+            </div>
+            <div class="faq-item">
+                <h3 class="faq-q">What happens to my data?</h3>
+                <p class="faq-a">Your conversation history is stored in our database only to power your experience. We do not sell it, share it with advertisers, or use it to train AI models. You can delete your account and all associated data at any time.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- About CTA -->
+<div class="p-5 mb-4 about-note rounded-3 section-center">
+    <div class="container-fluid py-5">
+        <p class="section-eyebrow">Join Us</p>
+        <h1 class="display-6 fw-bold">Built for real people with real goals.</h1>
+        <p class="cta-sub">No gimmicks. No celebrity endorsements. No detox teas. Just evidence-based nutrition made accessible.</p>
+        <a href="{{ url_for('signup') }}" class="btn btn-primary btn-lg px-4 rounded-pill">Get Started Free</a>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
+
+</body>
+</html>

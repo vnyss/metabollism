@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Socials — Too Good</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Courier+Prime:wght@400;700&family=Special+Elite&family=Playfair+Display:wght@400;700&display=swap" rel="stylesheet">
+    <script>(function(){
+        var r=document.documentElement;
+        if(localStorage.getItem('tg_mode')==='light')r.classList.add('light-mode');
+        var fs=localStorage.getItem('tg_fontsize');if(fs)r.style.setProperty('--fs',{sm:'12px',md:'14px',lg:'16px'}[fs]||'14px');
+        var sw=localStorage.getItem('tg_sw');if(sw)r.style.setProperty('--sw',{narrow:'220px',normal:'260px',wide:'320px'}[sw]||'260px');
+        var cr=localStorage.getItem('tg_corner');if(cr)r.style.setProperty('--radius',{sharp:'0px',soft:'6px',rounded:'14px'}[cr]||'6px');
+    })();</script>
+    <style>
+        :root{--bg:#080808;--sidebar:#060606;--surface:#0F0F0F;--elevated:#161616;--border:rgba(201,168,76,0.12);--border-h:rgba(201,168,76,0.38);--gold:#C9A84C;--gold-dim:rgba(201,168,76,0.07);--text:#EDE3CE;--text-2:#9A8B72;--text-3:#554430;--green:#4CAF82;--mono:'Courier Prime',monospace;--display:'Special Elite',monospace;--sw:260px;--radius:6px}
+        html.light-mode{--bg:#F5F0E8;--sidebar:#EDE8DF;--surface:#FFFFFF;--elevated:#F0EBE1;--border:rgba(100,80,40,0.14);--border-h:rgba(100,80,40,0.36);--gold-dim:rgba(201,168,76,0.10);--text:#2C2010;--text-2:#6B5B3E;--text-3:#A89070}
+        *{box-sizing:border-box;margin:0;padding:0}
+        body{background:var(--bg);color:var(--text);font-family:var(--mono);font-size:14px;display:flex;min-height:100vh}
+        .panel-left{width:272px;min-width:272px;border-right:1px solid var(--border);display:flex;flex-direction:column;height:100vh;position:fixed;left:var(--sw);top:0;background:var(--sidebar);overflow:hidden}
+        .panel-head{padding:18px 14px 12px;border-bottom:1px solid var(--border);flex-shrink:0}
+        .panel-title{font-family:var(--display);font-size:17px;color:var(--text);letter-spacing:.06em;margin-bottom:12px}
+        .search-wrap{position:relative}
+        .search-inp{width:100%;background:var(--surface);border:1px solid var(--border);color:var(--text);font-family:var(--mono);font-size:12px;padding:8px 10px 8px 32px;outline:none;transition:border-color .15s}
+        .search-inp:focus{border-color:var(--border-h)}
+        .s-icon{position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--text-3);pointer-events:none}
+        .search-drop{position:absolute;top:calc(100%+4px);left:0;right:0;background:var(--elevated);border:1px solid var(--border-h);z-index:300;max-height:260px;overflow-y:auto;display:none}
+        .search-drop.open{display:block}
+        .sd-item{display:flex;align-items:center;gap:10px;padding:10px 12px;border-bottom:1px solid var(--border)}
+        .sd-av{width:30px;height:30px;background:var(--gold-dim);border:1px solid var(--border-h);display:flex;align-items:center;justify-content:center;font-family:var(--display);font-size:14px;color:var(--gold);flex-shrink:0}
+        .sd-name{flex:1;font-size:12px;color:var(--text)}
+        .sd-btn{font-size:10px;padding:3px 9px;border:1px solid;background:none;cursor:pointer;font-family:var(--mono);letter-spacing:.04em;white-space:nowrap}
+        .sd-btn.add{color:var(--gold);border-color:rgba(201,168,76,.4);transition:background .12s}
+        .sd-btn.add:hover{background:var(--gold-dim)}
+        .sd-btn.sent{color:var(--text-3);border-color:var(--border);cursor:default}
+        .sd-btn.buddies{color:var(--green);border-color:rgba(76,175,130,.4);cursor:pointer}
+        .buddy-scroll{flex:1;overflow-y:auto}
+        .buddy-scroll::-webkit-scrollbar{width:2px}
+        .bl-label{font-size:10px;color:var(--text-3);letter-spacing:.2em;text-transform:uppercase;padding:12px 14px 4px}
+        .bl-empty{padding:16px 14px;font-size:11px;color:var(--text-3);line-height:1.7}
+        .buddy-row{display:flex;align-items:center;gap:10px;padding:11px 14px;cursor:pointer;border-bottom:1px solid var(--border);transition:background .12s;border-left:2px solid transparent}
+        .buddy-row:hover{background:var(--gold-dim)}
+        .buddy-row.active{background:rgba(201,168,76,.08);border-left-color:var(--gold)}
+        .br-av{width:34px;height:34px;background:var(--gold-dim);border:1px solid var(--border-h);display:flex;align-items:center;justify-content:center;font-family:var(--display);font-size:16px;color:var(--gold);flex-shrink:0}
+        .br-info{flex:1;min-width:0}
+        .br-name{font-size:13px;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+        .br-sub{font-size:10px;color:var(--text-3);margin-top:2px}
+        .req-row{padding:10px 14px;border-bottom:1px solid var(--border)}
+        .req-top{display:flex;align-items:center;gap:10px}
+        .req-btns{display:flex;gap:6px;margin-top:6px;padding-left:44px}
+        .req-btn{font-size:10px;padding:3px 10px;border:1px solid;background:none;cursor:pointer;font-family:var(--mono);letter-spacing:.04em;transition:background .12s}
+        .req-btn.acc{color:var(--green);border-color:rgba(76,175,130,.4)}
+        .req-btn.acc:hover{background:rgba(76,175,130,.1)}
+        .req-btn.dec{color:var(--text-3);border-color:var(--border)}
+        .req-btn.dec:hover{background:rgba(255,255,255,.05)}
+        /* Main */
+        .main{margin-left:calc(var(--sw) + 272px);flex:1;padding:36px 44px;min-height:100vh}
+        .feed-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;height:65vh;color:var(--text-3);gap:14px;text-align:center}
+        .profile-card{display:flex;align-items:center;gap:22px;padding:24px 28px;background:var(--surface);border:1px solid var(--border);margin-bottom:20px}
+        .pc-av{width:54px;height:54px;background:var(--gold-dim);border:1px solid var(--border-h);display:flex;align-items:center;justify-content:center;font-family:var(--display);font-size:28px;color:var(--gold);flex-shrink:0}
+        .pc-name{font-family:'Playfair Display',serif;font-size:22px;color:var(--text);margin-bottom:4px}
+        .pc-meta{font-size:11px;color:var(--text-3);line-height:1.8;letter-spacing:.04em}
+        .pc-stats{margin-left:auto;display:flex;gap:28px;text-align:center}
+        .pc-sv{font-family:'Playfair Display',serif;font-size:24px;color:var(--gold)}
+        .pc-sl{font-size:10px;color:var(--text-3);letter-spacing:.1em;text-transform:uppercase;margin-top:2px}
+        .info-box{display:flex;gap:24px;flex-wrap:wrap;padding:14px 20px;background:var(--surface);border:1px solid var(--border);border-top:none;margin-bottom:20px;font-size:12px;color:var(--text-3)}
+        .ib-v{color:var(--text);margin-left:5px}
+        .feed-head{font-size:11px;color:var(--text-3);letter-spacing:.18em;text-transform:uppercase;margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid var(--border)}
+        .feed-list{display:flex;flex-direction:column;gap:2px}
+        .feed-item{display:flex;align-items:center;gap:14px;padding:13px 16px;background:var(--surface);border:1px solid var(--border)}
+        .fi-icon{font-size:19px;width:30px;text-align:center;flex-shrink:0}
+        .fi-label{flex:1;font-size:13px;color:var(--text)}
+        .fi-note{font-size:10px;color:var(--text-3);margin-top:2px}
+        .fi-xp{font-family:'Playfair Display',serif;font-size:14px;color:var(--gold);white-space:nowrap;margin-right:6px}
+        .fi-time{font-size:10px;color:var(--text-3);white-space:nowrap}
+        .feed-none{padding:20px 0;font-size:12px;color:var(--text-3);letter-spacing:.06em}
+        .feed-card{background:var(--surface);border:1px solid var(--border);margin-bottom:2px}
+        .feed-card .feed-item{border:none;margin-bottom:0}
+        .social-bar{display:flex;align-items:center;gap:8px;padding:6px 16px 8px;border-top:1px solid var(--border)}
+        .react-row{display:flex;gap:5px;flex:1}
+        .react-btn{background:none;border:1px solid var(--border);padding:3px 8px;cursor:pointer;font-size:13px;color:var(--text);transition:border-color .15s,background .15s;display:flex;align-items:center;gap:4px}
+        .react-btn:hover{border-color:var(--border-h);background:var(--gold-dim)}
+        .react-count{font-family:var(--mono);font-size:10px;color:var(--gold)}
+        .comment-toggle{background:none;border:1px solid var(--border);padding:3px 10px;cursor:pointer;font-family:var(--mono);font-size:10px;color:var(--text-3);letter-spacing:.04em;transition:border-color .15s,color .15s}
+        .comment-toggle:hover{border-color:var(--border-h);color:var(--text)}
+        .comments-wrap{padding:8px 16px;border-top:1px solid var(--border);display:flex;flex-direction:column;gap:5px}
+        .comment-item{font-size:12px;color:var(--text-2);line-height:1.5}
+        .comment-who{color:var(--gold);margin-right:6px;font-size:11px;letter-spacing:.04em}
+        .comment-form{display:flex;gap:6px;padding:8px 16px;border-top:1px solid var(--border)}
+        .comment-inp{flex:1;background:var(--elevated);border:1px solid var(--border);color:var(--text);font-family:var(--mono);font-size:12px;padding:6px 10px;outline:none;transition:border-color .15s}
+        .comment-inp:focus{border-color:var(--border-h)}
+        .comment-send{padding:6px 14px;background:var(--gold);color:#0A0A0A;font-family:var(--mono);font-size:11px;font-weight:700;border:none;cursor:pointer;letter-spacing:.08em;transition:opacity .15s}
+        .comment-send:hover{opacity:.85}
+    </style>
+</head>
+<body>
+{% include 'perfect/_sidebar.html' %}
+
+<div class="panel-left">
+    <div class="panel-head">
+        <div class="panel-title">Socials</div>
+        <div class="search-wrap">
+            <svg class="s-icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            <input class="search-inp" id="searchInp" type="text" placeholder="Search by username…" autocomplete="off">
+            <div class="search-drop" id="searchDrop"></div>
+        </div>
+    </div>
+    <div class="buddy-scroll" id="buddyScroll"><div class="bl-empty">Loading…</div></div>
+</div>
+
+<div class="main" id="mainPanel">
+    <div class="feed-empty">
+        <div style="font-size:44px;opacity:.3">👥</div>
+        <div style="font-size:13px;letter-spacing:.06em">Select a buddy to view their activity</div>
+        <div style="font-size:11px;color:var(--text-3)">Search by username above to send a buddy request first</div>
+    </div>
+</div>
+
+<script>
+const ME = {{ username | tojson }};
+let activeBuddy = null;
+
+/* Search */
+const sInp = document.getElementById('searchInp');
+const sDrop = document.getElementById('searchDrop');
+let sT = null;
+sInp.addEventListener('input', () => {
+    clearTimeout(sT);
+    const q = sInp.value.trim();
+    if (q.length < 2) { sDrop.classList.remove('open'); return; }
+    sT = setTimeout(() => doSearch(q), 300);
+});
+document.addEventListener('click', e => { if (!sDrop.contains(e.target) && e.target !== sInp) sDrop.classList.remove('open'); });
+
+async function doSearch(q) {
+    const r = await fetch('/perfect/api/users/search?q=' + encodeURIComponent(q));
+    const d = await r.json();
+    if (!d.results || !d.results.length) {
+        sDrop.innerHTML = '<div style="padding:12px 14px;font-size:11px;color:var(--text-3)">No users found.</div>';
+    } else {
+        sDrop.innerHTML = d.results.map(u => {
+            const btnClass = {none:'add',pending_sent:'sent',pending_recv:'add',accepted:'buddies'}[u.status]||'add';
+            const btnText  = {none:'+ Buddy',pending_sent:'Sent',pending_recv:'Accept',accepted:'View'}[u.status]||'+ Buddy';
+            return `<div class="sd-item">
+                <div class="sd-av">${u.name[0].toUpperCase()}</div>
+                <div class="sd-name">${u.name} <span style="color:var(--text-3);font-size:10px">Lv ${u.level}</span></div>
+                <button class="sd-btn ${btnClass}" onclick="searchAct('${u.username}','${u.status}','${u.name.replace(/'/g,"\\'")}')">${btnText}</button>
+            </div>`;
+        }).join('');
+    }
+    sDrop.classList.add('open');
+}
+
+async function searchAct(username, status, name) {
+    if (status === 'accepted') { openFeed(username, name); sDrop.classList.remove('open'); sInp.value=''; return; }
+    if (status === 'pending_recv') {
+        await fetch('/perfect/api/buddy/respond',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username,action:'accept'})});
+        showToast('You are now buddies with ' + name + '!');
+    } else if (status === 'none') {
+        await fetch('/perfect/api/buddy/request',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username})});
+        showToast('Buddy request sent to ' + name);
+    }
+    doSearch(sInp.value.trim());
+    loadBuddies();
+}
+
+/* Buddy list */
+async function loadBuddies() {
+    const r = await fetch('/perfect/api/buddies');
+    const d = await r.json();
+    if (!d.ok) return;
+    let h = '';
+    if (d.incoming.length) {
+        h += '<div class="bl-label">Requests (' + d.incoming.length + ')</div>';
+        d.incoming.forEach(b => {
+            h += `<div class="req-row">
+                <div class="req-top"><div class="br-av">${b.name[0].toUpperCase()}</div>
+                <div class="br-info"><div class="br-name">${b.name}</div><div class="br-sub">Level ${b.level} · wants to be your buddy</div></div></div>
+                <div class="req-btns">
+                    <button class="req-btn acc" onclick="respond('${b.username}','accept')">Accept</button>
+                    <button class="req-btn dec" onclick="respond('${b.username}','reject')">Decline</button>
+                </div></div>`;
+        });
+    }
+    if (d.outgoing.length) {
+        h += '<div class="bl-label">Sent</div>';
+        d.outgoing.forEach(b => {
+            h += `<div class="buddy-row" style="opacity:.5;cursor:default"><div class="br-av">${b.name[0].toUpperCase()}</div>
+            <div class="br-info"><div class="br-name">${b.name}</div><div class="br-sub">Request pending…</div></div></div>`;
+        });
+    }
+    if (d.buddies.length) {
+        h += '<div class="bl-label">Buddies (' + d.buddies.length + ')</div>';
+        d.buddies.forEach(b => {
+            const act = activeBuddy === b.username ? ' active' : '';
+            h += `<div class="buddy-row${act}" onclick="openFeed('${b.username}','${b.name.replace(/'/g,"\\'")}')">
+                <div class="br-av">${b.name[0].toUpperCase()}</div>
+                <div class="br-info">
+                    <div class="br-name">${b.name}</div>
+                    <div class="br-sub">Lv ${b.level}${b.streak>0?' · 🔥'+b.streak+'d':''}</div>
+                </div></div>`;
+        });
+    }
+    if (!h) h = '<div class="bl-empty">No buddies yet.<br><span style="font-size:10px">Use the search bar to find people.</span></div>';
+    document.getElementById('buddyScroll').innerHTML = h;
+}
+
+async function respond(username, action) {
+    await fetch('/perfect/api/buddy/respond',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username,action})});
+    loadBuddies();
+}
+
+/* Activity feed */
+const REACT_EMOJIS = ['👏','🔥','💪','🏆','❤️'];
+
+function buildFeedItem(f) {
+    const reactBar = REACT_EMOJIS.map(e => {
+        const r = (f.reactions||[]).find(x=>x.emoji===e);
+        const count = r ? r.count : 0;
+        const active = f.my_react === e ? 'style="border-color:var(--gold);background:var(--gold-dim)"' : '';
+        return `<button class="react-btn" ${active} onclick="doReact(${f.id},'${e}',this)" title="${e}">
+            ${e}${count>0?` <span class="react-count">${count}</span>`:''}
+        </button>`;
+    }).join('');
+
+    const commentsHtml = (f.comments||[]).map(c =>
+        `<div class="comment-item"><span class="comment-who">${escHtml(c.who)}</span> ${escHtml(c.body)}</div>`
+    ).join('');
+
+    return `<div class="feed-card" id="fc${f.id}">
+        <div class="feed-item">
+            <div class="fi-icon">${f.icon}</div>
+            <div style="flex:1">
+                <div class="fi-label">${f.label}</div>
+                ${f.note?`<div class="fi-note">${f.note}</div>`:''}
+            </div>
+            <div class="fi-xp">+${f.xp} XP</div>
+            <div class="fi-time">${timeAgo(f.at)}</div>
+        </div>
+        <div class="social-bar">
+            <div class="react-row">${reactBar}</div>
+            <button class="comment-toggle" onclick="toggleComment(${f.id})">💬 Comment</button>
+        </div>
+        ${commentsHtml ? `<div class="comments-wrap">${commentsHtml}</div>` : ''}
+        <div class="comment-form" id="cf${f.id}" style="display:none">
+            <input class="comment-inp" id="ci${f.id}" type="text" placeholder="Write a comment…" maxlength="200"
+                onkeydown="if(event.key==='Enter'){submitComment(${f.id});event.preventDefault()}">
+            <button class="comment-send" onclick="submitComment(${f.id})">Send</button>
+        </div>
+    </div>`;
+}
+
+async function openFeed(username, name) {
+    activeBuddy = username;
+    loadBuddies();
+    const main = document.getElementById('mainPanel');
+    main.innerHTML = '<div style="padding:60px;color:var(--text-3);font-size:12px;letter-spacing:.06em">Loading…</div>';
+    const r = await fetch('/perfect/api/activity/' + username);
+    const d = await r.json();
+    if (!d.ok) { main.innerHTML = '<div style="padding:60px;color:var(--text-3)">Could not load activity.</div>'; return; }
+
+    const exTypes = d.exercise_types ? d.exercise_types.replace(/,/g, ', ') : '';
+    const feedHtml = d.feed.length
+        ? d.feed.map(buildFeedItem).join('')
+        : '<div class="feed-none">No activity yet.</div>';
+
+    main.innerHTML = `
+        <div class="profile-card">
+            <div class="pc-av">${d.name[0].toUpperCase()}</div>
+            <div>
+                <div class="pc-name">${d.name}</div>
+                <div class="pc-meta">Goal: ${d.goal}<br>Fitness: ${d.fitness_level}</div>
+            </div>
+            <div class="pc-stats">
+                <div><div class="pc-sv">${d.level}</div><div class="pc-sl">Level</div></div>
+                <div><div class="pc-sv">${d.streak}</div><div class="pc-sl">Streak</div></div>
+                <div><div class="pc-sv">${d.xp.toLocaleString()}</div><div class="pc-sl">Total XP</div></div>
+            </div>
+        </div>
+        ${exTypes ? `<div class="info-box"><span>Trains in:<span class="ib-v">${exTypes}</span></span></div>` : ''}
+        <div class="feed-head">Recent Activity</div>
+        <div class="feed-list">${feedHtml}</div>`;
+}
+
+async function doReact(eventId, emoji, btn) {
+    const res = await fetch('/perfect/api/activity/react',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({event_id:eventId,emoji})});
+    const d   = await res.json();
+    if (!d.ok) return;
+    // Update count on button
+    const countEl = btn.querySelector('.react-count');
+    if (d.reacted) {
+        btn.style.borderColor = 'var(--gold)'; btn.style.background = 'var(--gold-dim)';
+        if (countEl) countEl.textContent = d.count;
+        else if (d.count>0) btn.innerHTML = emoji + ` <span class="react-count">${d.count}</span>`;
+    } else {
+        btn.style.borderColor = ''; btn.style.background = '';
+        if (countEl && d.count===0) countEl.remove();
+        else if (countEl) countEl.textContent = d.count;
+    }
+}
+
+function toggleComment(eventId) {
+    const f = document.getElementById('cf'+eventId);
+    if (!f) return;
+    const vis = f.style.display === 'none';
+    f.style.display = vis ? 'flex' : 'none';
+    if (vis) document.getElementById('ci'+eventId)?.focus();
+}
+
+async function submitComment(eventId) {
+    const inp  = document.getElementById('ci'+eventId);
+    const body = inp ? inp.value.trim() : '';
+    if (!body) return;
+    inp.value = '';
+    await fetch('/perfect/api/activity/comment',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({event_id:eventId,body})});
+    const wrap = document.querySelector(`#fc${eventId} .comments-wrap`) || (() => {
+        const w = document.createElement('div'); w.className='comments-wrap';
+        document.getElementById('fc'+eventId).querySelector('.social-bar').after(w); return w;
+    })();
+    const div = document.createElement('div'); div.className='comment-item';
+    div.innerHTML = `<span class="comment-who">${escHtml(ME)}</span> ${escHtml(body)}`;
+    wrap.appendChild(div);
+    document.getElementById('cf'+eventId).style.display = 'none';
+}
+
+function escHtml(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+function timeAgo(s) {
+    if (!s) return '';
+    const diff = (Date.now() - new Date(s.replace(' ','T')+'Z')) / 1000;
+    if (diff < 60)    return 'just now';
+    if (diff < 3600)  return Math.floor(diff/60) + 'm ago';
+    if (diff < 86400) return Math.floor(diff/3600) + 'h ago';
+    return Math.floor(diff/86400) + 'd ago';
+}
+
+function showToast(msg) {
+    const t = document.createElement('div');
+    t.style.cssText = 'position:fixed;bottom:24px;right:24px;background:var(--elevated);border:1px solid var(--border-h);color:var(--gold);font-family:var(--mono);font-size:12px;padding:10px 18px;z-index:9000;letter-spacing:.04em;pointer-events:none';
+    t.textContent = msg; document.body.appendChild(t);
+    setTimeout(() => t.remove(), 3200);
+}
+
+loadBuddies();
+setInterval(loadBuddies, 20000);
+</script>
+</body>
+</html>

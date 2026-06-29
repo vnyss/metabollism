@@ -1,0 +1,3228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Dashboard — Too Good</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Courier+Prime:ital,wght@0,400;0,700;1,400&family=Special+Elite&display=swap" rel="stylesheet">
+    <script>(function(){
+        var r = document.documentElement;
+        if (localStorage.getItem('tg_mode') === 'light') r.classList.add('light-mode');
+        var fs = localStorage.getItem('tg_fontsize'); if (fs) r.style.setProperty('--fs', {sm:'12px',md:'14px',lg:'16px'}[fs]||'14px');
+        var cr = localStorage.getItem('tg_corner');   if (cr) r.style.setProperty('--radius', {sharp:'0px',soft:'6px',rounded:'14px'}[cr]||'6px');
+        var dn = localStorage.getItem('tg_density');  if (dn) r.style.setProperty('--msg-gap', {compact:'10px',comfortable:'18px',spacious:'28px'}[dn]||'18px');
+        var sw = localStorage.getItem('tg_sw');       if (sw) r.style.setProperty('--sw', {narrow:'220px',normal:'260px',wide:'320px'}[sw]||'260px');
+        var an = localStorage.getItem('tg_anim');     if (an) r.style.setProperty('--anim', {none:'0ms',normal:'200ms',snappy:'80ms'}[an]||'200ms');
+    })();</script>
+    <style>
+        :root {
+            --bg:       #080808;
+            --sidebar:  #060606;
+            --surface:  #0F0F0F;
+            --elevated: #161616;
+            --border:   rgba(201,168,76,0.12);
+            --border-h: rgba(201,168,76,0.38);
+            --gold:     #C9A84C;
+            --gold-h:   #DFC070;
+            --gold-dim: rgba(201,168,76,0.07);
+            --text:     #EDE3CE;
+            --text-2:   #9A8B72;
+            --text-3:   #554430;
+            --green:    #4CAF82;
+            --red:      #CF6679;
+            --mono:     'Courier Prime', monospace;
+            --display:  'Special Elite', monospace;
+            --sw:       260px;
+            --fs:       14px;
+            --radius:   6px;
+            --anim:     200ms;
+            --msg-gap:  18px;
+        }
+        html.light-mode {
+            --bg:       #F5F0E8;
+            --sidebar:  #EDE8DF;
+            --surface:  #FFFFFF;
+            --elevated: #F0EBE1;
+            --border:   rgba(100,80,40,0.14);
+            --border-h: rgba(100,80,40,0.36);
+            --gold-dim: rgba(201,168,76,0.10);
+            --text:     #1A1208;
+            --text-2:   #6B5A3E;
+            --text-3:   #9A8A72;
+        }
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        html { scroll-behavior: smooth; }
+        body { background: var(--bg); font-family: var(--mono); color: var(--text); height: 100vh; overflow: hidden; -webkit-font-smoothing: antialiased; font-size: 14px; line-height: 1.7; }
+        .app { display: flex; height: 100vh; }
+
+        /* ═══ SIDEBAR ═══ */
+        .sidebar { width: var(--sw); min-width: var(--sw); background: var(--sidebar); border-right: 1px solid var(--border); display: flex; flex-direction: column; height: 100vh; position: fixed; left: 0; top: 0; z-index: 100; transition: transform 0.25s; }
+        .sb-top { padding: 16px 14px 12px; border-bottom: 1px solid var(--border); flex-shrink: 0; }
+        .sb-brand { display: flex; align-items: center; gap: 10px; text-decoration: none; margin-bottom: 14px; }
+        .sb-logo { width: 32px; height: 32px; flex-shrink: 0; display: block; transition: color 0.3s; }
+        .sb-brand-name { font-family: var(--display); font-size: 15px; color: var(--text); letter-spacing: 0.06em; }
+        .new-chat-btn { width: 100%; display: flex; align-items: center; gap: 8px; padding: 8px 12px; background: transparent; border: 1px solid var(--border); color: var(--text-2); font-family: var(--mono); font-size: 13px; letter-spacing: 0.06em; cursor: pointer; transition: border-color 0.18s, color 0.18s, background 0.18s; }
+        .new-chat-btn:hover { border-color: var(--border-h); color: var(--gold); background: var(--gold-dim); }
+        .sb-nav { flex: 1; overflow-y: auto; padding: 10px 0 6px; }
+        .sb-nav::-webkit-scrollbar { width: 2px; }
+        .sb-nav::-webkit-scrollbar-thumb { background: var(--border); }
+        .sb-section-label { font-size: 9px; color: var(--text-3); letter-spacing: 0.24em; text-transform: uppercase; padding: 14px 16px 5px; display: block; }
+        .sb-item { display: flex; align-items: center; gap: 10px; width: 100%; padding: 9px 14px; background: none; border: none; color: var(--text-2); font-family: var(--mono); font-size: 13px; letter-spacing: 0.025em; cursor: pointer; text-align: left; text-decoration: none; transition: background 0.15s, color 0.15s; }
+        .sb-item:hover { background: var(--gold-dim); color: var(--text); }
+        .sb-item.active { background: rgba(201,168,76,0.09); color: var(--gold); }
+        .sb-item svg { flex-shrink: 0; opacity: 0.55; transition: opacity 0.15s; }
+        .sb-item:hover svg, .sb-item.active svg { opacity: 1; }
+        .sb-chevron { margin-left: auto; font-size: 10px; opacity: 0.4; transition: transform 0.22s; }
+        .sb-chevron.flipped { transform: rotate(180deg); }
+        .sb-sub { max-height: 0; overflow: hidden; transition: max-height 0.28s ease; }
+        .sb-sub.open { max-height: 600px; }
+        .sb-sub-item { display: flex; align-items: center; gap: 8px; padding: 7px 14px 7px 40px; font-family: var(--mono); font-size: 12px; color: var(--text-2); text-decoration: none; cursor: pointer; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; transition: background 0.15s, color 0.15s; border: none; background: none; width: 100%; text-align: left; }
+        .sb-sub-item:hover { background: var(--gold-dim); color: var(--text); }
+        .sb-sub-item.highlight { color: var(--gold); }
+        .sb-empty { padding: 8px 14px 8px 40px; font-size: 11px; color: var(--text-3); font-style: italic; }
+        .sb-bottom { border-top: 1px solid var(--border); padding: 8px; flex-shrink: 0; position: relative; }
+        .profile-btn { display: flex; align-items: center; gap: 10px; width: 100%; padding: 8px 10px; background: none; border: none; cursor: pointer; transition: background 0.15s; }
+        .profile-btn:hover { background: var(--gold-dim); }
+        .profile-avatar { width: 30px; height: 30px; background: rgba(201,168,76,0.12); border: 1px solid var(--border-h); display: flex; align-items: center; justify-content: center; font-family: var(--display); font-size: 14px; color: var(--gold); flex-shrink: 0; }
+        .profile-name { font-family: var(--mono); font-size: 13px; color: var(--text); flex: 1; text-align: left; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .profile-popup { display: none; position: absolute; bottom: calc(100% + 4px); left: 8px; right: 8px; background: var(--elevated); border: 1px solid var(--border-h); z-index: 200; }
+        .profile-popup.open { display: block; }
+        .pp-head { padding: 16px; display: flex; align-items: flex-start; gap: 12px; border-bottom: 1px solid var(--border); }
+        .pp-avatar { width: 38px; height: 38px; background: rgba(201,168,76,0.14); border: 1px solid var(--gold); display: flex; align-items: center; justify-content: center; font-family: var(--display); font-size: 18px; color: var(--gold); flex-shrink: 0; }
+        .pp-info { flex: 1; min-width: 0; }
+        .pp-name { font-family: var(--display); font-size: 15px; color: var(--text); display: block; margin-bottom: 3px; }
+        .pp-email { font-size: 11px; color: var(--text-2); display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 3px; }
+        .pp-since { font-size: 10px; color: var(--text-3); letter-spacing: 0.05em; display: block; }
+        .pp-actions { padding: 4px 0; }
+        .pp-btn { display: block; width: 100%; padding: 9px 16px; background: none; border: none; font-family: var(--mono); font-size: 12px; letter-spacing: 0.05em; color: var(--text-2); text-align: left; cursor: pointer; text-decoration: none; transition: background 0.15s, color 0.15s; }
+        .pp-btn:hover { background: var(--gold-dim); color: var(--text); }
+        .pp-btn.red:hover { color: var(--red); }
+
+        /* ═══ MAIN ═══ */
+        .main { margin-left: var(--sw); flex: 1; height: 100vh; overflow-y: auto; display: flex; flex-direction: column; }
+        .main::-webkit-scrollbar { width: 4px; }
+        .main::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+        /* ── HERO ── */
+        .hero { min-height: 100vh; display: flex; flex-direction: column; justify-content: center; padding: 0 72px; position: relative; border-bottom: 1px solid var(--border); flex-shrink: 0; }
+        .hero::before { content: ''; position: absolute; inset: 0; background: radial-gradient(ellipse 70% 60% at 60% 40%, rgba(201,168,76,0.035) 0%, transparent 70%); pointer-events: none; }
+        .hero-top { position: absolute; top: 24px; right: 28px; display: flex; align-items: center; gap: 10px; }
+        .hero-scan-btn { display: flex; align-items: center; gap: 7px; padding: 7px 14px; background: none; border: 1px solid var(--border); color: var(--text-2); font-family: var(--mono); font-size: 12px; letter-spacing: 0.08em; cursor: pointer; transition: border-color 0.18s, color 0.18s; }
+        .hero-scan-btn:hover { border-color: var(--border-h); color: var(--gold); }
+        .hero-eyebrow { font-size: 10px; color: var(--text-3); letter-spacing: 0.28em; text-transform: uppercase; margin-bottom: 20px; }
+        .hero-greeting { font-family: var(--display); font-size: clamp(32px, 4.5vw, 60px); color: var(--text); letter-spacing: 0.02em; line-height: 1.15; margin-bottom: 28px; }
+        .hero-greeting em { color: var(--gold); font-style: normal; }
+        .holiday-banner {
+            position: relative; display: inline-flex; align-items: center; gap: 10px;
+            padding: 10px 20px 10px 16px; margin-bottom: 28px;
+            border: 1px solid var(--gold); background: var(--gold-dim);
+            overflow: hidden;
+        }
+        .holiday-glow {
+            position: absolute; inset: 0;
+            background: radial-gradient(ellipse at 20% 50%, rgba(201,168,76,0.18) 0%, transparent 70%);
+            pointer-events: none;
+        }
+        .holiday-text {
+            font-family: var(--display); font-size: clamp(16px, 2vw, 22px);
+            color: var(--text); letter-spacing: 0.04em; position: relative;
+        }
+        .holiday-text em { color: var(--gold); font-style: normal; }
+
+        /* Weather widget */
+        .weather-widget { display: flex; align-items: center; gap: 16px; margin-bottom: 52px; }
+        .wx-icon-area { display: flex; flex-direction: column; align-items: center; gap: 5px; flex-shrink: 0; }
+        .wx-icon-box { width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; overflow: visible; }
+        .wx-code { font-family: var(--display); font-size: 10px; color: #060606; background: var(--gold); letter-spacing: 0.12em; padding: 3px 7px; }
+        .wx-temp { font-family: var(--display); font-size: 22px; color: var(--text); letter-spacing: 0.04em; }
+        .wx-desc { font-size: 12px; color: var(--text-2); letter-spacing: 0.08em; text-transform: uppercase; margin-top: 2px; }
+        .wx-date { font-size: 11px; color: var(--text-3); letter-spacing: 0.06em; margin-left: auto; text-align: right; line-height: 1.6; }
+        /* Weather icon keyframes */
+        @keyframes wxSunSpin  { to { transform: rotate(360deg); } }
+        @keyframes wxSunPulse { 0%,100% { opacity:.8; } 50% { opacity:1; } }
+        @keyframes wxCloudBob { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-2px); } }
+        @keyframes wxFogSlide { 0%,100% { transform: translateX(0); opacity:.5; } 50% { transform: translateX(5px); opacity:.7; } }
+        @keyframes wxRainFall { 0% { transform: translateY(0); opacity:.85; } 100% { transform: translateY(10px); opacity:0; } }
+        @keyframes wxSnowFall { 0% { transform: translate(0,0); opacity:.9; } 60% { transform: translate(2px,8px); opacity:.7; } 100% { transform: translate(-1px,14px); opacity:0; } }
+        @keyframes wxBoltFlash{ 0%,100% { opacity:.55; } 40% { opacity:1; } }
+
+        .hero-actions { display: flex; gap: 12px; flex-wrap: wrap; }
+        .hero-btn { padding: 11px 24px; font-family: var(--mono); font-size: 13px; letter-spacing: 0.1em; cursor: pointer; transition: background 0.2s, border-color 0.2s, color 0.2s; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; }
+        .hero-btn.primary { background: var(--gold); border: 1px solid var(--gold); color: #060606; }
+        .hero-btn.primary:hover { background: var(--gold-h); border-color: var(--gold-h); }
+        .hero-btn.secondary { background: transparent; border: 1px solid var(--border); color: var(--text-2); }
+        .hero-btn.secondary:hover { border-color: var(--border-h); color: var(--text); }
+
+        .scroll-hint { position: absolute; bottom: 36px; left: 50%; transform: translateX(-50%); display: flex; flex-direction: column; align-items: center; gap: 7px; animation: bounce 2.2s ease-in-out infinite; }
+        @keyframes bounce { 0%,100%{transform:translateX(-50%) translateY(0);} 50%{transform:translateX(-50%) translateY(6px);} }
+        .scroll-hint-line { width: 1px; height: 28px; background: linear-gradient(to bottom, transparent, var(--border)); }
+        .scroll-hint-label { font-size: 9px; color: var(--text-3); letter-spacing: 0.22em; text-transform: uppercase; }
+
+        /* ── BACK TO TOP ── */
+        .back-to-top { position: fixed; bottom: 28px; right: 28px; width: 40px; height: 40px; border-radius: 50%; background: var(--gold); color: #060606; border: none; font-size: 18px; line-height: 1; cursor: pointer; z-index: 300; opacity: 0; transform: translateY(10px); transition: opacity 0.2s, transform 0.2s; pointer-events: none; display: grid; place-items: center; }
+        .back-to-top.visible { opacity: 1; transform: translateY(0); pointer-events: auto; }
+        .back-to-top:hover { background: var(--gold-h); }
+
+
+        /* ── CONTENT SECTIONS ── */
+        .content { padding: 0 72px 80px; }
+        .section { margin-top: 64px; }
+        .section-header { display: flex; align-items: flex-end; justify-content: space-between; margin-bottom: 24px; gap: 16px; }
+        .section-title { font-family: var(--display); font-size: 20px; color: var(--text); letter-spacing: 0.04em; }
+        .section-sub { font-size: 13px; color: var(--text-2); font-style: italic; letter-spacing: 0.02em; }
+        .section-action { font-size: 12px; color: var(--text-2); letter-spacing: 0.08em; cursor: pointer; background: none; border: none; font-family: var(--mono); transition: color 0.15s; }
+        .section-action:hover { color: var(--gold); }
+
+        /* ── LOG TODAY ── */
+        .log-card { background: var(--surface); border: 1px solid var(--border); padding: 28px 32px; }
+        .log-date { font-size: 11px; color: var(--text-3); letter-spacing: 0.2em; text-transform: uppercase; margin-bottom: 20px; }
+        .log-row { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px; }
+        .log-field { display: flex; flex-direction: column; gap: 6px; }
+        .log-label { font-size: 10px; color: var(--text-3); letter-spacing: 0.2em; text-transform: uppercase; }
+        .log-input { background: var(--elevated); border: none; border-bottom: 1px solid var(--border); color: var(--text); font-family: var(--mono); font-size: 14px; padding: 7px 0; outline: none; transition: border-color 0.18s; letter-spacing: 0.03em; width: 100%; }
+        .log-input:focus { border-bottom-color: var(--gold); }
+        .log-input::placeholder { color: var(--text-3); }
+        input[type=number]::-webkit-outer-spin-button,
+        input[type=number]::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+        input[type=number] { -moz-appearance: textfield; }
+        .log-workout { grid-column: 1 / -1; }
+
+        /* Sliders */
+        .slider-row { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 24px; }
+        .slider-field { display: flex; flex-direction: column; gap: 8px; }
+        .slider-top { display: flex; justify-content: space-between; align-items: center; }
+        .slider-val { font-family: var(--display); font-size: 16px; color: var(--gold); }
+        input[type=range] { -webkit-appearance: none; width: 100%; height: 2px; background: var(--border); outline: none; cursor: pointer; }
+        input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 14px; height: 14px; background: var(--gold); cursor: pointer; border-radius: 0; }
+        input[type=range]::-moz-range-thumb { width: 14px; height: 14px; background: var(--gold); cursor: pointer; border: none; border-radius: 0; }
+
+        /* Food log within card */
+        .food-log-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; border-top: 1px solid var(--border); padding-top: 20px; }
+        .food-log-title { font-size: 11px; color: var(--text-3); letter-spacing: 0.2em; text-transform: uppercase; }
+        .food-cal-total { font-family: var(--display); font-size: 16px; color: var(--gold); }
+        .food-items { min-height: 32px; margin-bottom: 14px; }
+        .food-item { display: flex; align-items: center; gap: 10px; padding: 7px 0; border-bottom: 1px solid rgba(201,168,76,0.06); font-size: 13px; color: var(--text-2); }
+        .food-item-name { flex: 1; color: var(--text); }
+        .food-item-cal { color: var(--gold); font-family: var(--display); font-size: 13px; min-width: 60px; text-align: right; }
+        .food-item-macro { color: var(--text-3); font-size: 11px; min-width: 100px; text-align: right; }
+        .food-item-del { background: none; border: none; color: var(--text-3); cursor: pointer; font-size: 13px; padding: 2px 4px; transition: color 0.15s; }
+        .food-item-del:hover { color: var(--red); }
+        .no-food { font-size: 12px; color: var(--text-3); font-style: italic; padding: 4px 0; }
+        .food-actions { display: flex; gap: 10px; }
+        .food-btn { padding: 7px 14px; font-family: var(--mono); font-size: 12px; letter-spacing: 0.08em; cursor: pointer; border: 1px solid var(--border); background: none; color: var(--text-2); display: flex; align-items: center; gap: 7px; transition: border-color 0.18s, color 0.18s; }
+        .food-btn:hover { border-color: var(--border-h); color: var(--text); }
+        .log-footer { display: flex; justify-content: flex-end; margin-top: 20px; }
+        .log-save-btn { padding: 10px 28px; background: var(--gold); border: none; color: #060606; font-family: var(--mono); font-size: 12px; letter-spacing: 0.12em; text-transform: uppercase; cursor: pointer; transition: background 0.18s; }
+        .log-save-btn:hover { background: var(--gold-h); }
+        .log-done-state { display: none; }
+        .log-done-banner { display: flex; align-items: center; gap: 14px; padding: 18px 0 14px; border-bottom: 1px solid var(--border); margin-bottom: 18px; }
+        .log-done-check { width: 32px; height: 32px; border-radius: 50%; background: rgba(76,175,124,0.15); border: 1px solid rgba(76,175,124,0.4); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+        .log-done-check svg { stroke: #4CAF7C; }
+        .log-done-label { font-size: 13px; color: var(--text); letter-spacing: 0.04em; }
+        .log-done-sub { font-size: 11px; color: var(--text-3); margin-top: 2px; letter-spacing: 0.06em; }
+        .log-done-stats { display: flex; gap: 24px; flex-wrap: wrap; padding: 12px 0; }
+        .log-done-stat { display: flex; flex-direction: column; gap: 3px; }
+        .log-done-stat-val { font-size: 16px; color: var(--gold); letter-spacing: 0.04em; }
+        .log-done-stat-lbl { font-size: 10px; color: var(--text-3); letter-spacing: 0.18em; text-transform: uppercase; }
+        .log-done-actions { display: flex; gap: 10px; margin-top: 16px; }
+        .log-edit-btn { padding: 8px 20px; background: none; border: 1px solid var(--border); color: var(--text-2); font-family: var(--mono); font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; cursor: pointer; transition: border-color 0.15s, color 0.15s; }
+        .log-edit-btn:hover { border-color: var(--border-h); color: var(--text); }
+
+        /* ── M·ADAPT CARD ── */
+        .adapt-card { background: var(--surface); border: 1px solid var(--border); padding: 28px 32px; position: relative; overflow: hidden; }
+        .adapt-card::before { content: ''; position: absolute; top: 0; left: 0; width: 3px; height: 100%; background: var(--gold); }
+        .adapt-label { font-size: 9px; color: var(--gold); letter-spacing: 0.32em; text-transform: uppercase; margin-bottom: 6px; }
+        .adapt-title { font-family: var(--display); font-size: 22px; color: var(--text); letter-spacing: 0.04em; margin-bottom: 16px; }
+        .adapt-insight { font-size: 15px; color: var(--text); line-height: 1.75; margin-bottom: 20px; letter-spacing: 0.02em; }
+        .adapt-insight em { color: var(--gold); font-style: normal; font-weight: 700; }
+        .adapt-stats { display: flex; gap: 32px; flex-wrap: wrap; border-top: 1px solid var(--border); padding-top: 16px; }
+        .adapt-stat { display: flex; flex-direction: column; gap: 3px; }
+        .adapt-stat-label { font-size: 10px; color: var(--text-3); letter-spacing: 0.16em; text-transform: uppercase; }
+        .adapt-stat-val { font-family: var(--display); font-size: 18px; color: var(--text); }
+        .adapt-badge { display: inline-flex; align-items: center; gap: 5px; padding: 3px 10px; font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; }
+        .adapt-badge.ok { background: rgba(76,175,130,0.1); border: 1px solid rgba(76,175,130,0.3); color: var(--green); }
+        .adapt-badge.warn { background: rgba(201,168,76,0.08); border: 1px solid rgba(201,168,76,0.3); color: var(--gold); }
+        .adapt-badge.adj { background: rgba(207,102,121,0.08); border: 1px solid rgba(207,102,121,0.3); color: var(--red); }
+
+        /* ── MEAL PLAN TABLE ── */
+        .meal-plan-wrap { margin-top: 24px; border-top: 1px solid var(--border); padding-top: 20px; }
+        .meal-plan-label { font-size: 9px; color: var(--gold); letter-spacing: 0.32em; text-transform: uppercase; margin-bottom: 14px; }
+        .meal-table { width: 100%; border-collapse: collapse; }
+        .meal-table th { font-size: 9px; color: var(--text-3); letter-spacing: 0.2em; text-transform: uppercase; text-align: left; padding: 0 12px 10px 0; font-weight: 400; border-bottom: 1px solid var(--border); }
+        .meal-table th:last-child, .meal-table td:last-child { text-align: right; padding-right: 0; }
+        .meal-table td { padding: 14px 12px 14px 0; vertical-align: top; border-bottom: 1px solid rgba(255,255,255,0.04); }
+        .meal-table tr:last-child td { border-bottom: none; }
+        .meal-name { font-family: var(--display); font-size: 15px; color: var(--text); letter-spacing: 0.04em; white-space: nowrap; }
+        .meal-time { font-size: 10px; color: var(--text-3); margin-top: 2px; letter-spacing: 0.08em; }
+        .meal-foods { font-size: 13px; color: var(--text-2); line-height: 1.6; }
+        .meal-foods span { display: block; }
+        .meal-kcal { font-family: var(--display); font-size: 17px; color: var(--text); white-space: nowrap; }
+        .meal-macros { font-size: 10px; color: var(--text-3); margin-top: 3px; white-space: nowrap; }
+        .meal-total-row td { border-top: 1px solid var(--border) !important; border-bottom: none !important; padding-top: 12px; }
+
+        /* ── CHARTS ── */
+        .charts-row { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .chart-card { background: var(--surface); border: 1px solid var(--border); padding: 22px 24px; cursor: pointer; transition: border-color 0.15s; }
+        .chart-card:hover { border-color: var(--border-h); }
+        .chart-expand-hint { font-size: 9px; color: var(--text-3); letter-spacing: 0.1em; text-transform: uppercase; float: right; margin-top: -2px; }
+        /* ── Chart modal ── */
+        #chartModal { position:fixed;inset:0;z-index:350;background:rgba(0,0,0,0.82);display:none;align-items:center;justify-content:center;padding:20px;box-sizing:border-box; }
+        #chartModal.open { display:flex; }
+        #chartModalCard { background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:28px;width:min(720px,100%);max-height:90vh;overflow-y:auto; }
+        .chart-modal-hdr { display:flex;align-items:center;justify-content:space-between;margin-bottom:20px; }
+        .chart-modal-title { font-family:var(--mono);font-size:11px;letter-spacing:0.2em;text-transform:uppercase;color:var(--text-3); }
+        .chart-modal-close { background:none;border:1px solid var(--border);color:var(--text-3);border-radius:6px;width:28px;height:28px;font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:border-color 0.15s,color 0.15s; }
+        .chart-modal-close:hover { border-color:var(--border-h);color:var(--text); }
+        #chartModalSvg { width:100%;overflow:visible; }
+        .chart-title { font-size: 11px; color: var(--text-3); letter-spacing: 0.2em; text-transform: uppercase; margin-bottom: 16px; }
+        .chart-svg-wrap { width: 100%; }
+        .chart-svg { width: 100%; height: 110px; overflow: visible; }
+        .chart-no-data { font-size: 12px; color: var(--text-3); font-style: italic; padding: 20px 0; text-align: center; }
+        .chart-labels { display: flex; justify-content: space-between; margin-top: 8px; }
+        .chart-label { font-size: 9px; color: var(--text-3); letter-spacing: 0.06em; }
+        .chart-legend { display: flex; align-items: center; gap: 14px; margin-top: 10px; }
+        .chart-leg-item { display: flex; align-items: center; gap: 5px; font-size: 10px; color: var(--text-3); }
+        .chart-leg-line { width: 18px; height: 1px; background: var(--gold); }
+        .chart-leg-dashed { width: 18px; height: 1px; border-top: 1px dashed var(--text-3); }
+
+        /* ── PROGRESS GRID ── */
+        .progress-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+        .prog-card { background: var(--surface); border: 1px solid var(--border); padding: 18px 20px; }
+        .prog-label { font-size: 10px; color: var(--text-3); letter-spacing: 0.18em; text-transform: uppercase; margin-bottom: 8px; }
+        .prog-val { font-family: var(--display); font-size: 26px; color: var(--text); letter-spacing: 0.02em; margin-bottom: 6px; }
+        .prog-sub { font-size: 11px; color: var(--text-2); }
+        .prog-bar-wrap { margin-top: 10px; height: 2px; background: var(--border); }
+        .prog-bar-fill { height: 100%; background: var(--gold); transition: width 0.6s ease; }
+        .prog-bar-fill.green { background: var(--green); }
+        .prog-bar-fill.red { background: var(--red); }
+
+        /* ── QUICK ACTIONS ── */
+        .actions-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
+        .action-card { background: var(--surface); border: 1px solid var(--border); padding: 20px 18px; cursor: pointer; text-decoration: none; display: block; transition: border-color 0.18s, background 0.18s; }
+        .action-card:hover { border-color: var(--border-h); background: var(--gold-dim); }
+        .action-icon { width: 28px; height: 28px; border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; margin-bottom: 12px; transition: border-color 0.18s; }
+        .action-card:hover .action-icon { border-color: var(--gold); }
+        .action-icon svg { color: var(--gold); }
+        .action-name { font-size: 13px; color: var(--text); letter-spacing: 0.04em; margin-bottom: 4px; }
+        .action-desc { font-size: 11px; color: var(--text-2); line-height: 1.5; }
+
+        /* ── RECENT CHATS ── */
+        .chats-list { display: flex; flex-direction: column; gap: 1px; }
+        .chat-item-row { display: flex; align-items: center; border-bottom: 1px solid var(--border); }
+        .chat-item { display: flex; align-items: center; gap: 14px; padding: 14px 0; cursor: pointer; text-decoration: none; flex: 1; min-width: 0; }
+        .chat-item:hover .chat-title { color: var(--gold); }
+        .chat-dot { width: 5px; height: 5px; background: var(--border-h); flex-shrink: 0; }
+        .chat-info { flex: 1; min-width: 0; }
+        .chat-title { font-size: 14px; color: var(--text); letter-spacing: 0.02em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 2px; transition: color 0.15s; }
+        .chat-preview { font-size: 12px; color: var(--text-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .chat-date { font-size: 10px; color: var(--text-3); letter-spacing: 0.06em; flex-shrink: 0; margin-right: 10px; }
+        .chat-del-btn { background: none; border: none; color: var(--text-3); cursor: pointer; padding: 6px 4px; font-size: 15px; line-height: 1; opacity: 0; transition: opacity 0.15s, color 0.15s; flex-shrink: 0; }
+        .chat-item-row:hover .chat-del-btn { opacity: 1; }
+        .chat-del-btn:hover { color: #C05050; }
+        .no-chats { font-size: 13px; color: var(--text-2); font-style: italic; padding: 16px 0; }
+
+        /* ── BARCODE MODAL ── */
+        .modal-overlay { display: none; position: fixed; inset: 0; z-index: 500; background: rgba(0,0,0,0.85); align-items: center; justify-content: center; }
+        .modal-overlay.open { display: flex; }
+        .modal-box { background: var(--surface); border: 1px solid var(--border-h); width: 480px; max-width: calc(100vw - 40px); max-height: 90vh; overflow-y: auto; }
+        .modal-header { display: flex; align-items: center; justify-content: space-between; padding: 18px 22px; border-bottom: 1px solid var(--border); }
+        .modal-title { font-family: var(--display); font-size: 17px; color: var(--text); letter-spacing: 0.04em; }
+        .modal-close { background: none; border: none; color: var(--text-2); font-size: 18px; cursor: pointer; padding: 2px 6px; transition: color 0.15s; }
+        .modal-close:hover { color: var(--text); }
+        .scanner-area { position: relative; width: 100%; background: #000; overflow: hidden; }
+        #scanVideo { width: 100%; display: block; }
+        .scan-frame { position: absolute; inset: 20%; border: 1.5px solid var(--gold); pointer-events: none; }
+        .scan-line { position: absolute; left: 20%; right: 20%; height: 1px; background: var(--gold); box-shadow: 0 0 8px var(--gold); animation: scanSlide 2s ease-in-out infinite; }
+        @keyframes scanSlide { 0%{top:20%;} 100%{top:80%;} }
+        .scanner-hint { padding: 12px 22px; font-size: 12px; color: var(--text-2); letter-spacing: 0.04em; font-style: italic; }
+        .scan-result { padding: 18px 22px; border-top: 1px solid var(--border); display: none; }
+        .scan-result.show { display: block; }
+        .scan-product-name { font-family: var(--display); font-size: 17px; color: var(--text); margin-bottom: 4px; }
+        .scan-brand { font-size: 12px; color: var(--text-2); margin-bottom: 14px; }
+        .scan-macros { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 16px; }
+        .scan-macro { text-align: center; background: var(--elevated); padding: 10px 6px; }
+        .scan-macro-val { font-family: var(--display); font-size: 16px; color: var(--gold); display: block; }
+        .scan-macro-lbl { font-size: 9px; color: var(--text-3); letter-spacing: 0.14em; text-transform: uppercase; display: block; margin-top: 2px; }
+        .scan-serving { font-size: 12px; color: var(--text-2); margin-bottom: 14px; }
+        .scan-actions { display: flex; gap: 10px; }
+        .scan-action-btn { flex: 1; padding: 10px; font-family: var(--mono); font-size: 12px; letter-spacing: 0.08em; cursor: pointer; transition: background 0.18s; }
+        .scan-action-btn.primary { background: var(--gold); border: none; color: #060606; }
+        .scan-action-btn.primary:hover { background: var(--gold-h); }
+        .scan-action-btn.secondary { background: none; border: 1px solid var(--border); color: var(--text-2); }
+        .scan-action-btn.secondary:hover { border-color: var(--border-h); color: var(--text); }
+        .scan-error { padding: 18px 22px; border-top: 1px solid var(--border); display: none; }
+        .scan-error.show { display: block; }
+        .scan-error-msg { font-size: 13px; color: var(--red); margin-bottom: 10px; }
+
+        /* Add food inline modal */
+        .add-food-modal { display: none; position: fixed; inset: 0; z-index: 500; background: rgba(0,0,0,0.85); align-items: center; justify-content: center; }
+        .add-food-modal.open { display: flex; }
+        .add-food-box { background: var(--surface); border: 1px solid var(--border-h); width: 400px; max-width: calc(100vw - 40px); }
+        .afm-header { display: flex; align-items: center; justify-content: space-between; padding: 16px 20px; border-bottom: 1px solid var(--border); }
+        .afm-body { padding: 20px; display: flex; flex-direction: column; gap: 14px; }
+        .afm-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        .afm-field { display: flex; flex-direction: column; gap: 5px; }
+        .afm-label { font-size: 10px; color: var(--text-3); letter-spacing: 0.18em; text-transform: uppercase; }
+        .afm-input { background: var(--elevated); border: none; border-bottom: 1px solid var(--border); color: var(--text); font-family: var(--mono); font-size: 14px; padding: 6px 0; outline: none; width: 100%; transition: border-color 0.15s; }
+        .afm-input:focus { border-bottom-color: var(--gold); }
+        .afm-footer { padding: 0 20px 20px; }
+        .afm-save { width: 100%; padding: 10px; background: var(--gold); border: none; color: #060606; font-family: var(--mono); font-size: 12px; letter-spacing: 0.1em; text-transform: uppercase; cursor: pointer; transition: background 0.18s; }
+        .afm-save:hover { background: var(--gold-h); }
+
+        /* Toast */
+        .toast { position: fixed; top: 20px; left: 50%; transform: translateX(-50%) translateY(-80px); background: var(--elevated); border: 1px solid var(--border-h); padding: 12px 22px; font-family: var(--mono); font-size: 13px; color: var(--text); letter-spacing: 0.06em; z-index: 999; transition: transform 0.35s cubic-bezier(0.4,0,0.2,1); white-space: nowrap; }
+        .toast.show { transform: translateX(-50%) translateY(0); }
+
+        /* ── SETTINGS ── */
+        .sb-settings-wrap { border-top: 1px solid var(--border); position: relative; flex-shrink: 0; }
+        .settings-popup { display: none; position: absolute; bottom: 100%; left: 8px; right: 8px; background: var(--elevated); border: 1px solid var(--border-h); z-index: 200; padding: 4px 0; }
+        .settings-popup.open { display: block; }
+        .settings-section-label { font-size: 9px; color: var(--text-3); letter-spacing: 0.24em; text-transform: uppercase; padding: 10px 14px 6px; display: block; }
+        .settings-row { display: flex; align-items: center; justify-content: space-between; padding: 9px 14px; }
+        .settings-label { font-family: var(--mono); font-size: 12px; color: var(--text-2); letter-spacing: 0.04em; }
+        /* Toggle switch */
+        .tog { position: relative; display: inline-block; width: 34px; height: 20px; flex-shrink: 0; cursor: pointer; }
+        .tog input { opacity: 0; width: 0; height: 0; }
+        .tog-track { position: absolute; inset: 0; background: var(--border); transition: background 0.22s; border-radius: 20px; }
+        .tog-thumb { position: absolute; width: 14px; height: 14px; left: 3px; top: 3px; background: var(--text-3); border-radius: 50%; transition: transform 0.22s, background 0.22s; }
+        .tog input:checked ~ .tog-track { background: rgba(201,168,76,0.28); }
+        .tog input:checked ~ .tog-thumb { transform: translateX(14px); background: var(--gold); }
+
+        /* ── WEATHER OVERLAY ── */
+        #wxOverlay { position: fixed; inset: 0; pointer-events: none; z-index: 9; overflow: hidden; display: none; }
+
+        /* Rain drops */
+        .wx-rain { position: absolute; top: -30px; width: 2px; background: linear-gradient(to bottom, transparent, rgba(180,220,255,0.7)); animation: wxRainFall linear infinite; }
+        @keyframes wxRainFall { from { transform: translateY(0) skewX(-14deg); } to { transform: translateY(115vh) skewX(-14deg); } }
+
+        /* Snow flakes */
+        .wx-snow { position: absolute; top: -10px; border-radius: 50%; background: rgba(230,240,255,0.75); animation: wxSnowFall linear infinite; }
+        @keyframes wxSnowFall {
+            0%   { transform: translateY(0) translateX(0) rotate(0deg); }
+            25%  { transform: translateY(25vh) translateX(18px) rotate(90deg); }
+            75%  { transform: translateY(75vh) translateX(-12px) rotate(270deg); }
+            100% { transform: translateY(110vh) translateX(6px) rotate(360deg); }
+        }
+
+        /* Fog layers */
+        .wx-fog { position: absolute; left: -10%; width: 120%; height: 90px; border-radius: 50%; background: linear-gradient(to right, transparent, rgba(200,210,220,0.05), rgba(200,210,220,0.08), transparent); animation: wxFogDrift ease-in-out infinite alternate; }
+        @keyframes wxFogDrift { from { transform: translateX(-5%); } to { transform: translateX(5%); } }
+
+        /* Lightning flash */
+        .wx-lightning { position: fixed; inset: 0; background: rgba(220,230,255,0.14); animation: wxLightning 6s ease-in-out infinite; pointer-events: none; }
+        @keyframes wxLightning {
+            0%,88%,92%,95%,100% { opacity: 0; }
+            89%,93% { opacity: 1; }
+        }
+
+        /* Sunny warmth pulse */
+        .wx-sun { position: fixed; inset: 0; background: radial-gradient(ellipse 60% 50% at 70% 20%, rgba(201,168,76,0.06) 0%, transparent 70%); animation: wxSunPulse 5s ease-in-out infinite alternate; }
+        @keyframes wxSunPulse { from { opacity: 0.5; } to { opacity: 1; } }
+
+        /* Light mode overrides — original colours vanish against the pale background */
+        html.light-mode .wx-rain {
+            background: linear-gradient(to bottom, transparent, rgba(50,90,170,0.52));
+        }
+        html.light-mode .wx-snow {
+            background: rgba(100,130,190,0.55);
+        }
+        html.light-mode .wx-fog {
+            background: linear-gradient(to right, transparent, rgba(70,90,120,0.09), rgba(70,90,120,0.13), transparent);
+        }
+        html.light-mode .wx-lightning {
+            background: rgba(70,100,200,0.20);
+        }
+        html.light-mode .wx-sun {
+            background: radial-gradient(ellipse 60% 50% at 70% 20%, rgba(195,130,10,0.16) 0%, transparent 70%);
+        }
+
+        /* ═══ CALENDAR ═══ */
+        .cal-nav { display:flex; align-items:center; justify-content:space-between; margin-bottom:20px; }
+        .cal-week-label { font-family:var(--mono); font-size:11px; letter-spacing:0.1em; color:var(--text-2); text-transform:uppercase; }
+        .cal-arrow { background:none; border:1px solid var(--border); color:var(--text-2); border-radius:6px; padding:5px 12px; font-family:var(--mono); font-size:11px; cursor:pointer; letter-spacing:0.06em; transition:background 0.15s,color 0.15s; }
+        .cal-arrow:hover { background:var(--surface); color:var(--text); }
+        .cal-grid { display:grid; grid-template-columns:repeat(7,1fr); gap:8px; }
+        .cal-day { background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:14px 10px 12px; min-height:148px; display:flex; flex-direction:column; gap:6px; }
+        .cal-day.today { border-color:var(--accent); box-shadow:0 0 0 1px var(--accent); }
+        .cal-day.rest { background:var(--sidebar); border-color:var(--border); }
+        .cal-day.optional { opacity:0.55; }
+        .cal-day-name { font-family:var(--mono); font-size:8px; letter-spacing:0.18em; text-transform:uppercase; color:var(--text-3); }
+        .cal-date-num { font-family:var(--display); font-size:22px; color:var(--text); line-height:1.1; }
+        .cal-today-dot { width:5px; height:5px; border-radius:50%; background:var(--accent); }
+        .cal-rest-lbl { font-family:var(--mono); font-size:9px; letter-spacing:0.12em; text-transform:uppercase; color:var(--text-3); margin-top:auto; }
+        .cal-ex-chip { border:1px solid var(--border-h); border-radius:5px; padding:5px 7px; font-family:var(--mono); font-size:9px; letter-spacing:0.06em; color:var(--accent); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+        .cal-ex-meta { font-family:var(--mono); font-size:9px; color:var(--text-3); letter-spacing:0.04em; }
+        .cal-opt-lbl { font-family:var(--mono); font-size:9px; letter-spacing:0.1em; text-transform:uppercase; color:var(--text-3); margin-top:auto; }
+        .cal-setup-msg { text-align:center; padding:48px 24px; color:var(--text-3); font-family:var(--mono); font-size:12px; letter-spacing:0.06em; line-height:1.8; }
+        .cal-setup-msg a { color:var(--accent); text-decoration:none; }
+        @media (max-width: 900px) { .cal-grid { grid-template-columns:repeat(4,1fr); } }
+
+        /* ── Calendar Edit Modal ── */
+        .caled-pen-btn { background:none; border:1px solid var(--border); color:var(--text-3); border-radius:6px; padding:5px 9px; cursor:pointer; display:flex; align-items:center; transition:border-color 0.15s,color 0.15s; }
+        .caled-pen-btn:hover { border-color:var(--border-h); color:var(--text); }
+        .caled-backdrop { position:fixed; inset:0; background:rgba(0,0,0,0.74); z-index:400; display:flex; align-items:center; justify-content:center; }
+        .caled-modal { background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:24px; width:min(460px,92vw); display:flex; flex-direction:column; gap:16px; }
+        .caled-top { display:flex; align-items:center; justify-content:space-between; }
+        .caled-title { font-family:var(--display); font-size:15px; color:var(--text); letter-spacing:0.04em; }
+        .caled-close { background:none; border:none; color:var(--text-3); font-size:16px; cursor:pointer; padding:2px 6px; line-height:1; transition:color 0.15s; }
+        .caled-close:hover { color:var(--text); }
+        .caled-modes { display:flex; gap:8px; }
+        .caled-mode-btn { flex:1; background:none; border:1px solid var(--border); color:var(--text-3); border-radius:8px; padding:9px 12px; font-family:var(--mono); font-size:11px; letter-spacing:0.08em; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:7px; transition:border-color 0.15s,color 0.15s; }
+        .caled-mode-btn.active { border-color:var(--accent); color:var(--accent); }
+        .caled-hint { font-family:var(--mono); font-size:10px; color:var(--text-3); letter-spacing:0.04em; line-height:1.7; margin:0; }
+        .caled-ta { width:100%; background:var(--bg); border:1px solid var(--border); border-radius:8px; padding:12px; color:var(--text); font-family:var(--mono); font-size:12px; resize:none; outline:none; transition:border-color 0.15s; box-sizing:border-box; line-height:1.6; }
+        .caled-ta:focus { border-color:var(--border-h); }
+        .caled-ta::placeholder { color:var(--text-3); }
+        .caled-mic-area { display:flex; flex-direction:column; align-items:center; gap:14px; padding:14px 0 6px; }
+        .caled-mic-btn { width:64px; height:64px; border-radius:50%; background:var(--bg); border:2px solid var(--border); color:var(--text-2); cursor:pointer; display:flex; align-items:center; justify-content:center; transition:border-color 0.2s,color 0.2s; }
+        .caled-mic-btn:hover { border-color:var(--accent); color:var(--accent); }
+        .caled-mic-btn.recording { border-color:var(--accent); color:var(--accent); animation:calPulse 1.1s ease-in-out infinite; }
+        @keyframes calPulse { 0%,100%{box-shadow:0 0 0 0 rgba(200,169,110,0.45)} 50%{box-shadow:0 0 0 14px rgba(200,169,110,0)} }
+        .caled-transcript { font-family:var(--mono); font-size:11px; color:var(--text-2); text-align:center; letter-spacing:0.04em; line-height:1.7; max-width:330px; min-height:36px; }
+        .caled-response { background:var(--bg); border:1px solid var(--border); border-radius:8px; padding:12px 14px; font-family:var(--mono); font-size:11px; color:var(--text-2); letter-spacing:0.04em; line-height:1.7; }
+        .caled-actions { display:flex; gap:10px; justify-content:flex-end; padding-top:2px; }
+        .caled-cancel { background:none; border:1px solid var(--border); color:var(--text-2); border-radius:8px; padding:9px 18px; font-family:var(--mono); font-size:11px; cursor:pointer; transition:all 0.15s; letter-spacing:0.06em; }
+        .caled-cancel:hover { border-color:var(--border-h); color:var(--text); }
+        .caled-apply { background:var(--accent,#C8A96E); border:none; color:#060606; border-radius:8px; padding:9px 20px; font-family:var(--mono); font-size:11px; font-weight:700; letter-spacing:0.06em; cursor:pointer; transition:opacity 0.15s; }
+        .caled-apply:hover { opacity:0.85; }
+        .caled-apply:disabled { opacity:0.45; cursor:not-allowed; }
+
+        /* ── ASSISTANT ── */
+        .asst-card { border:1px solid var(--border); border-radius:12px; overflow:hidden; display:flex; flex-direction:column; height:420px; }
+        .asst-msgs { flex:1; overflow-y:auto; padding:18px; display:flex; flex-direction:column; gap:12px; }
+        .asst-msgs::-webkit-scrollbar { width:4px; } .asst-msgs::-webkit-scrollbar-thumb { background:var(--border); border-radius:2px; }
+        .asst-welcome { color:var(--text-3); font-family:var(--mono); font-size:11px; letter-spacing:0.04em; line-height:1.8; }
+        .asst-chips { display:flex; flex-wrap:wrap; gap:7px; margin-top:10px; }
+        .asst-chip { border:1px solid var(--border); border-radius:20px; padding:5px 12px; font-family:var(--mono); font-size:10px; letter-spacing:0.05em; color:var(--text-2); cursor:pointer; transition:border-color 0.15s,color 0.15s; }
+        .asst-chip:hover { border-color:var(--gold); color:var(--gold); }
+        .asst-bubble { max-width:84%; padding:10px 14px; border-radius:10px; font-family:var(--mono); font-size:12px; line-height:1.65; letter-spacing:0.03em; }
+        .asst-bubble.user { background:var(--gold);color:#060606;align-self:flex-end;border-bottom-right-radius:3px; }
+        .asst-bubble.ai { background:var(--surface);border:1px solid var(--border);color:var(--text);align-self:flex-start;border-bottom-left-radius:3px; }
+        .asst-bubble.thinking { background:var(--surface);border:1px solid var(--border);color:var(--text-3);align-self:flex-start;border-bottom-left-radius:3px;font-style:italic; }
+        .asst-logged-pill { display:inline-flex;align-items:center;gap:5px;background:rgba(76,175,124,0.12);border:1px solid rgba(76,175,124,0.3);border-radius:20px;padding:3px 10px;font-family:var(--mono);font-size:9px;letter-spacing:0.08em;color:#4CAF7C;margin-top:6px; }
+        .asst-composer { display:flex;align-items:flex-end;gap:8px;padding:10px 14px;border-top:1px solid var(--border);background:var(--surface); }
+        .asst-ta { flex:1;background:none;border:none;color:var(--text);font-family:var(--mono);font-size:12px;resize:none;outline:none;max-height:100px;letter-spacing:0.03em;line-height:1.6;padding:4px 0; }
+        .asst-ta::placeholder { color:var(--text-3); }
+        .asst-icon-btn { background:none;border:1px solid var(--border);color:var(--text-3);border-radius:6px;width:32px;height:32px;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:border-color 0.15s,color 0.15s;flex-shrink:0; }
+        .asst-icon-btn:hover { border-color:var(--border-h);color:var(--text); }
+        .asst-icon-btn.recording { border-color:var(--gold);color:var(--gold);animation:calPulse 1.1s ease-in-out infinite; }
+        .asst-send { background:var(--gold);border:none;color:#060606;border-radius:6px;width:32px;height:32px;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;transition:opacity 0.15s; }
+        .asst-send:hover { opacity:0.85; }
+        .asst-wave { display:none;align-items:center;gap:3px;padding:0 8px;height:28px;flex-shrink:0; }
+        .asst-wave-bar { width:3px;border-radius:2px;background:var(--gold);animation:asstWaveAnim 0.9s ease-in-out infinite; }
+        .asst-wave-bar:nth-child(1){animation-delay:0s}
+        .asst-wave-bar:nth-child(2){animation-delay:0.13s}
+        .asst-wave-bar:nth-child(3){animation-delay:0.26s}
+        .asst-wave-bar:nth-child(4){animation-delay:0.39s}
+        .asst-wave-bar:nth-child(5){animation-delay:0.52s}
+        @keyframes asstWaveAnim{0%,100%{height:4px;opacity:0.35}50%{height:22px;opacity:1}}
+
+        /* Mobile */
+        .mob-toggle { display: none; position: fixed; top: 12px; left: 12px; z-index: 200; background: var(--surface); border: 1px solid var(--border); color: var(--text-2); padding: 6px 8px; cursor: pointer; }
+        @media (max-width: 768px) {
+            .sidebar { transform: translateX(-100%); }
+            .sidebar.mob-open { transform: translateX(0); box-shadow: 4px 0 24px rgba(0,0,0,0.7); }
+            .main { margin-left: 0; }
+            .mob-toggle { display: flex; align-items: center; }
+            .hero { padding: 40px 28px; min-height: auto; padding-top: 80px; }
+            .content { padding: 0 24px 60px; }
+            .log-row, .slider-row, .charts-row, .progress-grid, .actions-grid { grid-template-columns: 1fr; }
+            .scan-macros { grid-template-columns: repeat(2, 1fr); }
+        }
+        /* ── Dynamic settings ── */
+        body { font-size: var(--fs); }
+        .sb-item, .new-chat-btn, .pp-btn, .hero-btn, .section-title { font-size: var(--fs) !important; }
+        .card, .stat-card, .action-card, .log-form, .scan-box, .scan-result,
+        .weather-card, .chat-item, .new-chat-btn, .hero-btn, .hero-scan-btn,
+        .food-btn, .log-save-btn, .log-edit-btn, .scan-action-btn, .afm-save,
+        .toast, .modal-inner { border-radius: var(--radius) !important; }
+        .new-chat-btn, .sb-item, .sb-item svg, .sb-chevron, .sb-sub, .sb-sub-item,
+        .profile-btn, .pp-btn, .hero-btn, .hero-scan-btn, .section-action,
+        .log-input, .food-item-del, .food-btn, .log-save-btn, .log-edit-btn,
+        .action-card, .action-icon, .chat-title, .chat-del-btn, .modal-close,
+        .scan-action-btn, .afm-input, .afm-save, .prog-bar-fill { transition-duration: var(--anim) !important; }
+        .sidebar { width: var(--sw); min-width: var(--sw); }
+        .main { margin-left: var(--sw); }
+    </style>
+    <!-- ZXing: pure-JS barcode scanner, works in all browsers -->
+    <script src="https://unpkg.com/@zxing/library@0.21.3/umd/index.min.js"></script>
+</head>
+<body>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<button class="mob-toggle" onclick="document.getElementById('sidebar').classList.toggle('mob-open')">
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+</button>
+
+<div class="app">
+
+    {% include 'perfect/_sidebar.html' %}
+
+    <!-- ══════════════════ MAIN ══════════════════ -->
+    <div class="main" id="mainScroll">
+
+        <!-- HERO -->
+        <section class="hero" id="heroSection">
+            <div class="hero-top">
+                <button class="hero-scan-btn" onclick="openBarcodeScanner()">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="1" y="4" width="22" height="16"/><line x1="1" y1="10" x2="23" y2="10"/><line x1="1" y1="14" x2="23" y2="14"/><line x1="6" y1="4" x2="6" y2="20"/><line x1="10" y1="4" x2="10" y2="20"/><line x1="16" y1="4" x2="16" y2="20"/></svg>
+                    Scan Barcode
+                </button>
+            </div>
+
+            {% if family_holiday %}
+            <div class="holiday-banner">
+                <span class="holiday-glow"></span>
+                <span class="holiday-text">Happy {{ family_holiday[0] }}, <em>{{ family_holiday[1] }}</em>! 🎉</span>
+            </div>
+            {% endif %}
+            {% for greeting in country_festivals %}
+            <div class="holiday-banner">
+                <span class="holiday-glow"></span>
+                <span class="holiday-text">{{ greeting }}</span>
+            </div>
+            {% endfor %}
+            <p class="hero-eyebrow" id="heroDate"></p>
+            <h1 class="hero-greeting" id="heroGreeting">Good day, <em>{{ full_name or username }}</em>.</h1>
+            <!-- World #1 banner — hidden unless user is rank 1 -->
+            <a href="/perfect/score" id="worldOneBanner" style="display:none;align-items:center;gap:10px;margin-bottom:10px;padding:8px 16px;background:rgba(201,168,76,.08);border:1px solid rgba(201,168,76,.5);text-decoration:none;">
+                <span style="font-size:18px">🥇</span>
+                <span style="font-family:'Courier Prime',monospace;font-size:11px;letter-spacing:.22em;color:var(--gold);text-transform:uppercase">World Number One</span>
+            </a>
+
+            <a href="/perfect/score" id="levelBadge" style="display:inline-block;margin-top:-4px;margin-bottom:22px;padding:14px 22px 12px;border:1px solid var(--border);background:var(--gold-dim);text-decoration:none;transition:border-color .2s;min-width:130px" onmouseover="this.style.borderColor='var(--border-h)'" onmouseout="this.style.borderColor='var(--border)'">
+                <div style="font-family:var(--mono);font-size:9px;color:var(--gold);letter-spacing:.28em;text-transform:uppercase;margin-bottom:2px">Level</div>
+                <div id="dashLevelNum" style="font-family:'Playfair Display',serif;font-size:42px;color:var(--gold);line-height:1;margin-bottom:6px">—</div>
+                <div style="height:3px;background:rgba(255,255,255,.06);border-radius:2px;overflow:hidden">
+                    <div id="dashLevelBar" style="height:100%;background:var(--gold);border-radius:2px;width:0%;transition:width 1s ease"></div>
+                </div>
+                <div id="dashLevelSub" style="font-family:var(--mono);font-size:9px;color:var(--text-3);margin-top:4px;letter-spacing:.06em"></div>
+            </a>
+
+            <div class="weather-widget" id="weatherWidget" style="opacity:0;transition:opacity 0.5s">
+                <div class="wx-icon-area">
+                    <div class="wx-icon-box" id="wxIconBox"></div>
+                    <div class="wx-code" id="wxCode">–</div>
+                </div>
+                <div>
+                    <div class="wx-temp" id="wxTemp">–</div>
+                    <div class="wx-desc" id="wxDesc">Fetching weather…</div>
+                </div>
+                <div class="wx-date" id="wxDate"></div>
+            </div>
+
+            <div class="hero-actions">
+                <a class="hero-btn primary" href="/perfect/ai">Ask the AI</a>
+                <button class="hero-btn secondary" onclick="scrollToSection('log')">Log Today</button>
+                <button class="hero-btn secondary" onclick="scrollToSection('adapt')">My Adaptation</button>
+            </div>
+
+            <div class="scroll-hint">
+                <div class="scroll-hint-line"></div>
+                <span class="scroll-hint-label">Scroll</span>
+            </div>
+        </section>
+
+        <!-- CONTENT -->
+        <div class="content">
+
+            <!-- TODAY'S LOG -->
+            <div class="section" id="log">
+                <div class="section-header">
+                    <div>
+                        <h2 class="section-title">Log Today</h2>
+                        <p class="section-sub" id="logSubtitle">Track your intake, activity and how you feel.</p>
+                    </div>
+                    <div style="display:flex;gap:10px;align-items:center">
+                        <a href="/perfect/log" class="section-action">Full view →</a>
+                        <button class="section-action" onclick="clearTodayLog()">Clear today</button>
+                    </div>
+                </div>
+                <div class="log-card">
+                    <p class="log-date" id="logDate"></p>
+
+                    <!-- Shown after saving -->
+                    <div class="log-done-state" id="logDoneState">
+                        <div class="log-done-banner">
+                            <div class="log-done-check">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+                            </div>
+                            <div>
+                                <div class="log-done-label">Already logged for today</div>
+                                <div class="log-done-sub" id="logDoneSub"></div>
+                            </div>
+                        </div>
+                        <div class="log-done-stats" id="logDoneStats"></div>
+                        <div class="log-done-actions">
+                            <button class="log-edit-btn" onclick="clearTodayLog()" style="color:#C05050;border-color:rgba(192,80,80,0.3)">Clear &amp; re-log</button>
+                        </div>
+                    </div>
+
+                    <!-- Form (hidden when done) -->
+                    <div id="logFormState">
+                    <div class="log-row">
+                        <div class="log-field">
+                            <span class="log-label">Weight (kg)</span>
+                            <input type="number" step="0.1" class="log-input" id="logWeight" placeholder="e.g. 74.5">
+                        </div>
+                        <div class="log-field">
+                            <span class="log-label">Steps</span>
+                            <input type="number" class="log-input" id="logSteps" placeholder="e.g. 8500">
+                        </div>
+                        <div class="log-field log-workout">
+                            <span class="log-label">Workout / Activity</span>
+                            <input type="text" class="log-input" id="logWorkout" placeholder="e.g. 30 min walk, yoga, rest day">
+                        </div>
+                    </div>
+                    <div class="slider-row">
+                        <div class="slider-field">
+                            <div class="slider-top">
+                                <span class="log-label">Hunger level</span>
+                                <span class="slider-val" id="hungerVal">5</span>
+                            </div>
+                            <input type="range" min="1" max="10" value="5" id="logHunger" oninput="document.getElementById('hungerVal').textContent=this.value">
+                        </div>
+                        <div class="slider-field">
+                            <div class="slider-top">
+                                <span class="log-label">Energy level</span>
+                                <span class="slider-val" id="energyVal">5</span>
+                            </div>
+                            <input type="range" min="1" max="10" value="5" id="logEnergy" oninput="document.getElementById('energyVal').textContent=this.value">
+                        </div>
+                    </div>
+                    <div class="food-log-header">
+                        <span class="food-log-title">Food Log</span>
+                        <span class="food-cal-total" id="foodCalTotal">0 kcal</span>
+                    </div>
+                    <div class="food-items" id="foodItems"><p class="no-food">Nothing logged yet. Add your first meal below.</p></div>
+                    <div class="food-actions">
+                        <button class="food-btn" onclick="openAddFood()">
+                            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+                            Add food
+                        </button>
+                        <button class="food-btn" onclick="openBarcodeScanner('log')">
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="1" y="4" width="22" height="16"/><line x1="1" y1="10" x2="23" y2="10"/><line x1="1" y1="14" x2="23" y2="14"/><line x1="6" y1="4" x2="6" y2="20"/><line x1="10" y1="4" x2="10" y2="20"/><line x1="16" y1="4" x2="16" y2="20"/></svg>
+                            Scan barcode
+                        </button>
+                        <button class="food-btn" onclick="openScanFood()">
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+                            Scan food
+                        </button>
+                    </div>
+                    <div class="log-footer">
+                        <button class="log-save-btn" onclick="saveTodayLog()">Save</button>
+                    </div>
+                    </div><!-- /logFormState -->
+                </div>
+            </div>
+
+            <!-- ASSISTANT -->
+            <div class="section" id="assistant">
+                <div class="section-header">
+                    <div>
+                        <h2 class="section-title">Assistant</h2>
+                        <p class="section-sub">Tell me what you ate, your weight, steps, or how your workout went — I'll log it.</p>
+                    </div>
+                </div>
+                <div class="asst-card">
+                    <div class="asst-msgs" id="asstMsgs">
+                        <div class="asst-welcome" id="asstWelcome">
+                            <p>No form needed. Just describe your meal, workout, or weight and I'll handle the logging automatically.</p>
+                            <div class="asst-chips">
+                                <span class="asst-chip" onclick="asstQuickSend(this.textContent)">I had idli and sambar for breakfast</span>
+                                <span class="asst-chip" onclick="asstQuickSend(this.textContent)">Just did a 30 min run</span>
+                                <span class="asst-chip" onclick="asstQuickSend(this.textContent)">My weight is 72 kg today</span>
+                                <span class="asst-chip" onclick="asstQuickSend(this.textContent)">Had rice, dal and sabzi for lunch, about 400g</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="asst-composer">
+                        <textarea class="asst-ta" id="asstTa" rows="1" placeholder="What did you eat? How was your workout?…" onkeydown="asstKeydown(event)" oninput="this.style.height='auto';this.style.height=this.scrollHeight+'px'"></textarea>
+                        <div class="asst-wave" id="asstWave">
+                            <div class="asst-wave-bar"></div>
+                            <div class="asst-wave-bar"></div>
+                            <div class="asst-wave-bar"></div>
+                            <div class="asst-wave-bar"></div>
+                            <div class="asst-wave-bar"></div>
+                        </div>
+                        <button class="asst-icon-btn" id="asstMicBtn" onclick="toggleAsstMic()" title="Dictate">
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 10a7 7 0 0 0 14 0"/><line x1="12" y1="19" x2="12" y2="22"/><line x1="8" y1="22" x2="16" y2="22"/></svg>
+                        </button>
+                        <button class="asst-send" onclick="asstSend()" title="Send">
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- M·ADAPT -->
+            <div class="section" id="adapt">
+                <div class="section-header">
+                    <div>
+                        <h2 class="section-title">TG·Adapt</h2>
+                        <p class="section-sub">Your plan adjusts week to week based on your real results.</p>
+                    </div>
+                    <a href="/perfect/adapt" class="section-action">Full view →</a>
+                </div>
+                <div class="adapt-card" id="adaptCard">
+                    <p class="adapt-label">TG·Adapt — Intelligent Plan Adaptation</p>
+                    <p class="adapt-title" id="adaptTitle">Analysing your week…</p>
+                    <p class="adapt-insight" id="adaptInsight">Log your weight and food for at least 3 days to unlock your first weekly insight.</p>
+                    <div class="adapt-stats" id="adaptStats">
+                        <div class="adapt-stat">
+                            <span class="adapt-stat-label">Avg Daily Calories</span>
+                            <span class="adapt-stat-val" id="adaptAvgCal">—</span>
+                        </div>
+                        <div class="adapt-stat">
+                            <span class="adapt-stat-label">Weight Change</span>
+                            <span class="adapt-stat-val" id="adaptWtChange">—</span>
+                        </div>
+                        <div class="adapt-stat">
+                            <span class="adapt-stat-label">Daily Target</span>
+                            <span class="adapt-stat-val" id="adaptTarget">—</span>
+                        </div>
+                        <div class="adapt-stat">
+                            <span class="adapt-stat-label">Status</span>
+                            <span class="adapt-badge warn" id="adaptStatus">Set up plan</span>
+                        </div>
+                    </div>
+
+                    <!-- Meal Plan Table -->
+                    <div class="meal-plan-wrap" id="mealPlanWrap">
+                        <p class="meal-plan-label">Today's Meal Plan</p>
+                        <table class="meal-table">
+                            <thead>
+                                <tr>
+                                    <th style="width:110px">Meal</th>
+                                    <th>What to eat</th>
+                                    <th style="text-align:right">Kcal&nbsp;/&nbsp;Macros</th>
+                                </tr>
+                            </thead>
+                            <tbody id="mealPlanBody">
+                                <tr><td colspan="3" style="color:var(--text-3);font-size:13px;padding:18px 0">Set your calorie target in the plan to see your meal breakdown.</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- CALENDAR -->
+            <div class="section" id="calendar">
+                <div class="section-header">
+                    <div>
+                        <h2 class="section-title">Exercise Calendar</h2>
+                        <p class="section-sub">Your weekly workout plan — auto-updates when you change your exercise schedule.</p>
+                    </div>
+                    <div style="display:flex;gap:10px;align-items:center">
+                        <a href="/perfect/calendar" class="section-action">Full view →</a>
+                        <a href="/perfect/settings#exercise" class="section-action" style="white-space:nowrap">Edit schedule →</a>
+                    </div>
+                </div>
+                <div id="calWrap">
+                    <div class="cal-nav">
+                        <button class="cal-arrow" onclick="calNav(-1)">← prev</button>
+                        <span class="cal-week-label" id="calWeekLabel"></span>
+                        <div style="display:flex;gap:8px;align-items:center">
+                            <button class="cal-arrow" onclick="calNav(1)">next →</button>
+                            <button class="caled-pen-btn" onclick="openCalEdit()" title="Edit schedule">
+                                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="cal-grid" id="calGrid"></div>
+                </div>
+
+                <!-- Edit Modal -->
+                <div class="caled-backdrop" id="caledBackdrop" onclick="closeCalEdit(event)" style="display:none">
+                    <div class="caled-modal">
+                        <div class="caled-top">
+                            <span class="caled-title">Edit your schedule</span>
+                            <button class="caled-close" onclick="closeCalEdit()">✕</button>
+                        </div>
+                        <div class="caled-modes">
+                            <button class="caled-mode-btn active" id="caledModeType" onclick="calSetMode('type')">Type it</button>
+                            <button class="caled-mode-btn" id="caledModeMic" onclick="calSetMode('mic')">
+                                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
+                                Dictate
+                            </button>
+                        </div>
+                        <div id="caledDirectPane">
+                            <p class="caled-hint">Describe what you want changed — the AI will update your schedule instantly.</p>
+                            <textarea class="caled-ta" id="caledDirectInput" rows="3"
+                                placeholder="e.g. I want to exercise every day except Sunday. Replace running with swimming. Move rest to Wednesday."></textarea>
+                        </div>
+                        <div id="caledMicPane" style="display:none">
+                            <p class="caled-hint">Tap the mic and speak your changes out loud.</p>
+                            <div class="caled-mic-area">
+                                <button class="caled-mic-btn" id="caledMicBtn" onclick="toggleCalMic()">
+                                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
+                                </button>
+                                <p class="caled-transcript" id="caledTranscript">Tap the mic to start speaking…</p>
+                            </div>
+                        </div>
+                        <div class="caled-response" id="caledResponse" style="display:none"></div>
+                        <div class="caled-actions">
+                            <button class="caled-cancel" onclick="closeCalEdit()">Cancel</button>
+                            <button class="caled-apply" id="caledApplyBtn" onclick="applyCalEdit()">Apply</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- CHARTS -->
+            <div class="section" id="charts">
+                <div class="section-header">
+                    <div>
+                        <h2 class="section-title">Your Trends</h2>
+                        <p class="section-sub">Last 7 days of logged data.</p>
+                    </div>
+                </div>
+                <div class="charts-row">
+                    <div class="chart-card" onclick="openChartModal('weight')">
+                        <p class="chart-title">Weight Trend (kg) <span class="chart-expand-hint">tap to expand</span></p>
+                        <div class="chart-svg-wrap">
+                            <svg class="chart-svg" id="weightChart" viewBox="0 0 300 100"></svg>
+                        </div>
+                        <div class="chart-labels" id="weightLabels" style="display:none"></div>
+                        <div class="chart-legend">
+                            <div class="chart-leg-item"><div class="chart-leg-line"></div> Weight</div>
+                        </div>
+                    </div>
+                    <div class="chart-card" onclick="openChartModal('cal')">
+                        <p class="chart-title">Daily Calories (kcal) <span class="chart-expand-hint">tap to expand</span></p>
+                        <div class="chart-svg-wrap">
+                            <svg class="chart-svg" id="calChart" viewBox="0 0 300 100"></svg>
+                        </div>
+                        <div class="chart-labels" id="calLabels" style="display:none"></div>
+                        <div class="chart-legend">
+                            <div class="chart-leg-item"><div class="chart-leg-line"></div> Calories</div>
+                            <div class="chart-leg-item"><div class="chart-leg-dashed"></div> Target</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- PROGRESS GRID -->
+            <div class="section" id="progress">
+                <div class="section-header">
+                    <h2 class="section-title">Progress Overview</h2>
+                </div>
+                <div class="progress-grid">
+                    <div class="prog-card">
+                        <p class="prog-label">Logging Streak</p>
+                        <p class="prog-val" id="streakVal">0</p>
+                        <p class="prog-sub">consecutive days</p>
+                        <div class="prog-bar-wrap"><div class="prog-bar-fill green" id="streakBar" style="width:0%"></div></div>
+                    </div>
+                    <div class="prog-card">
+                        <p class="prog-label">Days Logged</p>
+                        <p class="prog-val" id="daysLoggedVal">0</p>
+                        <p class="prog-sub">this month</p>
+                        <div class="prog-bar-wrap"><div class="prog-bar-fill" id="daysLoggedBar" style="width:0%"></div></div>
+                    </div>
+                    <div class="prog-card">
+                        <p class="prog-label">Missed Days</p>
+                        <p class="prog-val" id="missedVal">0</p>
+                        <p class="prog-sub" id="missedSub">this month</p>
+                        <div class="prog-bar-wrap"><div class="prog-bar-fill red" id="missedBar" style="width:0%"></div></div>
+                    </div>
+                    <div class="prog-card">
+                        <p class="prog-label">Avg Steps</p>
+                        <p class="prog-val" id="avgStepsVal">—</p>
+                        <p class="prog-sub">last 7 days</p>
+                        <div class="prog-bar-wrap"><div class="prog-bar-fill" id="stepsBar" style="width:0%"></div></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- QUICK ACTIONS -->
+            <div class="section" id="actions">
+                <div class="section-header">
+                    <h2 class="section-title">Quick Actions</h2>
+                </div>
+                <div class="actions-grid">
+                    <a class="action-card" href="/perfect/ai?q=meal-plan">
+                        <div class="action-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M3 11l19-9-9 19-2-8-8-2z"/></svg></div>
+                        <p class="action-name">Meal Plan</p>
+                        <p class="action-desc">Generate a personalised plan for today or this week.</p>
+                    </a>
+                    <a class="action-card" href="/perfect/ai?q=analyse-diet">
+                        <div class="action-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></div>
+                        <p class="action-name">Diet Analysis</p>
+                        <p class="action-desc">Let AI review what you ate and spot any gaps.</p>
+                    </a>
+                    <button class="action-card" onclick="openBarcodeScanner()">
+                        <div class="action-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="1" y="4" width="22" height="16"/><line x1="1" y1="10" x2="23" y2="10"/><line x1="1" y1="14" x2="23" y2="14"/><line x1="6" y1="4" x2="6" y2="20"/><line x1="10" y1="4" x2="10" y2="20"/><line x1="16" y1="4" x2="16" y2="20"/></svg></div>
+                        <p class="action-name">Scan Barcode</p>
+                        <p class="action-desc">Instantly look up nutrition on any packaged food.</p>
+                    </button>
+                    <a class="action-card" href="/perfect/ai?q=micronutrients">
+                        <div class="action-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></div>
+                        <p class="action-name">Nutrient Check</p>
+                        <p class="action-desc">Find out which micronutrients you may be missing.</p>
+                    </a>
+                </div>
+            </div>
+
+            <!-- RECENT AI CHATS -->
+            <div class="section" style="margin-bottom: 0">
+                <div class="section-header">
+                    <div>
+                        <h2 class="section-title">Recent Conversations</h2>
+                        <p class="section-sub">Your AI sessions from this device.</p>
+                    </div>
+                    <a class="section-action" href="/perfect/ai">Open AI</a>
+                </div>
+                <div class="chats-list" id="chatsList">
+                    <p class="no-chats">No conversations yet. Start by asking the AI something.</p>
+                </div>
+            </div>
+
+        </div><!-- /content -->
+    </div><!-- /main -->
+</div><!-- /app -->
+
+<!-- Weather overlay -->
+<div id="wxOverlay"></div>
+
+<!-- ══════════════════ BARCODE MODAL ══════════════════ -->
+<div class="modal-overlay" id="barcodeModal">
+    <div class="modal-box">
+        <div class="modal-header">
+            <span class="modal-title">Barcode Scanner</span>
+            <div style="display:flex;align-items:center;gap:8px">
+                <button class="scan-action-btn secondary" style="padding:4px 10px;font-size:10px" onclick="document.getElementById('barcodeImageInput').click()" title="Upload a photo of the barcode">
+                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" style="vertical-align:middle;margin-right:3px"><path d="M12 5v14M5 12h14"/></svg>
+                    Upload image
+                </button>
+                <button class="modal-close" onclick="closeBarcodeScanner()">✕</button>
+            </div>
+        </div>
+        <input type="file" id="barcodeImageInput" accept="image/*" style="display:none" onchange="analyseUploadedImage(this)">
+        <div class="scanner-area">
+            <video id="scanVideo" autoplay playsinline muted></video>
+            <div class="scan-frame"></div>
+            <div class="scan-line" id="scanLine"></div>
+        </div>
+        <canvas id="scanCanvas" style="display:none"></canvas>
+        <p class="scanner-hint" id="scannerHint">Point camera at the barcode on any food package.</p>
+        <button class="scan-action-btn primary" id="scanCaptureBtn" style="display:none;width:100%;margin-bottom:10px" onclick="captureAndAnalyse()">Capture &amp; Analyse</button>
+        <div class="scan-result" id="scanResult">
+            <p class="scan-product-name" id="scanProductName"></p>
+            <p class="scan-brand" id="scanBrand"></p>
+            <div class="scan-macros">
+                <div class="scan-macro"><span class="scan-macro-val" id="smCal">—</span><span class="scan-macro-lbl">kcal</span></div>
+                <div class="scan-macro"><span class="scan-macro-val" id="smProt">—</span><span class="scan-macro-lbl">Protein g</span></div>
+                <div class="scan-macro"><span class="scan-macro-val" id="smCarb">—</span><span class="scan-macro-lbl">Carbs g</span></div>
+                <div class="scan-macro"><span class="scan-macro-val" id="smFat">—</span><span class="scan-macro-lbl">Fat g</span></div>
+            </div>
+            <p class="scan-serving" id="scanServing"></p>
+            <div class="scan-actions">
+                <button class="scan-action-btn primary" id="scanAddBtn" onclick="addScannedToLog()">Add to Food Log</button>
+                <button class="scan-action-btn secondary" onclick="askAIAboutScanned()">Ask AI about this</button>
+            </div>
+        </div>
+        <div class="scan-error" id="scanError">
+            <!-- Camera denied block (only shown when camera fails entirely) -->
+            <div id="scanCameraError" style="display:none;margin-bottom:14px">
+                <p class="scan-error-msg" style="margin-bottom:6px">Camera blocked or unavailable.</p>
+                <p style="font-size:12px;color:var(--text-2);margin-bottom:10px">To allow camera: click the camera/lock icon in your browser's address bar → Allow → then retry.</p>
+                <button class="scan-action-btn secondary" style="width:100%;margin-bottom:4px" onclick="retryCameraAccess()">Retry camera</button>
+            </div>
+            <!-- Generic error message (lookup errors, etc.) -->
+            <p class="scan-error-msg" id="scanErrorMsg"></p>
+            <p style="font-size:12px;color:var(--text-2);margin-top:4px">Or enter barcode manually:</p>
+            <input type="text" id="manualBarcode" class="log-input" placeholder="e.g. 5000159396914" style="margin-top:6px">
+            <button class="scan-action-btn primary" style="margin-top:10px;width:100%" onclick="lookupManualBarcode()">Look up</button>
+        </div>
+    </div>
+</div>
+
+<!-- ══════════════════ ADD FOOD MODAL ══════════════════ -->
+<div class="add-food-modal" id="addFoodModal">
+    <div class="add-food-box">
+        <div class="afm-header">
+            <span class="modal-title" style="font-size:15px">Add Food</span>
+            <button class="modal-close" onclick="closeAddFood()">✕</button>
+        </div>
+        <div class="afm-body">
+            <div class="afm-field">
+                <span class="afm-label">Food name</span>
+                <input type="text" class="afm-input" id="afmName" placeholder="e.g. Brown rice">
+            </div>
+            <div class="afm-row">
+                <div class="afm-field">
+                    <span class="afm-label">Calories (kcal)</span>
+                    <input type="number" class="afm-input" id="afmCal" placeholder="320">
+                </div>
+                <div class="afm-field">
+                    <span class="afm-label">Serving</span>
+                    <input type="text" class="afm-input" id="afmServing" placeholder="100g / 1 cup">
+                </div>
+            </div>
+            <div class="afm-row">
+                <div class="afm-field">
+                    <span class="afm-label">Protein (g)</span>
+                    <input type="number" class="afm-input" id="afmProt" placeholder="12">
+                </div>
+                <div class="afm-field">
+                    <span class="afm-label">Carbs (g)</span>
+                    <input type="number" class="afm-input" id="afmCarb" placeholder="55">
+                </div>
+            </div>
+            <div class="afm-row">
+                <div class="afm-field">
+                    <span class="afm-label">Fat (g)</span>
+                    <input type="number" class="afm-input" id="afmFat" placeholder="5">
+                </div>
+                <div class="afm-field">
+                    <span class="afm-label">Meal</span>
+                    <input type="text" class="afm-input" id="afmMeal" placeholder="Breakfast / Lunch / Dinner">
+                </div>
+            </div>
+        </div>
+        <div class="afm-footer">
+            <button class="afm-save" onclick="saveAddFood()">Add to log</button>
+        </div>
+    </div>
+</div>
+
+<script>
+(function () {
+    const USERNAME     = {{ username | tojson }};
+    const DISPLAY_NAME = {{ (full_name or username) | tojson }};
+    const LOGS_KEY = 'toogood_daily_logs_'  + USERNAME;
+    const PLAN_KEY = 'toogood_user_plan_'   + USERNAME;
+    const SESS_KEY = `toogood_sessions_${USERNAME}`;
+
+    /* ─────────────── helpers ─────────────── */
+    function today() { return new Date().toISOString().slice(0, 10); }
+    function dayLabel(iso) { const d = new Date(iso + 'T00:00'); return d.toLocaleDateString('en', { weekday: 'short', day: 'numeric' }); }
+    function getLogs() { try { return JSON.parse(localStorage.getItem(LOGS_KEY)) || []; } catch { return []; } }
+    function saveLogs(l) { localStorage.setItem(LOGS_KEY, JSON.stringify(l)); }
+    function getLog(date) { return getLogs().find(l => l.date === date) || { date, weight: null, calories: 0, protein: 0, carbs: 0, fat: 0, steps: null, workout: '', hunger: 5, energy: 5, foods: [] }; }
+    function saveLog(entry) { const all = getLogs(); const i = all.findIndex(l => l.date === entry.date); if (i >= 0) all[i] = entry; else all.unshift(entry); saveLogs(all); }
+    function getPlan() { try { return JSON.parse(localStorage.getItem(PLAN_KEY)) || {}; } catch { return {}; } }
+
+    function showToast(msg) {
+        const t = document.getElementById('toast');
+        t.textContent = msg; t.classList.add('show');
+        setTimeout(() => t.classList.remove('show'), 2800);
+    }
+    window.showToast = showToast;
+
+    /* ─────────────── score / level badge ─────────────── */
+    (function initScoreBadge() {
+        fetch('/perfect/api/score/award', {
+            method:'POST', headers:{'Content-Type':'application/json'},
+            body: JSON.stringify({action:'login'})
+        }).then(r => r.json()).then(awd => {
+            const gained = awd.awarded ? (awd.xp_gained || 0) : 0;
+            if (gained > 0 && window.sbRefreshXP) window.sbRefreshXP(gained, awd.new_achievements || []);
+        }).catch(()=>{}).finally(() => {
+            fetch('/perfect/api/score').then(r => r.json()).then(d => {
+                if (!d.ok) return;
+                const numEl    = document.getElementById('dashLevelNum');
+                const barEl    = document.getElementById('dashLevelBar');
+                const subEl    = document.getElementById('dashLevelSub');
+                const bannerEl = document.getElementById('worldOneBanner');
+                if (numEl) numEl.textContent = d.level;
+                if (barEl) setTimeout(() => { barEl.style.width = Math.round(d.xp_in_level / d.xp_per_level * 100) + '%'; }, 120);
+                if (subEl) subEl.textContent = d.level < d.max_level
+                    ? (d.xp_per_level - d.xp_in_level).toLocaleString() + ' XP to next'
+                    : 'Max level!';
+                if (bannerEl && d.my_rank === 1) bannerEl.style.display = 'flex';
+            }).catch(()=>{});
+        });
+    })();
+
+    /* ─────────────── hero init ─────────────── */
+    function initHero() {
+        const now = new Date();
+        const h = now.getHours();
+        const greet = h < 5 ? 'Good night' : h < 12 ? 'Good morning' : h < 17 ? 'Good afternoon' : h < 21 ? 'Good evening' : 'Good night';
+        document.getElementById('heroGreeting').innerHTML = `${greet}, <em>${DISPLAY_NAME}</em>.`;
+        document.getElementById('heroDate').textContent = now.toLocaleDateString('en', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+        document.getElementById('logDate').textContent = now.toLocaleDateString('en', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+        document.getElementById('wxDate').innerHTML = now.toLocaleDateString('en', { weekday: 'long' }) + '<br>' + now.toLocaleDateString('en', { month: 'long', day: 'numeric' });
+    }
+
+    /* ─────────────── weather (no emoji, text codes) ─────────────── */
+    const WX = {
+        0:  { c: 'CLR', l: 'Clear sky',     lNight: 'Clear night' },
+        1:  { c: 'CLR', l: 'Mainly clear',  lNight: 'Mainly clear' },
+        2:  { c: 'PTY', l: 'Partly cloudy' },
+        3:  { c: 'OVC', l: 'Overcast' },
+        45: { c: 'FOG', l: 'Foggy' },
+        48: { c: 'FOG', l: 'Icy fog' },
+        51: { c: 'DRZ', l: 'Light drizzle' },
+        53: { c: 'DRZ', l: 'Drizzle' },
+        61: { c: 'RIN', l: 'Light rain' },
+        63: { c: 'RIN', l: 'Rain' },
+        65: { c: 'RIN', l: 'Heavy rain' },
+        71: { c: 'SNW', l: 'Light snow' },
+        73: { c: 'SNW', l: 'Snow' },
+        80: { c: 'SHW', l: 'Showers' },
+        85: { c: 'SNW', l: 'Snow showers' },
+        95: { c: 'THD', l: 'Thunderstorm' },
+        99: { c: 'THD', l: 'Heavy thunderstorm' },
+    };
+    function wxLookup(code, isDay) {
+        const w = WX[code] || WX[Math.floor(code / 10) * 10] || { c: '–', l: 'Unknown' };
+        return { c: w.c, l: (isDay === 0 && w.lNight) ? w.lNight : w.l };
+    }
+
+    async function fetchWeatherCoords(lat, lon) {
+        const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true&temperature_unit=celsius`;
+        const d = await (await fetch(url)).json();
+        const cw = d.current_weather;
+        const isDay = cw.is_day;
+        const wx = wxLookup(cw.weathercode, isDay);
+        const wxCodeEl = document.getElementById('wxCode');
+        wxCodeEl.textContent = wx.c;
+        wxCodeEl.dataset.code = cw.weathercode;
+        document.getElementById('wxTemp').textContent = Math.round(cw.temperature) + '°C';
+        document.getElementById('wxDesc').textContent = wx.l;
+        document.getElementById('weatherWidget').style.opacity = '1';
+        setWeatherIcon(cw.weathercode, isDay);
+        startWeatherAnimation(cw.weathercode);
+    }
+
+    async function fetchWeatherByIP() {
+        try {
+            const loc = await (await fetch('https://ipapi.co/json/')).json();
+            if (loc.latitude && loc.longitude) {
+                await fetchWeatherCoords(loc.latitude, loc.longitude);
+            } else {
+                document.getElementById('wxDesc').textContent = 'Allow location for weather';
+                document.getElementById('weatherWidget').style.opacity = '1';
+            }
+        } catch {
+            document.getElementById('wxDesc').textContent = 'Allow location for weather';
+            document.getElementById('weatherWidget').style.opacity = '1';
+        }
+    }
+
+    function initWeather() {
+        if (!navigator.geolocation) { fetchWeatherByIP(); return; }
+        navigator.geolocation.getCurrentPosition(
+            async pos => {
+                try { await fetchWeatherCoords(pos.coords.latitude, pos.coords.longitude); }
+                catch { await fetchWeatherByIP(); }
+            },
+            () => fetchWeatherByIP(),
+            { timeout: 7000 }
+        );
+    }
+
+    /* ─────────────── Weather icon ─────────────── */
+    function setWeatherIcon(code, isDay) {
+        const box = document.getElementById('wxIconBox');
+        if (!box) return;
+        const RAIN    = [51,53,55,56,57,61,63,65,66,67,80,81,82];
+        const SNOW    = [71,73,75,77,85,86];
+        const THUNDER = [95,96,99];
+        const FOG     = [45,48];
+        const CLEAR   = [0,1];
+
+        if (CLEAR.includes(code)) {
+            if (isDay === 0) {
+                /* Crescent moon for clear night */
+                box.innerHTML = `<svg viewBox="0 0 44 44" width="44" height="44" style="overflow:visible">
+  <path d="M28 10 Q16 12 14 22 Q12 32 22 36 Q14 36 10 28 Q6 18 14 11 Q20 5 28 10Z"
+        fill="#C9A84C" opacity="0.9" style="animation:wxSunPulse 4s ease-in-out infinite"/>
+  <circle cx="32" cy="10" r="1.5" fill="#C9A84C" opacity="0.5"/>
+  <circle cx="36" cy="18" r="1"   fill="#C9A84C" opacity="0.4"/>
+  <circle cx="29" cy="20" r="1"   fill="#C9A84C" opacity="0.35"/>
+</svg>`;
+            } else {
+                box.innerHTML = `<svg viewBox="0 0 44 44" width="44" height="44" style="overflow:visible">
+  <g style="transform-origin:22px 22px;animation:wxSunSpin 10s linear infinite">
+    <line x1="22" y1="2" x2="22" y2="9"   stroke="#C9A84C" stroke-width="1.8" stroke-linecap="round"/>
+    <line x1="22" y1="35" x2="22" y2="42" stroke="#C9A84C" stroke-width="1.8" stroke-linecap="round"/>
+    <line x1="2"  y1="22" x2="9"  y2="22" stroke="#C9A84C" stroke-width="1.8" stroke-linecap="round"/>
+    <line x1="35" y1="22" x2="42" y2="22" stroke="#C9A84C" stroke-width="1.8" stroke-linecap="round"/>
+    <line x1="7.4"  y1="7.4"  x2="12.5" y2="12.5" stroke="#C9A84C" stroke-width="1.8" stroke-linecap="round"/>
+    <line x1="31.5" y1="31.5" x2="36.6" y2="36.6" stroke="#C9A84C" stroke-width="1.8" stroke-linecap="round"/>
+    <line x1="36.6" y1="7.4"  x2="31.5" y2="12.5" stroke="#C9A84C" stroke-width="1.8" stroke-linecap="round"/>
+    <line x1="12.5" y1="31.5" x2="7.4"  y2="36.6" stroke="#C9A84C" stroke-width="1.8" stroke-linecap="round"/>
+  </g>
+  <circle cx="22" cy="22" r="8" fill="#C9A84C" style="animation:wxSunPulse 3s ease-in-out infinite"/>
+</svg>`;
+            }
+        } else if (THUNDER.includes(code)) {
+            box.innerHTML = `<svg viewBox="0 0 44 44" width="44" height="44">
+  <g style="animation:wxCloudBob 4s ease-in-out infinite">
+    <path d="M4 22 Q3 14 11 11 Q13 4 22 5 Q31 4 34 11 Q41 11 41 18 Q41 24 4 24Z" fill="rgba(70,80,100,0.35)" stroke="rgba(150,165,185,0.5)" stroke-width="1.2"/>
+  </g>
+  <polyline points="24,27 19,36 23,36 17,44" fill="none" stroke="#C9A84C" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="animation:wxBoltFlash 1.2s ease-in-out infinite"/>
+</svg>`;
+        } else if (SNOW.includes(code)) {
+            box.innerHTML = `<svg viewBox="0 0 44 44" width="44" height="44">
+  <g style="animation:wxCloudBob 4s ease-in-out infinite">
+    <path d="M5 24 Q4 17 11 14 Q13 7 22 8 Q31 7 33 14 Q40 14 40 21 Q40 26 5 26Z" fill="rgba(120,150,180,0.2)" stroke="rgba(180,200,220,0.5)" stroke-width="1.2"/>
+  </g>
+  <circle cx="14" cy="35" r="2.2" fill="rgba(220,235,255,0.9)" style="animation:wxSnowFall 1.5s ease-in infinite"/>
+  <circle cx="22" cy="33" r="2.2" fill="rgba(220,235,255,0.9)" style="animation:wxSnowFall 1.5s ease-in infinite 0.5s"/>
+  <circle cx="31" cy="35" r="2.2" fill="rgba(220,235,255,0.9)" style="animation:wxSnowFall 1.5s ease-in infinite 1s"/>
+</svg>`;
+        } else if (RAIN.includes(code)) {
+            box.innerHTML = `<svg viewBox="0 0 44 44" width="44" height="44">
+  <g style="animation:wxCloudBob 4s ease-in-out infinite">
+    <path d="M5 24 Q4 17 11 14 Q13 7 22 8 Q31 7 33 14 Q40 14 40 21 Q40 26 5 26Z" fill="rgba(100,130,160,0.2)" stroke="rgba(170,195,220,0.5)" stroke-width="1.2"/>
+  </g>
+  <line x1="14" y1="30" x2="12" y2="40" stroke="rgba(140,195,240,0.8)" stroke-width="1.6" stroke-linecap="round" style="animation:wxRainFall 0.9s linear infinite"/>
+  <line x1="22" y1="30" x2="20" y2="41" stroke="rgba(140,195,240,0.8)" stroke-width="1.6" stroke-linecap="round" style="animation:wxRainFall 0.9s linear infinite 0.3s"/>
+  <line x1="31" y1="30" x2="29" y2="40" stroke="rgba(140,195,240,0.8)" stroke-width="1.6" stroke-linecap="round" style="animation:wxRainFall 0.9s linear infinite 0.6s"/>
+</svg>`;
+        } else if (FOG.includes(code)) {
+            box.innerHTML = `<svg viewBox="0 0 44 44" width="44" height="44">
+  <line x1="4"  y1="16" x2="40" y2="16" stroke="rgba(200,210,220,0.5)" stroke-width="2" stroke-linecap="round" style="animation:wxFogSlide 2.5s ease-in-out infinite"/>
+  <line x1="8"  y1="23" x2="36" y2="23" stroke="rgba(200,210,220,0.65)" stroke-width="2" stroke-linecap="round" style="animation:wxFogSlide 2.5s ease-in-out infinite 0.4s"/>
+  <line x1="4"  y1="30" x2="40" y2="30" stroke="rgba(200,210,220,0.5)" stroke-width="2" stroke-linecap="round" style="animation:wxFogSlide 2.5s ease-in-out infinite 0.8s"/>
+</svg>`;
+        } else {
+            /* cloudy / partly cloudy (codes 2, 3 and anything else) */
+            box.innerHTML = `<svg viewBox="0 0 44 44" width="44" height="44">
+  <g style="animation:wxCloudBob 3s ease-in-out infinite">
+    <path d="M5 30 Q4 22 11 19 Q13 11 22 12 Q31 11 33 19 Q40 19 40 26 Q40 32 5 32Z" fill="rgba(140,160,180,0.2)" stroke="rgba(200,210,220,0.55)" stroke-width="1.2"/>
+  </g>
+</svg>`;
+        }
+    }
+
+    /* ─────────────── Weather animation ─────────────── */
+    const WX_ANIM_KEY = 'toogood_weather_anim';
+
+    function wxAnimEnabled() {
+        return localStorage.getItem(WX_ANIM_KEY) !== 'off';
+    }
+
+    function startWeatherAnimation(code) {
+        const toggle = document.getElementById('wxAnimToggle');
+        if (toggle) toggle.checked = wxAnimEnabled();
+        if (!wxAnimEnabled()) return;
+
+        const overlay = document.getElementById('wxOverlay');
+        overlay.innerHTML = '';
+        overlay.style.display = 'none';
+
+        const RAIN    = [51,53,55,61,63,65,80,81,82];
+        const THUNDER = [95,96,99];
+        const SNOW    = [71,73,75,77,85,86];
+        const FOG     = [45,48];
+        const CLEAR   = [0,1];
+
+        if (THUNDER.includes(code) || RAIN.includes(code)) {
+            overlay.style.display = 'block';
+            const count = THUNDER.includes(code) ? 160 : 120;
+            for (let i = 0; i < count; i++) {
+                const d = document.createElement('div');
+                d.className = 'wx-rain';
+                d.style.left   = (Math.random() * 110) + 'vw';
+                d.style.height = (10 + Math.random() * 22) + 'px';
+                d.style.opacity = (0.28 + Math.random() * 0.45).toString();
+                d.style.animationDuration  = (0.28 + Math.random() * 0.55) + 's';
+                d.style.animationDelay     = (-Math.random() * 2) + 's';
+                overlay.appendChild(d);
+            }
+            if (THUNDER.includes(code)) {
+                const fl = document.createElement('div');
+                fl.className = 'wx-lightning';
+                overlay.appendChild(fl);
+            }
+        } else if (SNOW.includes(code)) {
+            overlay.style.display = 'block';
+            for (let i = 0; i < 90; i++) {
+                const f = document.createElement('div');
+                f.className = 'wx-snow';
+                const sz = 3 + Math.random() * 6;
+                f.style.width  = sz + 'px';
+                f.style.height = sz + 'px';
+                f.style.left   = (Math.random() * 100) + 'vw';
+                f.style.opacity = (0.55 + Math.random() * 0.45).toString();
+                f.style.animationDuration = (4 + Math.random() * 7) + 's';
+                f.style.animationDelay    = (-Math.random() * 10) + 's';
+                overlay.appendChild(f);
+            }
+        } else if (FOG.includes(code)) {
+            overlay.style.display = 'block';
+            for (let i = 0; i < 5; i++) {
+                const m = document.createElement('div');
+                m.className = 'wx-fog';
+                m.style.top = (10 + i * 18) + '%';
+                m.style.animationDuration = (14 + i * 5) + 's';
+                m.style.animationDelay    = (i * 2.5) + 's';
+                overlay.appendChild(m);
+            }
+        } else if (CLEAR.includes(code)) {
+            overlay.style.display = 'block';
+            const sun = document.createElement('div');
+            sun.className = 'wx-sun';
+            overlay.appendChild(sun);
+        }
+    }
+
+    function clearWeatherAnimation() {
+        const overlay = document.getElementById('wxOverlay');
+        overlay.innerHTML = '';
+        overlay.style.display = 'none';
+    }
+
+    /* ─────────────── Settings ─────────────── */
+    window.toggleSettings = function (e) {
+        e.stopPropagation();
+        document.getElementById('settingsPopup').classList.toggle('open');
+        document.getElementById('profilePopup').classList.remove('open');
+    };
+
+    window.onWxToggleChange = function (checkbox) {
+        localStorage.setItem(WX_ANIM_KEY, checkbox.checked ? 'on' : 'off');
+        if (checkbox.checked) {
+            // Re-trigger animation with cached code if available
+            const code = parseInt(document.getElementById('wxCode').dataset.code || '-1');
+            if (code >= 0) startWeatherAnimation(code);
+        } else {
+            clearWeatherAnimation();
+        }
+    };
+
+    document.addEventListener('click', e => {
+        const sp = document.getElementById('settingsPopup');
+        const sb = document.getElementById('settingsBtn');
+        if (sp && !sp.contains(e.target) && sb && !sb.contains(e.target)) sp.classList.remove('open');
+    });
+
+    /* ─────────────── today's log form ─────────────── */
+    let todayFoods = [];
+
+    function showLogDoneState(log) {
+        document.getElementById('logDoneState').style.display = '';
+        document.getElementById('logFormState').style.display = 'none';
+        const parts = [];
+        if (log.weight) parts.push(`${log.weight} kg`);
+        if (log.calories) parts.push(`${log.calories} kcal`);
+        if (log.steps) parts.push(`${log.steps.toLocaleString()} steps`);
+        document.getElementById('logDoneSub').textContent = parts.join(' · ') || 'No data recorded';
+        const stats = [
+            log.weight  ? { v: log.weight + ' kg', l: 'Weight' }   : null,
+            log.calories? { v: log.calories + ' kcal', l: 'Calories' } : null,
+            log.protein ? { v: log.protein + 'g', l: 'Protein' }   : null,
+            log.steps   ? { v: log.steps.toLocaleString(), l: 'Steps' } : null,
+            log.workout ? { v: log.workout, l: 'Activity' }         : null,
+        ].filter(Boolean);
+        document.getElementById('logDoneStats').innerHTML = stats.map(s =>
+            `<div class="log-done-stat"><span class="log-done-stat-val">${s.v}</span><span class="log-done-stat-lbl">${s.l}</span></div>`
+        ).join('');
+    }
+
+    function showLogFormState() {
+        document.getElementById('logDoneState').style.display = 'none';
+        document.getElementById('logFormState').style.display = '';
+    }
+
+    function loadTodayLog() {
+        const log = getLog(today());
+        document.getElementById('logWeight').value = log.weight || '';
+        document.getElementById('logSteps').value = log.steps || '';
+        document.getElementById('logWorkout').value = log.workout || '';
+        document.getElementById('logHunger').value = log.hunger || 5;
+        document.getElementById('hungerVal').textContent = log.hunger || 5;
+        document.getElementById('logEnergy').value = log.energy || 5;
+        document.getElementById('energyVal').textContent = log.energy || 5;
+        todayFoods = log.foods ? [...log.foods] : [];
+        renderFoodItems();
+        if (log.saved) showLogDoneState(log);
+        else showLogFormState();
+    }
+
+    window.editTodayLog = function() { showLogFormState(); };
+
+    function renderFoodItems() {
+        const el = document.getElementById('foodItems');
+        const totalCal = todayFoods.reduce((s, f) => s + (f.calories || 0), 0);
+        document.getElementById('foodCalTotal').textContent = totalCal + ' kcal';
+        if (!todayFoods.length) { el.innerHTML = '<p class="no-food">Nothing logged yet. Add your first meal below.</p>'; return; }
+        el.innerHTML = todayFoods.map((f, i) => `
+            <div class="food-item">
+                <span class="food-item-name">${f.name}</span>
+                <span class="food-item-macro">${f.serving || ''}</span>
+                <span class="food-item-cal">${f.calories} kcal</span>
+                <button class="food-item-del" onclick="removeFood(${i})" title="Remove">✕</button>
+            </div>`).join('');
+    }
+
+    window.removeFood = function (i) { todayFoods.splice(i, 1); renderFoodItems(); };
+
+    window.saveTodayLog = function () {
+        const w = parseFloat(document.getElementById('logWeight').value) || null;
+        const s = parseInt(document.getElementById('logSteps').value) || null;
+        const totalCal = todayFoods.reduce((acc, f) => acc + (f.calories || 0), 0);
+        const entry = {
+            date: today(), weight: w, calories: totalCal,
+            protein: todayFoods.reduce((a, f) => a + (f.protein || 0), 0),
+            carbs:   todayFoods.reduce((a, f) => a + (f.carbs || 0), 0),
+            fat:     todayFoods.reduce((a, f) => a + (f.fat || 0), 0),
+            steps: s, workout: document.getElementById('logWorkout').value.trim(),
+            hunger: parseInt(document.getElementById('logHunger').value),
+            energy: parseInt(document.getElementById('logEnergy').value),
+            foods: [...todayFoods],
+            saved: true,
+        };
+        saveLog(entry);
+        showToast("Today's log saved.");
+        showLogDoneState(entry);
+        renderProgress(); renderCharts(); renderAdapt();
+    };
+
+    window.clearTodayLog = function () {
+        if (!confirm('Clear today\'s log?')) return;
+        todayFoods = [];
+        renderFoodItems();
+        document.getElementById('logWeight').value = '';
+        document.getElementById('logSteps').value = '';
+        document.getElementById('logWorkout').value = '';
+        document.getElementById('logHunger').value = 5; document.getElementById('hungerVal').textContent = 5;
+        document.getElementById('logEnergy').value = 5; document.getElementById('energyVal').textContent = 5;
+        const log = getLog(today());
+        saveLog({ ...log, saved: false });
+        showLogFormState();
+    };
+
+    /* ─────────────── Add food modal ─────────────── */
+    let scannedForLog = null;
+
+    window.openAddFood = function () { document.getElementById('addFoodModal').classList.add('open'); document.getElementById('afmName').focus(); };
+    window.closeAddFood = function () { document.getElementById('addFoodModal').classList.remove('open'); };
+
+    window.saveAddFood = function () {
+        const name = document.getElementById('afmName').value.trim();
+        if (!name) { alert('Enter a food name.'); return; }
+        todayFoods.push({
+            name,
+            calories: parseInt(document.getElementById('afmCal').value) || 0,
+            serving:  document.getElementById('afmServing').value.trim(),
+            protein:  parseFloat(document.getElementById('afmProt').value) || 0,
+            carbs:    parseFloat(document.getElementById('afmCarb').value) || 0,
+            fat:      parseFloat(document.getElementById('afmFat').value) || 0,
+            meal:     document.getElementById('afmMeal').value.trim(),
+        });
+        renderFoodItems(); closeAddFood();
+        ['afmName','afmCal','afmServing','afmProt','afmCarb','afmFat','afmMeal'].forEach(id => document.getElementById(id).value = '');
+    };
+
+    /* ─────────────── TG·Adapt ─────────────── */
+    function renderAdapt() {
+        const logs = getLogs();
+        const cutoff = new Date(); cutoff.setDate(cutoff.getDate() - 7);
+        const last7 = logs.filter(l => new Date(l.date + 'T00:00') >= cutoff);
+        const plan = getPlan();
+        const target = plan.targetCalories || 2000;
+        const goal = (plan.goal || '').toLowerCase();
+
+        const cals = last7.map(l => l.calories).filter(c => c > 0);
+        const wts = last7.map(l => l.weight).filter(w => w && w > 0);
+
+        document.getElementById('adaptTarget').textContent = target + ' kcal';
+
+        renderMealPlan(target, goal);
+
+        if (cals.length < 3) {
+            document.getElementById('adaptTitle').textContent = 'Getting started…';
+            document.getElementById('adaptInsight').textContent = 'Log your weight and food for at least 3 days to see your personalised weekly analysis.';
+            document.getElementById('adaptAvgCal').textContent = '—';
+            document.getElementById('adaptWtChange').textContent = '—';
+            return;
+        }
+
+        const avgCal = Math.round(cals.reduce((a, b) => a + b, 0) / cals.length);
+        document.getElementById('adaptAvgCal').textContent = avgCal + ' kcal';
+
+        let wtChange = null;
+        let wtText = '—';
+        if (wts.length >= 2) {
+            wtChange = wts[wts.length - 1] - wts[0];
+            wtText = (wtChange > 0 ? '+' : '') + wtChange.toFixed(1) + ' kg';
+        }
+        document.getElementById('adaptWtChange').textContent = wtText;
+
+        let title, insight, badgeClass, badgeText;
+
+        const isLoss = goal.includes('loss') || goal === 'fat_loss';
+        const isGain = goal.includes('gain') || goal.includes('muscle') || goal === 'weight_gain';
+
+        if (isLoss) {
+            if (wtChange !== null && wtChange < -0.1) {
+                title = 'On track. No adjustment needed.';
+                insight = `You averaged <em>${avgCal} kcal</em> this week and your weight trend decreased by <em>${Math.abs(wtChange).toFixed(1)} kg</em>. Your current target is working well.`;
+                badgeClass = 'ok'; badgeText = 'On Track';
+            } else if (wtChange !== null && wtChange > 0.1) {
+                const adj = Math.round(target * 0.95);
+                title = 'Adjustment suggested.';
+                insight = `Your weight increased by <em>${wtChange.toFixed(1)} kg</em> this week despite averaging <em>${avgCal} kcal</em>. TG·Adapt recommends reducing your target from <em>${target} kcal</em> to <em>${adj} kcal</em> per day.`;
+                badgeClass = 'adj'; badgeText = 'Target Reduced';
+            } else {
+                title = 'Progress is steady.';
+                insight = `You averaged <em>${avgCal} kcal</em> this week. Weight change is minimal — this is normal. Maintain your current target of <em>${target} kcal</em> and log consistently for stronger insights next week.`;
+                badgeClass = 'warn'; badgeText = 'Monitoring';
+            }
+        } else if (isGain) {
+            if (wtChange !== null && wtChange > 0.1) {
+                title = 'Solid progress.';
+                insight = `You averaged <em>${avgCal} kcal</em> and gained <em>${wtChange.toFixed(1)} kg</em>. Muscle-building is on track. Keep prioritising protein and progressive training.`;
+                badgeClass = 'ok'; badgeText = 'On Track';
+            } else {
+                title = 'Consider a small increase.';
+                insight = `You averaged <em>${avgCal} kcal</em> but weight has not increased much. TG·Adapt suggests a slight calorie increase to <em>${Math.round(target * 1.05)} kcal</em> if you're training consistently.`;
+                badgeClass = 'warn'; badgeText = 'Review Intake';
+            }
+        } else {
+            title = 'Maintenance summary.';
+            insight = `You averaged <em>${avgCal} kcal</em> this week${wtChange !== null ? ` with a weight change of <em>${(wtChange > 0 ? '+' : '') + wtChange.toFixed(1)} kg</em>` : ''}. Balanced eating is on track.`;
+            badgeClass = 'ok'; badgeText = 'Balanced';
+        }
+
+        document.getElementById('adaptTitle').textContent = title;
+        document.getElementById('adaptInsight').innerHTML = insight;
+        const badge = document.getElementById('adaptStatus');
+        badge.className = 'adapt-badge ' + badgeClass;
+        badge.textContent = badgeText;
+
+    }
+
+    function renderMealPlan(targetCal, goal) {
+        const body = document.getElementById('mealPlanBody');
+        if (!body) return;
+
+        if (!targetCal || targetCal < 100) {
+            body.innerHTML = '<tr><td colspan="3" style="color:var(--text-3);font-size:13px;padding:18px 0">Set your calorie target above to see your daily meal breakdown.</td></tr>';
+            return;
+        }
+
+        const splits = { breakfast: 0.25, lunch: 0.35, dinner: 0.30, snacks: 0.10 };
+        const kcal = {
+            breakfast: Math.round(targetCal * splits.breakfast),
+            lunch:     Math.round(targetCal * splits.lunch),
+            dinner:    Math.round(targetCal * splits.dinner),
+            snacks:    Math.round(targetCal * splits.snacks),
+        };
+
+        const isLoss = (goal || '').includes('loss') || (goal || '') === 'fat_loss';
+        const isGain = (goal || '').includes('gain') || (goal || '').includes('muscle') || (goal || '') === 'weight_gain';
+        const goalKey = isLoss ? 'loss' : isGain ? 'gain' : 'maintain';
+
+        /* rotate suggestions by day-of-week so each day looks different */
+        const dow = new Date().getDay();
+        const opt = {
+            breakfast: {
+                loss: [
+                    ['2 boiled eggs', 'Oats with skim milk (40 g)', 'Black coffee or green tea'],
+                    ['Vegetable omelette (2 eggs)', 'Brown bread (1 slice)', 'Unsweetened yogurt (100 g)'],
+                    ['Moong dal chilla (2)', 'Mint chutney', 'Green tea'],
+                    ['Poha with vegetables (1 cup)', '1 boiled egg', 'Black coffee'],
+                ],
+                gain: [
+                    ['3 scrambled eggs + 2 whole wheat toast', 'Banana + peanut butter (1 tbsp)', 'Full-fat milk (200 ml)'],
+                    ['Besan chilla (3)', 'Paneer (50 g)', 'Banana shake (300 ml)'],
+                    ['4-egg omelette with cheese', '3 multigrain toast', 'Orange juice (200 ml)'],
+                    ['Upma (1.5 cup)', '2 boiled eggs', 'Whole milk (250 ml)'],
+                ],
+                maintain: [
+                    ['2 eggs (any style)', 'Whole wheat toast (2 slices)', 'Seasonal fruit'],
+                    ['Idli (3) with sambar', 'Coconut chutney', 'Tea or coffee'],
+                    ['Vegetable poha (1 cup)', '1 egg', 'Any fruit'],
+                    ['Dalia with milk (1 bowl)', '1 banana', 'Green tea'],
+                ],
+            },
+            lunch: {
+                loss: [
+                    ['Grilled chicken breast (120 g)', 'Brown rice (80 g cooked)', 'Mixed salad with lemon dressing'],
+                    ['Dal (1 cup)', '1 roti', 'Stir-fried vegetables', 'Buttermilk (200 ml)'],
+                    ['Baked fish (150 g)', 'Quinoa (80 g cooked)', 'Steamed broccoli'],
+                    ['Paneer bhurji (low oil, 100 g)', '1 roti', 'Cucumber + tomato salad'],
+                ],
+                gain: [
+                    ['Chicken or paneer (150 g)', 'White rice (150 g cooked)', 'Dal + 2 rotis', 'Curd (100 g)'],
+                    ['Rajma (1 cup)', 'Rice (200 g cooked)', '2 rotis', 'Salad'],
+                    ['Egg curry (3 eggs)', 'Rice (200 g)', '2 rotis', 'Curd'],
+                    ['Chicken biryani (1 plate)', 'Raita (150 g)', 'Salad'],
+                ],
+                maintain: [
+                    ['Dal + rice or 2 rotis', 'Sabzi (any vegetable)', 'Curd or buttermilk'],
+                    ['2 chapati', 'Paneer sabzi', 'Dal', 'Salad'],
+                    ['Khichdi (1 bowl)', 'Papad', 'Mixed pickle', 'Curd'],
+                    ['Chole (1 cup)', '2 rotis', 'Onion salad', 'Lassi (small)'],
+                ],
+            },
+            dinner: {
+                loss: [
+                    ['Baked fish or tofu (100 g)', 'Stir-fried vegetables', '1 small roti'],
+                    ['Grilled paneer (80 g)', 'Dal soup (1 bowl)', 'Salad'],
+                    ['Egg white omelette (3 whites)', 'Sautéed mushrooms', 'Whole wheat toast (1)'],
+                    ['Chicken clear soup', 'Steamed vegetables', 'Small salad'],
+                ],
+                gain: [
+                    ['Chicken / paneer (150 g)', '2–3 rotis', 'Cooked vegetables + dal'],
+                    ['Pasta with chicken (1 bowl)', 'Garlic bread (2)', 'Mixed salad'],
+                    ['Dal makhani (1 cup)', '3 rotis', 'Paneer (80 g)', 'Rice (100 g cooked)'],
+                    ['Egg fried rice (1 plate)', 'Chicken (100 g)', 'Soup'],
+                ],
+                maintain: [
+                    ['2 rotis + dal', 'Vegetable sabzi', 'Small bowl curd'],
+                    ['Rice (100 g cooked)', 'Dal', 'Sabzi', 'Salad'],
+                    ['Mixed veg khichdi (1 bowl)', 'Papad', 'Pickle'],
+                    ['Paneer sabzi', '2 rotis', 'Dal soup'],
+                ],
+            },
+            snacks: {
+                loss: [
+                    ['Almonds (15 g)', 'Green tea', 'Apple or pear'],
+                    ['Roasted chana (30 g)', 'Black coffee', 'Cucumber sticks'],
+                    ['Low-fat yogurt (100 g)', 'Berries or banana'],
+                    ['1 boiled egg', 'Apple', 'Herbal tea'],
+                ],
+                gain: [
+                    ['Banana milkshake (300 ml)', 'Mixed nuts (30 g)', 'Protein bar'],
+                    ['Peanut butter toast (2 slices)', 'Whole milk (200 ml)', 'Banana'],
+                    ['Dates (5) + almonds (20 g)', 'Full-fat curd (150 g)'],
+                    ['Chikki (1 piece)', '2 bananas', 'Whole milk (250 ml)'],
+                ],
+                maintain: [
+                    ['Seasonal fruit', 'Handful of nuts or murmura'],
+                    ['Roasted makhana (30 g)', 'Green tea', 'Apple'],
+                    ['Curd (100 g)', 'Banana', 'Tea'],
+                    ['Rice cake (2)', 'Peanut butter (1 tsp)', 'Herbal tea'],
+                ],
+            },
+        };
+
+        const pick = (meal) => opt[meal][goalKey][dow % opt[meal][goalKey].length];
+
+        /* macros: protein 25%, carbs 50%, fat 25% of each meal's calories */
+        function macroFor(cal) {
+            return {
+                p: Math.round(cal * 0.25 / 4),
+                c: Math.round(cal * 0.50 / 4),
+                f: Math.round(cal * 0.25 / 9),
+            };
+        }
+
+        const rows = [
+            { key: 'breakfast', label: 'Breakfast', time: '7 – 9 am'      },
+            { key: 'lunch',     label: 'Lunch',     time: '12 – 2 pm'     },
+            { key: 'dinner',    label: 'Dinner',    time: '7 – 9 pm'      },
+            { key: 'snacks',    label: 'Snacks',    time: 'Between meals' },
+        ];
+
+        body.innerHTML = rows.map(r => {
+            const foods = pick(r.key).map(f => `<span>${f}</span>`).join('');
+            const m = macroFor(kcal[r.key]);
+            return `<tr>
+                <td>
+                    <div class="meal-name">${r.label}</div>
+                    <div class="meal-time">${r.time}</div>
+                </td>
+                <td><div class="meal-foods">${foods}</div></td>
+                <td>
+                    <div class="meal-kcal">${kcal[r.key]} kcal</div>
+                    <div class="meal-macros">${m.p}g P · ${m.c}g C · ${m.f}g F</div>
+                </td>
+            </tr>`;
+        }).join('');
+
+        /* total row */
+        const tot = macroFor(targetCal);
+        body.innerHTML += `<tr class="meal-total-row">
+            <td><div class="meal-name" style="color:var(--gold)">Total</div></td>
+            <td></td>
+            <td>
+                <div class="meal-kcal" style="color:var(--gold)">${targetCal} kcal</div>
+                <div class="meal-macros">${tot.p}g P · ${tot.c}g C · ${tot.f}g F</div>
+            </td>
+        </tr>`;
+    }
+
+    /* ─────────────── Charts ─────────────── */
+    function renderCharts() {
+        const logs = getLogs();
+        const last7 = [];
+        for (let i = 6; i >= 0; i--) {
+            const d = new Date(); d.setDate(d.getDate() - i);
+            const iso = d.toISOString().slice(0, 10);
+            const found = logs.find(l => l.date === iso);
+            last7.push({ date: iso, short: d.toLocaleDateString('en', { weekday: 'short' }), ...(found || { weight: null, calories: 0 }) });
+        }
+
+        // Layout constants (SVG viewBox 300 x 100)
+        const W = 300, VH = 100;
+        const PL = 36, PR = 6, PT = 8, PB = 18; // PB reserves space for X labels
+        const CH = VH - PT - PB; // usable chart height = 74
+
+        const FONT  = 'Courier Prime,monospace';
+        const GOLD  = '#C9A84C';
+        const MUTED = '#6B5B45';
+        const DIM   = 'rgba(107,91,69,0.25)';
+
+        function yTicks(minV, maxV, n) {
+            const out = [];
+            for (let i = 0; i < n; i++) out.push(minV + (maxV - minV) * (i / (n - 1)));
+            return out;
+        }
+
+        function buildAxes(minV, maxV, fmtY, days) {
+            const py = v => PT + CH - ((v - minV) / (maxV - minV || 1)) * CH;
+            const px = idx => PL + (idx / 6) * (W - PL - PR);
+            const ticks = yTicks(minV, maxV, 4);
+            let svg = '';
+            // Y gridlines + labels
+            ticks.forEach(t => {
+                const y = py(t);
+                svg += `<line x1="${PL}" y1="${y}" x2="${W - PR}" y2="${y}" stroke="${DIM}" stroke-width="0.6"/>`;
+                svg += `<text x="${PL - 4}" y="${y + 3}" text-anchor="end" font-size="7.5" fill="${MUTED}" font-family="${FONT}">${fmtY(t)}</text>`;
+            });
+            // X labels (inside SVG, bottom)
+            days.forEach((day, i) => {
+                svg += `<text x="${px(i)}" y="${VH - 2}" text-anchor="middle" font-size="8" fill="${MUTED}" font-family="${FONT}">${day.short}</text>`;
+            });
+            // Axis border lines
+            svg += `<line x1="${PL}" y1="${PT}" x2="${PL}" y2="${PT + CH}" stroke="${DIM}" stroke-width="0.8"/>`;
+            return { svg, py, px };
+        }
+
+        // ── Weight chart ──
+        const wPts  = last7.filter(d => d.weight && d.weight > 0);
+        const wSvg  = document.getElementById('weightChart');
+        const wLbls = document.getElementById('weightLabels');
+        wSvg.setAttribute('viewBox', `0 0 ${W} ${VH}`);
+        wLbls.innerHTML = '';
+
+        if (wPts.length >= 1) {
+            const vals = wPts.map(p => p.weight);
+            let minW = Math.floor((Math.min(...vals) - 0.5) * 2) / 2;
+            let maxW = Math.ceil( (Math.max(...vals) + 0.5) * 2) / 2;
+            if (minW === maxW) { minW -= 1; maxW += 1; }
+            const { svg: axes, py, px } = buildAxes(minW, maxW, v => v.toFixed(1), last7);
+            const indices = wPts.map(p => last7.findIndex(d => d.date === p.date));
+            const ptStr = wPts.map((p, k) => `${px(indices[k])},${py(p.weight)}`).join(' ');
+            const line = wPts.length >= 2
+                ? `<polyline points="${ptStr}" fill="none" stroke="${GOLD}" stroke-width="1.5" stroke-linejoin="round"/>`
+                : '';
+            wSvg.innerHTML = axes + line +
+                wPts.map((p, k) =>
+                    `<circle cx="${px(indices[k])}" cy="${py(p.weight)}" r="3" fill="${GOLD}"/>` +
+                    `<text x="${px(indices[k])}" y="${py(p.weight) - 6}" text-anchor="middle" font-size="7.5" fill="${GOLD}" font-family="${FONT}">${p.weight}</text>`
+                ).join('');
+        } else {
+            wSvg.innerHTML = `<text x="150" y="50" text-anchor="middle" font-size="11" fill="${MUTED}" font-family="${FONT}" font-style="italic">Log weight to see trend</text>`;
+        }
+
+        // ── Calorie chart ──
+        const plan   = getPlan();
+        const target = plan.targetCalories || 2000;
+        const cSvg   = document.getElementById('calChart');
+        const cLbls  = document.getElementById('calLabels');
+        const calData = last7.map(d => d.calories || 0);
+        const maxCal  = Math.ceil(Math.max(...calData, target) * 1.12 / 100) * 100 || 2500;
+        const minCal  = 0;
+        cSvg.setAttribute('viewBox', `0 0 ${W} ${VH}`);
+        cLbls.innerHTML = '';
+
+        const fmtCal = v => v >= 1000 ? (v / 1000).toFixed(1) + 'k' : Math.round(v).toString();
+        const { svg: cAxes, py: cpy, px: cpx } = buildAxes(minCal, maxCal, fmtCal, last7);
+        const bw  = (W - PL - PR) / 7;
+        const tLineY = cpy(target);
+        cSvg.innerHTML = cAxes +
+            calData.map((v, i) => v > 0
+                ? `<rect x="${PL + i * bw + 2}" y="${cpy(v)}" width="${bw - 4}" height="${PT + CH - cpy(v)}" fill="${v > target + 100 ? '#CF6679' : GOLD}" opacity="0.75" rx="1"/>`
+                : ''
+            ).join('') +
+            `<line x1="${PL}" y1="${tLineY}" x2="${W - PR}" y2="${tLineY}" stroke="#836040" stroke-width="1" stroke-dasharray="4 3"/>` +
+            `<text x="${W - PR - 2}" y="${tLineY - 3}" text-anchor="end" font-size="7.5" fill="#836040" font-family="${FONT}">target</text>`;
+    }
+
+    /* ─────────────── Progress cards ─────────────── */
+    function renderProgress() {
+        const logs = getLogs();
+        const now = new Date();
+        const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
+        const dayOfMonth = now.getDate();
+
+        // Streak
+        let streak = 0;
+        for (let i = 0; i < 30; i++) {
+            const d = new Date(); d.setDate(d.getDate() - i);
+            const iso = d.toISOString().slice(0, 10);
+            const log = logs.find(l => l.date === iso);
+            if (log && (log.calories > 0 || log.weight)) streak++; else break;
+        }
+        document.getElementById('streakVal').textContent = streak;
+        document.getElementById('streakBar').style.width = Math.min(streak / 30 * 100, 100) + '%';
+
+        // Days logged this month
+        const monthPrefix = now.toISOString().slice(0, 7);
+        const monthLogs = logs.filter(l => l.date.startsWith(monthPrefix) && (l.calories > 0 || l.weight));
+        document.getElementById('daysLoggedVal').textContent = monthLogs.length;
+        document.getElementById('daysLoggedBar').style.width = (monthLogs.length / dayOfMonth * 100) + '%';
+
+        // Missed
+        const missed = dayOfMonth - monthLogs.length;
+        document.getElementById('missedVal').textContent = Math.max(0, missed);
+        document.getElementById('missedSub').textContent = 'this month';
+        document.getElementById('missedBar').style.width = Math.min(Math.max(0, missed) / dayOfMonth * 100, 100) + '%';
+
+        // Avg steps
+        const cutoff = new Date(); cutoff.setDate(cutoff.getDate() - 7);
+        const stepLogs = logs.filter(l => new Date(l.date + 'T00:00') >= cutoff && l.steps > 0);
+        if (stepLogs.length > 0) {
+            const avg = Math.round(stepLogs.reduce((a, b) => a + b.steps, 0) / stepLogs.length);
+            document.getElementById('avgStepsVal').textContent = avg.toLocaleString();
+            document.getElementById('stepsBar').style.width = Math.min(avg / 10000 * 100, 100) + '%';
+        }
+    }
+
+    /* ─────────────── Recent AI chats ─────────────── */
+    function renderRecentChats() {
+        const sessions = JSON.parse(localStorage.getItem(SESS_KEY) || '[]');
+        const el = document.getElementById('chatsList');
+        const recent = document.getElementById('sbRecentChats');
+
+        if (!sessions.length) { el.innerHTML = '<p class="no-chats">No conversations yet. Start by asking the AI something.</p>'; recent.innerHTML = '<div class="sb-empty">No recent chats.</div>'; return; }
+
+        el.innerHTML = sessions.slice(0, 5).map(s => {
+            const d = new Date(s.updatedAt || 0);
+            const label = d.toLocaleDateString('en', { month: 'short', day: 'numeric' });
+            const last = s.history && s.history.length > 1 ? s.history[s.history.length - 1].content.slice(0, 60) : '';
+            return `<div class="chat-item-row">
+                <a class="chat-item" href="/perfect/ai" onclick="sessionStorage.setItem('aiLoadSession','${s.id}')">
+                    <div class="chat-dot"></div>
+                    <div class="chat-info">
+                        <p class="chat-title">${s.title}</p>
+                        <p class="chat-preview">${last}</p>
+                    </div>
+                    <span class="chat-date">${label}</span>
+                </a>
+                <button class="chat-del-btn" title="Delete chat" onclick="deleteChat('${s.id}')">×</button>
+            </div>`;
+        }).join('');
+
+        recent.innerHTML = sessions.slice(0, 4).map(s => `
+            <button class="sb-sub-item" onclick="sessionStorage.setItem('aiLoadSession','${s.id}');window.location='/perfect/ai'">
+                <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                ${s.title}
+            </button>`).join('') || '<div class="sb-empty">No recent chats.</div>';
+    }
+
+    window.deleteChat = function(id) {
+        const all = JSON.parse(localStorage.getItem(SESS_KEY) || '[]');
+        localStorage.setItem(SESS_KEY, JSON.stringify(all.filter(s => s.id !== id)));
+        renderRecentChats();
+    };
+
+    /* ─────────────── Sidebar / profile ─────────────── */
+    window.toggleAISub = function () {
+        const s = document.getElementById('aiSub'); const c = document.getElementById('aiChev');
+        const o = s.classList.toggle('open'); c.classList.toggle('flipped', o);
+    };
+    window.toggleProfile = function (e) { e.stopPropagation(); document.getElementById('profilePopup').classList.toggle('open'); };
+    document.addEventListener('click', e => {
+        const p = document.getElementById('profilePopup'); const b = document.getElementById('profileBtn');
+        if (p && !p.contains(e.target) && b && !b.contains(e.target)) p.classList.remove('open');
+    });
+    window.scrollToSection = function (id) {
+        const el = document.getElementById(id);
+        if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    };
+
+    /* ─────────────── Barcode scanner ─────────────── */
+    let scanStream = null;
+    let scanInterval = null;
+    let zxingReader = null;
+    let scanMode = 'generic'; // 'log' or 'generic'
+    let lastScannedProduct = null;
+
+    window.retryCameraAccess = function() {
+        document.getElementById('scanCameraError').style.display = 'none';
+        document.getElementById('scanError').classList.remove('show');
+        document.getElementById('scanVideo').style.display = '';
+        scanHandled = false;
+        startCamera();
+    };
+
+    window.openBarcodeScanner = function (mode) {
+        scanMode = mode || 'generic';
+        document.getElementById('barcodeModal').classList.add('open');
+        document.getElementById('scanResult').classList.remove('show');
+        document.getElementById('scanError').classList.remove('show');
+        document.getElementById('scanCameraError').style.display = 'none';
+        document.getElementById('scanVideo').style.display = '';
+        document.getElementById('scanCaptureBtn').style.display = 'none';
+        document.getElementById('scannerHint').textContent = 'Point camera at the barcode on any food package.';
+        lastScannedProduct = null;
+        scanHandled = false;
+        startCamera();
+    };
+
+    window.closeBarcodeScanner = function () {
+        stopCamera();
+        document.getElementById('barcodeModal').classList.remove('open');
+    };
+
+    async function startCamera() {
+        const video = document.getElementById('scanVideo');
+        // Try rear camera first, fall back to any camera
+        const constraints = [
+            { video: { facingMode: { ideal: 'environment' } } },
+            { video: { facingMode: 'user' } },
+            { video: true },
+        ];
+        for (const c of constraints) {
+            try {
+                scanStream = await navigator.mediaDevices.getUserMedia(c);
+                video.srcObject = scanStream;
+                await video.play();
+                startScanning(video);
+                return;
+            } catch {}
+        }
+        // All constraints failed
+        document.getElementById('scanVideo').style.display = 'none';
+        document.getElementById('scanCameraError').style.display = '';
+        document.getElementById('scanError').classList.add('show');
+    }
+
+    function stopCamera() {
+        if (scanInterval) { clearInterval(scanInterval); scanInterval = null; }
+        if (zxingReader) { try { zxingReader.reset(); } catch {} zxingReader = null; }
+        if (scanStream) { scanStream.getTracks().forEach(t => t.stop()); scanStream = null; }
+    }
+
+    let scanHandled = false;
+
+    function startScanning(video) {
+        scanHandled = false;
+        document.getElementById('scannerHint').textContent = 'Auto-scanning… point camera at any barcode.';
+
+        const onDetected = async (code) => {
+            if (scanHandled) return;
+            scanHandled = true;
+            if (scanInterval) { clearInterval(scanInterval); scanInterval = null; }
+            if (zxingReader) { try { zxingReader.reset(); } catch {} zxingReader = null; }
+            // Flash the scan frame green briefly
+            const frame = document.querySelector('.scan-frame');
+            if (frame) { frame.style.borderColor = '#4CAF7C'; setTimeout(() => { frame.style.borderColor = ''; }, 800); }
+            await lookupBarcode(code);
+        };
+
+        /* ── Native BarcodeDetector (Chrome/Edge — fastest) ── */
+        if ('BarcodeDetector' in window) {
+            const detector = new BarcodeDetector({ formats: ['ean_13','ean_8','upc_a','upc_e','upc_e1','code_128','code_39','qr_code'] });
+            scanInterval = setInterval(async () => {
+                if (!video.readyState || video.readyState < 2 || scanHandled) return;
+                try {
+                    const codes = await detector.detect(video);
+                    if (codes.length) onDetected(codes[0].rawValue);
+                } catch {}
+            }, 150);
+            return;
+        }
+
+        /* ── ZXing frame-grab fallback (all browsers) ── */
+        if (window.ZXing) {
+            const reader = new ZXing.BrowserMultiFormatReader();
+            zxingReader = reader;
+            const cvs = document.createElement('canvas');
+            scanInterval = setInterval(async () => {
+                if (!video.readyState || video.readyState < 2 || scanHandled) return;
+                cvs.width = video.videoWidth; cvs.height = video.videoHeight;
+                cvs.getContext('2d').drawImage(video, 0, 0);
+                try {
+                    const result = await reader.decodeFromImageElement(cvs);
+                    if (result) onDetected(result.getText());
+                } catch {}
+            }, 300);
+            return;
+        }
+
+        /* ── Last resort: manual capture button ── */
+        document.getElementById('scanCaptureBtn').style.display = 'block';
+        document.getElementById('scannerHint').textContent = 'Point camera at the barcode and tap Capture.';
+    }
+
+    window.captureAndAnalyse = async function () {
+        const video  = document.getElementById('scanVideo');
+        const canvas = document.getElementById('scanCanvas');
+        const btn    = document.getElementById('scanCaptureBtn');
+        canvas.width  = video.videoWidth  || 640;
+        canvas.height = video.videoHeight || 480;
+        canvas.getContext('2d').drawImage(video, 0, 0);
+        const base64 = canvas.toDataURL('image/jpeg', 0.85);
+
+        btn.disabled = true;
+        btn.textContent = 'Analysing…';
+        document.getElementById('scannerHint').textContent = 'AI is reading the barcode…';
+
+        try {
+            const resp = await fetch('/api/nutriai/chat', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    messages: [{
+                        role: 'user',
+                        content: 'Look at this image carefully. If you can see a barcode, read the number precisely. Identify the food product. Respond ONLY with valid JSON in this exact format, no extra text:\n{"barcode":"<number or empty string>","name":"<product name>","brand":"<brand or empty>","calories":<kcal per 100g>,"protein":<g per 100g>,"carbs":<g per 100g>,"fat":<g per 100g>,"serving":"<serving size or 100g>"}\nIf nutritional info is on the pack, use those exact numbers. If not, estimate based on the product type.',
+                        images: [base64]
+                    }]
+                })
+            });
+            const data = await resp.json();
+            const raw  = (data.reply || data.error || '').trim();
+            /* Strip markdown code fences if present */
+            const jsonStr = raw.replace(/^```json?\s*/i, '').replace(/```\s*$/, '').trim();
+            let product;
+            try { product = JSON.parse(jsonStr); } catch {
+                /* Gemini sometimes adds text before/after — try to extract the JSON object */
+                const m = raw.match(/\{[\s\S]*\}/);
+                if (m) product = JSON.parse(m[0]);
+                else throw new Error('No JSON in response');
+            }
+
+            /* If Gemini found a barcode, try Open Food Facts for accurate data first */
+            if (product.barcode && product.barcode.length > 6) {
+                document.getElementById('scannerHint').textContent = 'Barcode ' + product.barcode + ' — looking up database…';
+                try {
+                    const r = await fetch(`https://world.openfoodfacts.org/api/v2/product/${product.barcode}?fields=product_name,nutriments,serving_size,brands`);
+                    const off = await r.json();
+                    if (off.status === 1 && off.product) {
+                        const p = off.product;
+                        const n = p.nutriments || {};
+                        const kcal = Math.round(n['energy-kcal_100g'] || n['energy-kcal'] || (n['energy_100g'] || 0) / 4.184 || 0);
+                        product = {
+                            barcode: product.barcode,
+                            name:    p.product_name || product.name,
+                            brand:   p.brands       || product.brand || '',
+                            calories: kcal || product.calories,
+                            protein:  parseFloat((n.proteins_100g      || product.protein || 0).toFixed(1)),
+                            carbs:    parseFloat((n.carbohydrates_100g  || product.carbs   || 0).toFixed(1)),
+                            fat:      parseFloat((n.fat_100g            || product.fat     || 0).toFixed(1)),
+                            serving:  p.serving_size || product.serving || '100g',
+                        };
+                    }
+                } catch { /* use Gemini data if OFF fails */ }
+            }
+
+            lastScannedProduct = {
+                name:     product.name     || 'Unknown product',
+                brand:    product.brand    || '',
+                calories: product.calories || 0,
+                protein:  product.protein  || 0,
+                carbs:    product.carbs    || 0,
+                fat:      product.fat      || 0,
+                serving:  product.serving  || '100g',
+            };
+            showScanResult(lastScannedProduct);
+        } catch (err) {
+            showScanError('Could not analyse the image. Make sure the barcode is clear and well-lit, then try again.');
+        } finally {
+            btn.disabled = false;
+            btn.textContent = 'Capture & Analyse';
+        }
+    };
+
+    /* Upload an image of the barcode from the file picker */
+    window.analyseUploadedImage = function (input) {
+        const file = input.files[0];
+        if (!file) return;
+        input.value = '';
+        const reader = new FileReader();
+        reader.onload = async function (e) {
+            const base64 = e.target.result;
+            document.getElementById('scannerHint').textContent = 'Analysing uploaded image…';
+            document.getElementById('scanResult').classList.remove('show');
+            document.getElementById('scanError').classList.remove('show');
+            stopCamera();
+            document.getElementById('scanVideo').style.display = 'none';
+            document.getElementById('scanCaptureBtn').style.display = 'none';
+            await analyseBase64Image(base64);
+        };
+        reader.readAsDataURL(file);
+    };
+
+    /* "Scan food" — opens file picker or camera for food photo (no barcode needed) */
+    window.openScanFood = function () {
+        scanMode = 'log';
+        const input = document.createElement('input');
+        input.type = 'file';
+        input.accept = 'image/*';
+        input.capture = 'environment';
+        input.onchange = async function () {
+            const file = input.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = async function (e) {
+                document.getElementById('barcodeModal').classList.add('open');
+                document.getElementById('scanResult').classList.remove('show');
+                document.getElementById('scanError').classList.remove('show');
+                document.getElementById('scanVideo').style.display = 'none';
+                document.getElementById('scannerHint').textContent = 'Identifying food and estimating nutrition…';
+                lastScannedProduct = null;
+                await analyseBase64Image(e.target.result);
+            };
+            reader.readAsDataURL(file);
+        };
+        input.click();
+    };
+
+    const UNKNOWN_QUIPS = [
+        "This barcode is apparently in witness protection. Nobody knows who it is.",
+        "Scanned. Searched everywhere. Even asked the internet. Total mystery.",
+        "The product exists. The data does not. A true enigma.",
+        "404: product not found. It's living off the grid.",
+        "Our database looked, shrugged, and went home early.",
+        "This one's a ghost — real barcode, zero digital footprint.",
+        "Even Gemini is confused. That's saying something.",
+        "Unidentified edible object. Proceed with curiosity.",
+        "The barcode works. The product? Apparently shy.",
+        "Could be anything. Could be nothing. Schrödinger's snack.",
+    ];
+    function randomQuip() { return UNKNOWN_QUIPS[Math.floor(Math.random() * UNKNOWN_QUIPS.length)]; }
+
+    /* Shared: send any base64 image to Gemini for product/food identification */
+    async function analyseBase64Image(base64) {
+        try {
+            const resp = await fetch('/api/nutriai/chat', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    messages: [{
+                        role: 'user',
+                        content: 'Look at this image carefully. First decide: does it show a barcode, a food product, or a meal? If it is none of these — just a random object, a person, scenery, text, etc. — respond ONLY with: {"not_food":true}\nOtherwise respond ONLY with valid JSON:\n{"barcode":"<number or empty string>","name":"<product or food name>","brand":"<brand or empty>","calories":<kcal per 100g>,"protein":<g per 100g>,"carbs":<g per 100g>,"fat":<g per 100g>,"serving":"<serving size or 100g>"}\nIf it is a cooked dish with no barcode, estimate nutrition for the visible portion.',
+                        images: [base64]
+                    }]
+                })
+            });
+            const data = await resp.json();
+            const raw  = (data.reply || data.error || '').trim().replace(/^```json?\s*/i,'').replace(/```\s*$/,'').trim();
+            const m    = raw.match(/\{[\s\S]*\}/);
+            if (!m) throw new Error('No JSON');
+            let product = JSON.parse(m[0]);
+
+            if (product.not_food) {
+                showScanError("That doesn't look like a barcode or food. Try pointing the camera at a product or meal.");
+                return;
+            }
+
+            if (product.barcode && product.barcode.length > 6) {
+                document.getElementById('scannerHint').textContent = 'Barcode ' + product.barcode + ' — checking database…';
+                try {
+                    const r   = await fetch(`https://world.openfoodfacts.org/api/v2/product/${product.barcode}?fields=product_name,nutriments,serving_size,brands`);
+                    const off = await r.json();
+                    if (off.status === 1 && off.product) {
+                        const p = off.product, n = p.nutriments || {};
+                        const kcal = Math.round(n['energy-kcal_100g'] || n['energy-kcal'] || (n['energy_100g'] || 0) / 4.184 || 0);
+                        product = { barcode: product.barcode, name: p.product_name || product.name, brand: p.brands || product.brand || '',
+                            calories: kcal || product.calories, protein: parseFloat((n.proteins_100g || product.protein || 0).toFixed(1)),
+                            carbs: parseFloat((n.carbohydrates_100g || product.carbs || 0).toFixed(1)), fat: parseFloat((n.fat_100g || product.fat || 0).toFixed(1)),
+                            serving: p.serving_size || product.serving || '100g' };
+                    }
+                } catch { /* use Gemini data */ }
+            }
+
+            lastScannedProduct = { name: product.name || 'Unknown', brand: product.brand || '',
+                calories: product.calories || 0, protein: product.protein || 0,
+                carbs: product.carbs || 0, fat: product.fat || 0, serving: product.serving || '100g' };
+            showScanResult(lastScannedProduct);
+        } catch {
+            showScanError('Could not analyse the image. Try a clearer photo with good lighting.');
+        }
+    }
+
+    async function lookupBarcode(barcode) {
+        document.getElementById('scannerHint').textContent = 'Found barcode: ' + barcode + '. Looking up product…';
+        try {
+            const r = await fetch(`https://world.openfoodfacts.org/api/v2/product/${barcode}?fields=product_name,nutriments,serving_size,brands`);
+            const data = await r.json();
+            if (data.status !== 1 || !data.product) {
+                /* Barcode found but not in database — ask Gemini */
+                document.getElementById('scannerHint').textContent = 'Not in database, asking AI…';
+                await lookupBarcodeViaAI(barcode);
+                return;
+            }
+            const p = data.product;
+            const n = p.nutriments || {};
+            const kcal = Math.round(n['energy-kcal_100g'] || n['energy-kcal'] || (n['energy_100g'] || 0) / 4.184 || 0);
+            lastScannedProduct = {
+                name:     p.product_name || 'Unknown product',
+                brand:    p.brands       || '',
+                calories: kcal,
+                protein:  parseFloat((n.proteins_100g     || 0).toFixed(1)),
+                carbs:    parseFloat((n.carbohydrates_100g || 0).toFixed(1)),
+                fat:      parseFloat((n.fat_100g           || 0).toFixed(1)),
+                serving:  p.serving_size || '100g',
+            };
+            showScanResult(lastScannedProduct);
+        } catch (e) {
+            showScanError('Could not connect to product database.');
+        }
+    }
+
+    async function lookupBarcodeViaAI(barcode) {
+        try {
+            const resp = await fetch('/api/nutriai/chat', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    messages: [{
+                        role: 'user',
+                        content: `The barcode number is ${barcode}. Do you recognise this food product? If yes, respond ONLY with valid JSON:\n{"name":"<product name>","brand":"<brand>","calories":<kcal per 100g>,"protein":<g>,"carbs":<g>,"fat":<g>,"serving":"100g"}\nIf you genuinely do not recognise this barcode at all, respond ONLY with: {"unknown":true}`
+                    }]
+                })
+            });
+            const data = await resp.json();
+            const raw  = (data.reply || '').trim().replace(/^```json?\s*/i,'').replace(/```\s*$/,'').trim();
+            const m    = raw.match(/\{[\s\S]*\}/);
+            if (!m) throw new Error();
+            const product = JSON.parse(m[0]);
+            if (product.unknown) { showScanError(randomQuip()); return; }
+            lastScannedProduct = {
+                name: product.name || 'Product ' + barcode, brand: product.brand || '',
+                calories: product.calories || 0, protein: product.protein || 0,
+                carbs: product.carbs || 0, fat: product.fat || 0, serving: product.serving || '100g',
+            };
+            showScanResult(lastScannedProduct);
+        } catch {
+            showScanError(randomQuip());
+        }
+    }
+
+    function showScanResult(p) {
+        document.getElementById('scanProductName').textContent = p.name;
+        document.getElementById('scanBrand').textContent = p.brand || 'per 100g';
+        document.getElementById('smCal').textContent = p.calories;
+        document.getElementById('smProt').textContent = p.protein;
+        document.getElementById('smCarb').textContent = p.carbs;
+        document.getElementById('smFat').textContent = p.fat;
+        document.getElementById('scanServing').textContent = 'Serving size: ' + p.serving + ' — values shown per 100g';
+        document.getElementById('scanResult').classList.add('show');
+        document.getElementById('scanAddBtn').textContent = scanMode === 'log' ? 'Add to Food Log' : 'Add to Today\'s Log';
+    }
+
+    function showScanError(msg) {
+        document.getElementById('scanErrorMsg').textContent = msg;
+        document.getElementById('scanError').classList.add('show');
+    }
+
+    window.addScannedToLog = function () {
+        if (!lastScannedProduct) return;
+        todayFoods.push({ ...lastScannedProduct });
+        renderFoodItems();
+        closeBarcodeScanner();
+        scrollToSection('log');
+        showToast(lastScannedProduct.name + ' added to your log.');
+    };
+
+    window.askAIAboutScanned = function () {
+        if (!lastScannedProduct) return;
+        const q = `I scanned this product: ${lastScannedProduct.name}${lastScannedProduct.brand ? ' by ' + lastScannedProduct.brand : ''}. Nutrition per 100g: ${lastScannedProduct.calories} kcal, ${lastScannedProduct.protein}g protein, ${lastScannedProduct.carbs}g carbs, ${lastScannedProduct.fat}g fat. How does this fit into a healthy diet? Should I eat it regularly?`;
+        sessionStorage.setItem('aiPrefill', q);
+        closeBarcodeScanner();
+        window.location = '/perfect/ai';
+    };
+
+    window.lookupManualBarcode = function () {
+        const val = document.getElementById('manualBarcode').value.trim();
+        if (!val) return;
+        document.getElementById('scanError').classList.remove('show');
+        lookupBarcode(val);
+    };
+
+    /* ─────────────── Toast for page messages ─────────────── */
+    function checkMsg() {
+        const p = new URLSearchParams(window.location.search);
+        const m = p.get('msg');
+        if (m === 'created') showToast('Account created. Welcome, ' + DISPLAY_NAME + '.');
+        else if (m === 'login') showToast('Welcome back, ' + DISPLAY_NAME + '.');
+        if (m) history.replaceState({}, '', window.location.pathname);
+    }
+
+    /* ─────────────── init ─────────────── */
+    // Restore settings toggle state
+    const wxToggleEl = document.getElementById('wxAnimToggle');
+    if (wxToggleEl) wxToggleEl.checked = wxAnimEnabled();
+
+    initHero();
+    initWeather();
+    loadTodayLog();
+    renderProgress();
+    renderCharts();
+    renderAdapt();
+    renderRecentChats();
+    checkMsg();
+
+    /* ─────────────── Exercise Calendar ─────────────── */
+    (function initCalendar() {
+        const EX = {
+            types:    {{ exercise_types | tojson }}.split(',').map(s => s.trim()).filter(Boolean),
+            perWeek:  {{ exercise_days_per_week }},
+            restDays: {{ rest_day | tojson }}.split(',').map(s => s.trim()).filter(Boolean),
+            duration: {{ session_duration | tojson }},
+            timePref: {{ workout_time_pref | tojson }},
+            level:    {{ fitness_level | tojson }}
+        };
+
+        const WEEK   = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
+        const SHORT  = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+        const DUR    = {'30min':'30 min','45min':'45 min','1hr':'1 hr','90min':'90 min','2hr':'2 hr+'};
+        const TPREF  = {'early_morning':'5–7 am','morning':'7–10 am','afternoon':'12–4 pm','evening':'5–9 pm','flexible':'flexible'};
+
+        let offset = 0;
+
+        // Compute which days are active exercise days (non-rest, up to perWeek, in Mon–Sun order)
+        const nonRest  = WEEK.filter(d => !EX.restDays.includes(d));
+        const active   = nonRest.slice(0, EX.perWeek);
+        const optional = nonRest.slice(EX.perWeek);
+
+        function getMonday(baseDate, weekOff) {
+            const d = new Date(baseDate);
+            const dow = d.getDay(); // 0=Sun
+            d.setDate(d.getDate() + (dow === 0 ? -6 : 1 - dow) + weekOff * 7);
+            d.setHours(0, 0, 0, 0);
+            return d;
+        }
+
+        function fmtDate(d) {
+            return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
+        }
+
+        function buildCalendar() {
+            const today = new Date(); today.setHours(0,0,0,0);
+            const monday = getMonday(today, offset);
+            const days = Array.from({length:7}, (_, i) => { const d = new Date(monday); d.setDate(monday.getDate()+i); return d; });
+
+            document.getElementById('calWeekLabel').textContent =
+                `${fmtDate(days[0])} – ${fmtDate(days[6])}, ${days[0].getFullYear()}`;
+
+            const grid = document.getElementById('calGrid');
+            grid.innerHTML = '';
+
+            // No schedule set
+            if (!EX.perWeek && !EX.restDays.length && !EX.types.length) {
+                grid.innerHTML = `<div class="cal-setup-msg" style="grid-column:1/-1">
+                    No exercise schedule set yet.<br>
+                    <a href="/perfect/settings#exercise">Set up your schedule →</a>
+                </div>`;
+                return;
+            }
+
+            let exIdx = 0;
+            days.forEach((date, i) => {
+                const dayName  = WEEK[i];
+                const isToday  = date.getTime() === today.getTime();
+                const isRest   = EX.restDays.includes(dayName);
+                const isActive = active.includes(dayName);
+                const isOpt    = optional.includes(dayName);
+
+                let exercise = null;
+                if (isActive && EX.types.length) {
+                    exercise = EX.types[exIdx % EX.types.length];
+                    exIdx++;
+                }
+
+                const cls = ['cal-day',
+                    isToday  ? 'today'    : '',
+                    isRest   ? 'rest'     : '',
+                    isOpt    ? 'optional' : '',
+                ].filter(Boolean).join(' ');
+
+                const card = document.createElement('div');
+                card.className = cls;
+
+                let html = `
+                    <span class="cal-day-name">${SHORT[i]}</span>
+                    <span class="cal-date-num">${date.getDate()}</span>
+                    ${isToday ? '<span class="cal-today-dot"></span>' : ''}
+                `;
+
+                if (isRest) {
+                    html += `<span class="cal-rest-lbl" style="margin-top:auto">Rest</span>`;
+                } else if (isActive) {
+                    if (exercise) html += `<span class="cal-ex-chip">${exercise}</span>`;
+                    if (EX.duration) html += `<span class="cal-ex-meta">${DUR[EX.duration] || EX.duration}</span>`;
+                    if (EX.timePref) html += `<span class="cal-ex-meta">${TPREF[EX.timePref] || EX.timePref}</span>`;
+                } else if (isOpt) {
+                    html += `<span class="cal-opt-lbl" style="margin-top:auto">Optional</span>`;
+                }
+
+                card.innerHTML = html;
+                grid.appendChild(card);
+            });
+        }
+
+        window.calNav = function(dir) { offset += dir; buildCalendar(); };
+        window.calRebuild = function(s) {
+            EX.types    = (s.exercise_types || '').split(',').map(t => t.trim()).filter(Boolean);
+            EX.perWeek  = parseInt(s.exercise_days_per_week) || 0;
+            EX.restDays = (s.rest_day || '').split(',').map(t => t.trim()).filter(Boolean);
+            EX.duration = s.session_duration || '';
+            EX.timePref = s.workout_time_pref || '';
+            EX.level    = s.fitness_level || '';
+            buildCalendar();
+        };
+        buildCalendar();
+    })();
+
+    /* ─────────────── Calendar Edit Modal ─────────────── */
+    let _calMicRecog = null, _calMicFinal = '', _calMicActive = false;
+
+    window.openCalEdit = function() {
+        document.getElementById('caledBackdrop').style.display = 'flex';
+        calSetMode('type');
+        document.getElementById('caledDirectInput').value = '';
+        document.getElementById('caledResponse').style.display = 'none';
+        const btn = document.getElementById('caledApplyBtn');
+        btn.disabled = false; btn.textContent = 'Apply';
+        _calMicFinal = '';
+    };
+
+    window.closeCalEdit = function(e) {
+        if (e && e.target !== document.getElementById('caledBackdrop')) return;
+        _stopCalMic();
+        document.getElementById('caledBackdrop').style.display = 'none';
+    };
+
+    window.calSetMode = function(mode) {
+        document.getElementById('caledModeType').classList.toggle('active', mode === 'type');
+        document.getElementById('caledModeMic').classList.toggle('active', mode === 'mic');
+        document.getElementById('caledDirectPane').style.display = mode === 'type' ? 'block' : 'none';
+        document.getElementById('caledMicPane').style.display   = mode === 'mic'  ? 'block' : 'none';
+        if (mode === 'type') _stopCalMic();
+    };
+
+    function _stopCalMic() {
+        if (_calMicRecog) { try { _calMicRecog.stop(); } catch(e){} _calMicRecog = null; }
+        _calMicActive = false;
+        const mb = document.getElementById('caledMicBtn');
+        if (mb) mb.classList.remove('recording');
+    }
+
+    window.toggleCalMic = function() {
+        if (_calMicActive) { _stopCalMic(); return; }
+        const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+        if (!SR) { alert('Speech recognition is not supported in this browser. Please use Chrome.'); return; }
+        _calMicFinal = '';
+        const transcript = document.getElementById('caledTranscript');
+        transcript.textContent = 'Listening…';
+        document.getElementById('caledMicBtn').classList.add('recording');
+        _calMicActive = true;
+        _calMicRecog = new SR();
+        _calMicRecog.continuous = true;
+        _calMicRecog.interimResults = true;
+        _calMicRecog.lang = 'en-US';
+        _calMicRecog.onresult = e => {
+            let final = '', interim = '';
+            for (const r of e.results) {
+                if (r.isFinal) final += r[0].transcript + ' ';
+                else interim += r[0].transcript;
+            }
+            if (final) _calMicFinal = final.trim();
+            transcript.textContent = (_calMicFinal + ' ' + interim).trim() || 'Listening…';
+        };
+        _calMicRecog.onend = () => {
+            _calMicActive = false;
+            document.getElementById('caledMicBtn').classList.remove('recording');
+            if (_calMicFinal) applyCalEdit();
+        };
+        _calMicRecog.start();
+    };
+
+    window.applyCalEdit = async function() {
+        const isMic = document.getElementById('caledModeMic').classList.contains('active');
+        const instruction = isMic
+            ? _calMicFinal
+            : (document.getElementById('caledDirectInput').value || '').trim();
+        if (!instruction) {
+            if (!isMic) document.getElementById('caledDirectInput').focus();
+            return;
+        }
+        const btn = document.getElementById('caledApplyBtn');
+        const resp = document.getElementById('caledResponse');
+        btn.disabled = true; btn.textContent = 'Updating…';
+        resp.style.display = 'none';
+        try {
+            const r = await fetch('/perfect/api/calendar-edit', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ instruction })
+            });
+            const d = await r.json();
+            if (d.ok) {
+                window.calRebuild(d.schedule);
+                resp.textContent = d.explanation || 'Schedule updated.';
+                resp.style.display = 'block';
+                btn.textContent = 'Done ✓';
+                setTimeout(() => {
+                    document.getElementById('caledBackdrop').style.display = 'none';
+                    btn.disabled = false; btn.textContent = 'Apply';
+                }, 1800);
+            } else {
+                resp.textContent = d.error || 'Something went wrong.';
+                resp.style.display = 'block';
+                btn.disabled = false; btn.textContent = 'Retry';
+            }
+        } catch(err) {
+            resp.textContent = 'Network error — please try again.';
+            resp.style.display = 'block';
+            btn.disabled = false; btn.textContent = 'Retry';
+        }
+    };
+
+    /* ─────────────── Assistant ─────────────── */
+    let _asstHistory = [];
+    let _asstMicRecog = null;
+    let _asstBusy = false;
+
+    function asstScroll() {
+        const el = document.getElementById('asstMsgs');
+        el.scrollTop = el.scrollHeight;
+    }
+
+    function asstAddBubble(role, text) {
+        const welcome = document.getElementById('asstWelcome');
+        if (welcome) welcome.remove();
+        const div = document.createElement('div');
+        div.className = 'asst-bubble ' + role;
+        div.textContent = text;
+        document.getElementById('asstMsgs').appendChild(div);
+        asstScroll();
+        return div;
+    }
+
+    function asstAddLogPill(items) {
+        const lastBubble = document.getElementById('asstMsgs').lastElementChild;
+        if (!lastBubble) return;
+        const pill = document.createElement('div');
+        pill.className = 'asst-logged-pill';
+        pill.innerHTML = '<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg> Logged — ' + items;
+        lastBubble.appendChild(pill);
+    }
+
+    async function _asstDispatch(msg) {
+        if (_asstBusy || !msg) return;
+        _asstBusy = true;
+        document.getElementById('asstTa').disabled = true;
+
+        asstAddBubble('user', msg);
+        const thinking = asstAddBubble('thinking', 'Thinking…');
+
+        try {
+            const resp = await fetch('/perfect/api/assistant', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ message: msg, history: _asstHistory.slice(-6) })
+            });
+            const data = await resp.json();
+            thinking.remove();
+
+            const aiBubble = asstAddBubble('ai', data.reply || 'Sorry, no response.');
+
+            if (data.logged) {
+                const logged = data.logged;
+                const log = getLog(today());
+                const newFoods = logged.foods || [];
+
+                if (newFoods.length) {
+                    log.foods = [...(log.foods || []), ...newFoods];
+                    log.calories = log.foods.reduce((s, f) => s + (f.calories || 0), 0);
+                    log.protein  = log.foods.reduce((s, f) => s + (f.protein  || 0), 0);
+                    log.carbs    = log.foods.reduce((s, f) => s + (f.carbs    || 0), 0);
+                    log.fat      = log.foods.reduce((s, f) => s + (f.fat      || 0), 0);
+                }
+                if (logged.weight != null) log.weight = logged.weight;
+                if (logged.steps  != null) log.steps  = logged.steps;
+                if (logged.workout)        log.workout = (log.workout ? log.workout + '; ' : '') + logged.workout;
+                if (logged.hunger != null) log.hunger = Math.min(10, Math.max(1, Math.round(logged.hunger)));
+                if (logged.energy != null) log.energy = Math.min(10, Math.max(1, Math.round(logged.energy)));
+                saveLog(log);
+                loadTodayLog();
+                renderProgress(); renderCharts(); renderAdapt();
+
+                const parts = [];
+                if (newFoods.length) parts.push(newFoods.map(f => f.name).join(', '));
+                if (logged.weight != null) parts.push(logged.weight + ' kg');
+                if (logged.steps  != null) parts.push(logged.steps + ' steps');
+                if (logged.workout)        parts.push(logged.workout);
+                if (logged.hunger != null) parts.push('hunger ' + logged.hunger + '/10');
+                if (logged.energy != null) parts.push('energy ' + logged.energy + '/10');
+                asstAddLogPill(parts.join(' · ') || 'Updated');
+                showToast('Logged!');
+            }
+
+            _asstHistory.push({ role: 'user', content: msg });
+            _asstHistory.push({ role: 'assistant', content: data.reply || '' });
+        } catch (_) {
+            thinking.remove();
+            asstAddBubble('ai', 'Something went wrong. Please try again.');
+        }
+
+        _asstBusy = false;
+        document.getElementById('asstTa').disabled = false;
+        document.getElementById('asstTa').focus();
+    }
+
+    window.asstSend = function() {
+        const ta = document.getElementById('asstTa');
+        const msg = ta.value.trim();
+        if (!msg) return;
+        ta.value = ''; ta.style.height = 'auto';
+        _asstDispatch(msg);
+    };
+
+    window.asstQuickSend = function(text) { _asstDispatch(text.trim()); };
+
+    window.asstKeydown = function(e) {
+        if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); window.asstSend(); }
+    };
+
+    window.toggleAsstMic = function() {
+        const btn  = document.getElementById('asstMicBtn');
+        const wave = document.getElementById('asstWave');
+        const ta   = document.getElementById('asstTa');
+
+        if (_asstMicRecog) { _asstMicRecog.stop(); return; }
+
+        const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+        if (!SR) { alert('Voice input is not supported in this browser.'); return; }
+
+        _asstMicRecog = new SR();
+        _asstMicRecog.continuous      = false;
+        _asstMicRecog.interimResults  = true;
+        _asstMicRecog.lang            = 'en-IN';
+
+        let _finalText = '';
+
+        _asstMicRecog.onstart = () => {
+            btn.classList.add('recording');
+            wave.style.display = 'flex';
+            _finalText = '';
+            ta.value = '';
+            ta.style.height = 'auto';
+            ta.placeholder = 'Listening…';
+        };
+
+        _asstMicRecog.onresult = e => {
+            let interim = '';
+            for (let i = e.resultIndex; i < e.results.length; i++) {
+                if (e.results[i].isFinal) _finalText += e.results[i][0].transcript;
+                else interim += e.results[i][0].transcript;
+            }
+            ta.value = _finalText + interim;
+            ta.style.height = 'auto';
+            ta.style.height = ta.scrollHeight + 'px';
+        };
+
+        _asstMicRecog.onend = () => {
+            btn.classList.remove('recording');
+            wave.style.display = 'none';
+            ta.placeholder = 'What did you eat? How was your workout?…';
+            _asstMicRecog = null;
+            const text = ta.value.trim();
+            if (text) { ta.value = ''; ta.style.height = 'auto'; _asstDispatch(text); }
+        };
+
+        _asstMicRecog.start();
+    };
+
+})();
+</script>
+
+<!-- Chart expand modal -->
+<div id="chartModal" onclick="closeChartModal()">
+  <div id="chartModalCard" onclick="event.stopPropagation()">
+    <div class="chart-modal-hdr">
+      <p class="chart-modal-title" id="chartModalTitle"></p>
+      <button class="chart-modal-close" onclick="closeChartModal()">✕</button>
+    </div>
+    <svg id="chartModalSvg" viewBox="0 0 600 220"></svg>
+  </div>
+</div>
+<script>
+(function () {
+    const _U2      = {{ username | tojson }};
+    const LOGS_KEY = 'toogood_daily_logs_' + _U2;
+    function getLogs() { try { return JSON.parse(localStorage.getItem(LOGS_KEY)) || []; } catch { return []; } }
+    function getPlan() { try { return JSON.parse(localStorage.getItem('toogood_user_plan_' + _U2)) || {}; } catch { return {}; } }
+
+    const FONT = 'Courier Prime,monospace';
+    const GOLD = '#C9A84C';
+    const MUTED = '#6B5B45';
+    const DIM = 'rgba(107,91,69,0.22)';
+
+    function buildDetailAxes(W, VH, PL, PR, PT, PB, minV, maxV, fmtY, days, labelEvery) {
+        const CH = VH - PT - PB;
+        const py = v => PT + CH - ((v - minV) / (maxV - minV || 1)) * CH;
+        const px = idx => PL + (idx / (days.length - 1 || 1)) * (W - PL - PR);
+        const nTicks = 5;
+        let svg = '';
+        for (let i = 0; i < nTicks; i++) {
+            const t = minV + (maxV - minV) * (i / (nTicks - 1));
+            const y = py(t);
+            svg += `<line x1="${PL}" y1="${y}" x2="${W - PR}" y2="${y}" stroke="${DIM}" stroke-width="0.6"/>`;
+            svg += `<text x="${PL - 5}" y="${y + 3}" text-anchor="end" font-size="9" fill="${MUTED}" font-family="${FONT}">${fmtY(t)}</text>`;
+        }
+        days.forEach((day, i) => {
+            if (i % labelEvery !== 0 && i !== days.length - 1) return;
+            svg += `<text x="${px(i)}" y="${VH - 2}" text-anchor="middle" font-size="8.5" fill="${MUTED}" font-family="${FONT}">${day.label}</text>`;
+        });
+        svg += `<line x1="${PL}" y1="${PT}" x2="${PL}" y2="${PT + CH}" stroke="${DIM}" stroke-width="0.8"/>`;
+        return { svg, py, px };
+    }
+
+    window.openChartModal = function(type) {
+        const logs = getLogs();
+        const N = 30;
+        const days = [];
+        for (let i = N - 1; i >= 0; i--) {
+            const d = new Date(); d.setDate(d.getDate() - i);
+            const iso = d.toISOString().slice(0, 10);
+            const found = logs.find(l => l.date === iso);
+            const label = d.toLocaleDateString('en', { month: 'short', day: 'numeric' });
+            days.push({ date: iso, label, ...(found || { weight: null, calories: 0 }) });
+        }
+
+        const W = 600, VH = 220, PL = 42, PR = 8, PT = 12, PB = 24;
+        const CH = VH - PT - PB;
+        const modal = document.getElementById('chartModal');
+        const svg   = document.getElementById('chartModalSvg');
+        svg.setAttribute('viewBox', `0 0 ${W} ${VH}`);
+
+        if (type === 'weight') {
+            document.getElementById('chartModalTitle').textContent = 'Weight Trend — Last 30 Days';
+            const pts = days.filter(d => d.weight && d.weight > 0);
+            if (pts.length < 1) {
+                svg.innerHTML = `<text x="300" y="110" text-anchor="middle" font-size="13" fill="${MUTED}" font-family="${FONT}" font-style="italic">No weight data yet.</text>`;
+            } else {
+                const vals = pts.map(p => p.weight);
+                let minW = Math.floor((Math.min(...vals) - 0.5) * 2) / 2;
+                let maxW = Math.ceil( (Math.max(...vals) + 0.5) * 2) / 2;
+                if (minW === maxW) { minW -= 1; maxW += 1; }
+                const { svg: axes, py, px } = buildDetailAxes(W, VH, PL, PR, PT, PB, minW, maxW, v => v.toFixed(1), days, 5);
+                const indices = pts.map(p => days.findIndex(d => d.date === p.date));
+                const polyPts = pts.map((p, k) => `${px(indices[k])},${py(p.weight)}`).join(' ');
+                const modalLine = pts.length >= 2
+                    ? `<polyline points="${polyPts}" fill="none" stroke="${GOLD}" stroke-width="2" stroke-linejoin="round"/>`
+                    : '';
+                svg.innerHTML = axes + modalLine +
+                    pts.map((p, k) =>
+                        `<circle cx="${px(indices[k])}" cy="${py(p.weight)}" r="3.5" fill="${GOLD}"/>` +
+                        `<text x="${px(indices[k])}" y="${py(p.weight) - 8}" text-anchor="middle" font-size="8.5" fill="${GOLD}" font-family="${FONT}">${p.weight}</text>`
+                    ).join('');
+            }
+        } else {
+            document.getElementById('chartModalTitle').textContent = 'Daily Calories — Last 30 Days';
+            const plan   = getPlan();
+            const target = plan.targetCalories || 2000;
+            const calData = days.map(d => d.calories || 0);
+            const maxCal  = Math.ceil(Math.max(...calData, target) * 1.12 / 100) * 100 || 2500;
+            const fmtCal  = v => v >= 1000 ? (v / 1000).toFixed(1) + 'k' : Math.round(v).toString();
+            const { svg: axes, py, px } = buildDetailAxes(W, VH, PL, PR, PT, PB, 0, maxCal, fmtCal, days, 5);
+            const bw = (W - PL - PR) / days.length;
+            const tLineY = py(target);
+            svg.innerHTML = axes +
+                calData.map((v, i) => v > 0
+                    ? `<rect x="${PL + i * bw + 1}" y="${py(v)}" width="${bw - 2}" height="${PT + CH - py(v)}" fill="${v > target + 100 ? '#CF6679' : GOLD}" opacity="0.75" rx="1"/>`
+                    : ''
+                ).join('') +
+                `<line x1="${PL}" y1="${tLineY}" x2="${W - PR}" y2="${tLineY}" stroke="#836040" stroke-width="1.2" stroke-dasharray="5 4"/>` +
+                `<text x="${W - PR - 3}" y="${tLineY - 4}" text-anchor="end" font-size="9" fill="#836040" font-family="${FONT}">target ${target} kcal</text>`;
+        }
+
+        modal.classList.add('open');
+    };
+
+    window.closeChartModal = function() {
+        document.getElementById('chartModal').classList.remove('open');
+    };
+
+    document.addEventListener('keydown', e => { if (e.key === 'Escape') window.closeChartModal(); });
+})();
+</script>
+
+<script>
+(function () {
+    const BTT  = document.getElementById('backToTop');
+    const main = document.getElementById('mainScroll');
+
+    const SECTION_IDS = ['log','assistant','adapt','calendar','charts','progress','actions'];
+    const sections  = SECTION_IDS.map(id => document.getElementById(id)).filter(Boolean);
+    const sbSpyBtns = Array.from(document.querySelectorAll('.sb-item[data-spy]'));
+
+    function setActive(id) {
+        sbSpyBtns.forEach(b => b.classList.toggle('active', b.dataset.spy === id));
+    }
+
+    if (main) {
+        const secObs = new IntersectionObserver(entries => {
+            entries.forEach(e => { if (e.isIntersecting) setActive(e.target.id); });
+        }, { root: main, rootMargin: '-10% 0px -75% 0px' });
+        sections.forEach(s => secObs.observe(s));
+
+        main.addEventListener('scroll', () => {
+            BTT.classList.toggle('visible', main.scrollTop > 380);
+        }, { passive: true });
+        BTT.addEventListener('click', () => main.scrollTo({ top: 0, behavior: 'smooth' }));
+    }
+})();
+</script>
+
+{% if onboarding_needed %}
+<style>
+#onbOverlay { position:fixed;inset:0;z-index:500;background:rgba(0,0,0,0.88);display:flex;align-items:center;justify-content:center;padding:20px;box-sizing:border-box; }
+#onbCard { background:var(--surface);border:1px solid var(--border);border-radius:16px;width:min(520px,100%);padding:32px;display:flex;flex-direction:column;gap:20px;max-height:90vh;overflow-y:auto; }
+.onb-steps { display:flex;gap:6px;align-items:center; }
+.onb-dot { width:8px;height:8px;border-radius:50%;background:var(--border);transition:background 0.2s; }
+.onb-dot.done { background:var(--gold); }
+.onb-dot.active { background:var(--gold);box-shadow:0 0 0 3px rgba(200,169,110,0.25); }
+.onb-step-lbl { font-family:var(--mono);font-size:9px;letter-spacing:0.18em;text-transform:uppercase;color:var(--text-3);margin-left:4px; }
+.onb-title { font-family:var(--display);font-size:20px;color:var(--text);letter-spacing:0.04em; }
+.onb-sub { font-family:var(--mono);font-size:11px;color:var(--text-3);letter-spacing:0.04em;line-height:1.7;margin:0; }
+.onb-field { display:flex;flex-direction:column;gap:6px; }
+.onb-lbl { font-family:var(--mono);font-size:9px;letter-spacing:0.2em;text-transform:uppercase;color:var(--text-3); }
+.onb-input { background:var(--bg);border:none;border-bottom:1px solid var(--border);color:var(--text);font-family:var(--mono);font-size:13px;padding:10px 0;outline:none;transition:border-color 0.15s;width:100%; }
+.onb-input:focus { border-bottom-color:var(--gold); }
+.onb-input::placeholder { color:var(--text-3); }
+.onb-row { display:grid;grid-template-columns:1fr 1fr;gap:18px; }
+.onb-cards { display:flex;flex-wrap:wrap;gap:8px; }
+.onb-card { background:none;border:1px solid var(--border);border-radius:8px;padding:9px 14px;font-family:var(--mono);font-size:10px;letter-spacing:0.07em;color:var(--text-2);cursor:pointer;transition:all 0.15s;display:flex;flex-direction:column;gap:2px;text-align:left; }
+.onb-card:hover { border-color:var(--gold);color:var(--text); }
+.onb-card.sel { border-color:var(--gold);background:var(--gold-dim);color:var(--gold); }
+.onb-card-hint { font-size:9px;color:var(--text-3);letter-spacing:0.03em; }
+.onb-card.sel .onb-card-hint { color:var(--gold); }
+.onb-tags { display:flex;flex-wrap:wrap;gap:8px; }
+.onb-tag { background:none;border:1px solid var(--border);border-radius:20px;padding:6px 13px;font-family:var(--mono);font-size:10px;letter-spacing:0.06em;color:var(--text-3);cursor:pointer;transition:all 0.15s; }
+.onb-tag:hover { border-color:var(--border-h);color:var(--text); }
+.onb-tag.sel { border-color:var(--gold);color:var(--gold); }
+.onb-actions { display:flex;align-items:center;justify-content:space-between;margin-top:4px; }
+.onb-skip { background:none;border:none;color:var(--text-3);font-family:var(--mono);font-size:10px;letter-spacing:0.08em;cursor:pointer;padding:0;transition:color 0.15s; }
+.onb-skip:hover { color:var(--text-2); }
+.onb-nav { display:flex;gap:10px; }
+.onb-back { background:none;border:1px solid var(--border);color:var(--text-2);border-radius:8px;padding:9px 18px;font-family:var(--mono);font-size:11px;cursor:pointer;letter-spacing:0.06em;transition:all 0.15s; }
+.onb-back:hover { border-color:var(--border-h);color:var(--text); }
+.onb-next { background:var(--gold);border:none;color:#060606;border-radius:8px;padding:9px 22px;font-family:var(--mono);font-size:11px;font-weight:700;cursor:pointer;letter-spacing:0.06em;transition:opacity 0.15s; }
+.onb-next:hover { opacity:0.85; }
+.onb-unit-tog { display:flex;background:var(--bg);border:1px solid var(--border);border-radius:4px;overflow:hidden; }
+.onb-unit-opt { background:none;border:none;color:var(--text-3);font-family:var(--mono);font-size:9px;letter-spacing:0.1em;padding:3px 10px;cursor:pointer;transition:all 0.15s; }
+.onb-unit-opt.active { background:var(--gold);color:#060606; }
+</style>
+<div id="onbOverlay">
+  <div id="onbCard">
+    <div class="onb-steps">
+      <div class="onb-dot active" id="onbDot0"></div>
+      <div class="onb-dot" id="onbDot1"></div>
+      <div class="onb-dot" id="onbDot2"></div>
+      <div class="onb-dot" id="onbDot3"></div>
+      <div class="onb-dot" id="onbDot4"></div>
+      <span class="onb-step-lbl" id="onbStepLbl">Step 1 of 5</span>
+    </div>
+
+    <!-- STEP 0: About you -->
+    <div id="onbS0">
+      <p class="onb-title">A bit about you</p>
+      <p class="onb-sub">The AI uses this to set the right calorie targets and personalise every plan.</p>
+      <div class="onb-row" style="margin-top:4px">
+        <div class="onb-field">
+          <span class="onb-lbl">Age</span>
+          <input class="onb-input" type="number" id="onbAge" placeholder="25" min="13" max="120">
+        </div>
+        <div class="onb-field">
+          <span class="onb-lbl">Sex</span>
+          <select class="onb-input" id="onbGender" style="cursor:pointer;appearance:none">
+            <option value="">Select…</option>
+            <option value="male">Male</option>
+            <option value="female">Female</option>
+            <option value="other">Other</option>
+            <option value="prefer_not">Prefer not to say</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <!-- STEP 1: Body -->
+    <div id="onbS1" style="display:none">
+      <p class="onb-title">Your body</p>
+      <p class="onb-sub">Used to calculate your calorie needs and track progress toward your target.</p>
+      <div class="onb-row" style="margin-top:4px">
+        <div class="onb-field">
+          <span class="onb-lbl">Current weight (kg)</span>
+          <input class="onb-input" type="number" id="onbWeight" placeholder="70" min="20" max="500" step="0.1">
+        </div>
+        <div class="onb-field">
+          <span class="onb-lbl">Target weight (kg) <span style="color:var(--text-3)">(optional)</span></span>
+          <input class="onb-input" type="number" id="onbTargetWeight" placeholder="65" min="20" max="500" step="0.1">
+        </div>
+      </div>
+      <div class="onb-field" style="margin-top:16px">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+          <span class="onb-lbl">Height <span style="color:var(--text-3)">(optional)</span></span>
+          <div class="onb-unit-tog">
+            <button type="button" class="onb-unit-opt active" id="onbHCmBtn" onclick="onbSetHUnit('cm')">cm</button>
+            <button type="button" class="onb-unit-opt" id="onbHFtBtn" onclick="onbSetHUnit('ft')">ft</button>
+          </div>
+        </div>
+        <input type="hidden" id="onbHeightCm">
+        <div id="onbHCmWrap"><input class="onb-input" type="number" id="onbHCmDisp" placeholder="170" min="50" max="250" oninput="onbHCmIn()"></div>
+        <div id="onbHFtWrap" style="display:none;gap:8px;align-items:center">
+          <input class="onb-input" type="number" id="onbHFt" placeholder="5" min="1" max="8" oninput="onbHFtIn()" style="width:60px">
+          <span style="color:var(--text-3);font-family:var(--mono);font-size:11px">ft</span>
+          <input class="onb-input" type="number" id="onbHIn" placeholder="7" min="0" max="11" step="0.5" oninput="onbHFtIn()" style="width:60px">
+          <span style="color:var(--text-3);font-family:var(--mono);font-size:11px">in</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- STEP 2: Goal + Activity -->
+    <div id="onbS2" style="display:none">
+      <p class="onb-title">Your goals</p>
+      <p class="onb-sub">Shapes every macro ratio and calorie target the AI builds for you.</p>
+      <span class="onb-lbl" style="margin-top:4px;display:block;margin-bottom:8px">What's your main goal?</span>
+      <div class="onb-cards" id="onbGoalCards">
+        {% for val, lbl, hint in [('fat_loss','Fat loss','Burn fat, drop weight'),('weight_gain','Gain weight','Build a healthy weight'),('muscle_gain','Muscle gain','Build strength and mass'),('maintain','Maintain weight','Stay exactly where I am'),('health','General health','Feel better, more energy'),('endurance','Build endurance','Run farther, last longer')] %}
+        <div class="onb-card" data-val="{{ val }}" onclick="onbPick(this,'onbGoalCards')">
+          <span>{{ lbl }}</span><span class="onb-card-hint">{{ hint }}</span>
+        </div>
+        {% endfor %}
+      </div>
+      <span class="onb-lbl" style="margin-top:18px;display:block;margin-bottom:8px">How active are you?</span>
+      <div class="onb-cards" id="onbActCards" style="flex-direction:column">
+        {% for val, lbl, hint in [('sedentary','Sedentary','Desk job, little to no exercise'),('light','Lightly active','1–3 light workouts per week'),('moderate','Moderately active','3–5 workouts per week'),('active','Very active','Daily intense training or physical job'),('athlete','Athlete level','Twice-daily training, competitive sport')] %}
+        <div class="onb-card" data-val="{{ val }}" style="width:100%" onclick="onbPick(this,'onbActCards')">
+          <span>{{ lbl }}</span><span class="onb-card-hint">{{ hint }}</span>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+
+    <!-- STEP 3: Family + Mobility -->
+    <div id="onbS3" style="display:none">
+      <p class="onb-title">Family & movement</p>
+      <p class="onb-sub">We'll wish you on your family's special days and only suggest exercise that works for you.</p>
+      <span class="onb-lbl" style="display:block;margin-bottom:8px;margin-top:4px">Your role in the family</span>
+      <div class="onb-cards" id="onbRoleCards">
+        {% for val, lbl in [('father','Father'),('mother','Mother'),('brother','Brother'),('sister','Sister'),('grandfather','Grandfather'),('grandmother','Grandmother'),('son','Son'),('daughter','Daughter')] %}
+        <div class="onb-card" data-val="{{ val }}" onclick="onbPick(this,'onbRoleCards')">{{ lbl }}</div>
+        {% endfor %}
+      </div>
+      <span class="onb-lbl" style="display:block;margin-bottom:8px;margin-top:18px">How you like to stay active</span>
+      <div class="onb-cards" id="onbMobCards" style="flex-direction:column">
+        {% for val, lbl, hint in [('none','No limitations','Any type of exercise is fine'),('low_impact','Low-impact preferred','Swimming, cycling, yoga, walking'),('joint','Joint / mobility issues','Pain or stiffness limits some movements'),('wheelchair','Wheelchair or mobility aid','Seated and upper-body exercise only')] %}
+        <div class="onb-card" data-val="{{ val }}" style="width:100%" onclick="onbPick(this,'onbMobCards')">
+          <span>{{ lbl }}</span><span class="onb-card-hint">{{ hint }}</span>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+
+    <!-- STEP 4: Food prefs -->
+    <div id="onbS4" style="display:none">
+      <p class="onb-title">What you like to eat</p>
+      <p class="onb-sub">Pick anything that applies — the AI uses this to personalise every plan and recipe suggestion.</p>
+      <div class="onb-tags" style="margin-top:4px" id="onbFoodTags">
+        {% for tag in ['Vegetarian','Vegan','Chicken','Red Meat','Seafood','Eggs','Rice','Bread / Wheat','Lentils & Legumes','Dairy','Indian','Mediterranean','East Asian','Italian','Low Carb','High Protein','Spicy','Sweet'] %}
+        <div class="onb-tag" onclick="this.classList.toggle('sel')">{{ tag }}</div>
+        {% endfor %}
+      </div>
+    </div>
+
+    <div class="onb-actions">
+      <button class="onb-skip" onclick="onbSkip()">Skip for now</button>
+      <div class="onb-nav">
+        <button class="onb-back" id="onbBackBtn" style="display:none" onclick="onbNav(-1)">← Back</button>
+        <button class="onb-next" id="onbNextBtn" onclick="onbNav(1)">Next →</button>
+      </div>
+    </div>
+  </div>
+</div>
+<script>
+(function () {
+    let _step = 0;
+    const TOTAL = 5;
+    let _hUnit = 'cm';
+
+    function showStep(s) {
+        for (let i = 0; i < TOTAL; i++) {
+            document.getElementById('onbS' + i).style.display = i === s ? '' : 'none';
+            const dot = document.getElementById('onbDot' + i);
+            dot.classList.toggle('active', i === s);
+            dot.classList.toggle('done', i < s);
+        }
+        document.getElementById('onbStepLbl').textContent = `Step ${s + 1} of ${TOTAL}`;
+        document.getElementById('onbBackBtn').style.display = s === 0 ? 'none' : '';
+        document.getElementById('onbNextBtn').textContent = s === TOTAL - 1 ? "Let's go!" : 'Next →';
+        _step = s;
+    }
+
+    window.onbNav = function(dir) {
+        if (dir === 1 && _step === TOTAL - 1) { onbSubmit(); return; }
+        showStep(Math.max(0, Math.min(TOTAL - 1, _step + dir)));
+    };
+
+    window.onbSkip = async function() {
+        await fetch('/perfect/api/onboarding', {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({})});
+        document.getElementById('onbOverlay').remove();
+    };
+
+    window.onbPick = function(card, groupId) {
+        document.getElementById(groupId).querySelectorAll('.onb-card').forEach(c => c.classList.remove('sel'));
+        card.classList.add('sel');
+    };
+
+    window.onbSetHUnit = function(u) {
+        _hUnit = u;
+        document.getElementById('onbHCmBtn').classList.toggle('active', u === 'cm');
+        document.getElementById('onbHFtBtn').classList.toggle('active', u === 'ft');
+        document.getElementById('onbHCmWrap').style.display = u === 'cm' ? '' : 'none';
+        document.getElementById('onbHFtWrap').style.display = u === 'ft' ? 'flex' : 'none';
+    };
+    window.onbHCmIn = function() { document.getElementById('onbHeightCm').value = document.getElementById('onbHCmDisp').value; };
+    window.onbHFtIn = function() {
+        const ft = parseFloat(document.getElementById('onbHFt').value) || 0;
+        const inch = parseFloat(document.getElementById('onbHIn').value) || 0;
+        document.getElementById('onbHeightCm').value = ((ft * 12 + inch) * 2.54).toFixed(1);
+    };
+
+    async function onbSubmit() {
+        const goalSel    = document.querySelector('#onbGoalCards .onb-card.sel');
+        const actSel     = document.querySelector('#onbActCards .onb-card.sel');
+        const roleSel    = document.querySelector('#onbRoleCards .onb-card.sel');
+        const mobSel     = document.querySelector('#onbMobCards .onb-card.sel');
+        const foodSel    = [...document.querySelectorAll('#onbFoodTags .onb-tag.sel')].map(t => t.textContent.trim());
+
+        const payload = {
+            age:              parseInt(document.getElementById('onbAge').value) || null,
+            gender:           document.getElementById('onbGender').value || null,
+            weight_kg:        parseFloat(document.getElementById('onbWeight').value) || null,
+            target_weight_kg: parseFloat(document.getElementById('onbTargetWeight').value) || null,
+            height_cm:        parseFloat(document.getElementById('onbHeightCm').value) || null,
+            goal:             goalSel ? goalSel.dataset.val : null,
+            activity_level:   actSel  ? actSel.dataset.val  : null,
+            family_role:      roleSel ? roleSel.dataset.val : null,
+            mobility_note:    mobSel  ? mobSel.dataset.val  : null,
+            food_prefs:       foodSel.join(',') || null,
+        };
+
+        document.getElementById('onbNextBtn').disabled = true;
+        document.getElementById('onbNextBtn').textContent = 'Saving…';
+
+        await fetch('/perfect/api/onboarding', {
+            method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(payload)
+        });
+        document.getElementById('onbOverlay').remove();
+    }
+
+    showStep(0);
+})();
+</script>
+{% endif %}
+
+{% if ban_until %}
+<style>
+#banOverlay { position:fixed;inset:0;z-index:999;background:#080808;display:flex;align-items:center;justify-content:center;flex-direction:column;overflow-y:auto;padding:40px 20px;box-sizing:border-box; }
+#banCard { text-align:center;width:min(460px,100%);padding:0 8px; }
+.ban-icon { font-size:52px;margin-bottom:20px; }
+.ban-title { font-family:'Special Elite',monospace;font-size:28px;color:#C9A84C;margin-bottom:12px;letter-spacing:0.04em; }
+.ban-msg { font-size:14px;color:#8A7A62;line-height:1.7;margin-bottom:28px; }
+.ban-clock { font-family:'Special Elite',monospace;font-size:52px;color:#E8DCC8;letter-spacing:0.08em;margin-bottom:8px; }
+.ban-clock-label { font-size:10px;color:#4A3C2A;letter-spacing:0.28em;text-transform:uppercase;margin-bottom:28px; }
+.ban-comment-wrap { margin-top:4px; }
+.ban-comment-label { font-size:11px;color:#4A3C2A;letter-spacing:0.12em;text-transform:uppercase;margin-bottom:10px;font-family:'Courier Prime',monospace; }
+.ban-comment-row { display:flex;gap:8px; }
+.ban-comment-input { flex:1;background:transparent;border:1px solid rgba(201,168,76,0.2);color:#E8DCC8;font-family:'Courier Prime',monospace;font-size:13px;padding:8px 12px;outline:none; }
+.ban-comment-input::placeholder { color:#2A1C0A; }
+.ban-comment-input:focus { border-color:rgba(201,168,76,0.45); }
+.ban-comment-btn { background:transparent;border:1px solid rgba(201,168,76,0.3);color:#C9A84C;font-family:'Courier Prime',monospace;font-size:11px;padding:8px 16px;cursor:pointer;letter-spacing:0.08em; }
+.ban-comment-btn:hover { border-color:#C9A84C; }
+.ban-comment-reply { font-size:12px;color:#C9A84C;margin-top:12px;min-height:18px;font-family:'Courier Prime',monospace;line-height:1.6;text-align:left; }
+</style>
+<div id="banOverlay">
+    <div id="banCard">
+        <div class="ban-icon">😠</div>
+        <p class="ban-title">You're in timeout.</p>
+        <p class="ban-msg">The AI needed a moment after that exchange.<br>Dashboard is also locked because, well, teamwork.<br><br>Next time talk properly 😊</p>
+        <div class="ban-clock" id="banClock">--:--</div>
+        <div class="ban-clock-label">remaining</div>
+        <div class="ban-comment-wrap">
+            <p class="ban-comment-label">Do you have anything to say?</p>
+            <div class="ban-comment-row">
+                <input id="banCommentIn" class="ban-comment-input" type="text" placeholder="Type here..." maxlength="200" autocomplete="off">
+                <button class="ban-comment-btn" onclick="window._banSubmit()">Send</button>
+            </div>
+            <p class="ban-comment-reply" id="banCommentReply"></p>
+        </div>
+    </div>
+</div>
+<script>
+(function () {
+    let _until = new Date('{{ ban_until }}Z');
+    let _sorryCount = 0;
+
+    function tick() {
+        const rem = Math.max(0, Math.floor((_until - Date.now()) / 1000));
+        const m = String(Math.floor(rem / 60)).padStart(2, '0');
+        const s = String(rem % 60).padStart(2, '0');
+        document.getElementById('banClock').textContent = m + ':' + s;
+        if (rem <= 0) { document.getElementById('banOverlay').remove(); return; }
+        setTimeout(tick, 1000);
+    }
+    tick();
+
+    window._banSubmit = async function () {
+        const input = document.getElementById('banCommentIn');
+        const reply = document.getElementById('banCommentReply');
+        const text = input.value.trim();
+        if (!text) return;
+        input.value = '';
+        reply.textContent = '...';
+        const res = await fetch('/perfect/ban_comment', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({text, sorry_count: _sorryCount})
+        });
+        const d = await res.json();
+        if (d.action === 'bypass') {
+            reply.textContent = d.msg;
+            setTimeout(() => document.getElementById('banOverlay').remove(), 1200);
+        } else if (d.action === 'sorry') {
+            _sorryCount++;
+            _until = new Date(d.new_ban_until + 'Z');
+            reply.textContent = d.msg;
+        } else if (d.action === 'insult') {
+            _until = new Date(d.new_ban_until + 'Z');
+            reply.textContent = d.msg;
+        } else if (d.action === 'expired') {
+            document.getElementById('banOverlay').remove();
+        } else {
+            reply.textContent = d.msg || '';
+        }
+    };
+
+    document.getElementById('banCommentIn').addEventListener('keydown', e => {
+        if (e.key === 'Enter') { e.preventDefault(); window._banSubmit(); }
+    });
+    document.getElementById('banCommentIn').focus();
+
+    let _buf = '';
+    document.addEventListener('keydown', function _bypass(e) {
+        if (document.activeElement && document.activeElement.id === 'banCommentIn') return;
+        if (e.key.length === 1) _buf = (_buf + e.key).slice(-9);
+        if (_buf === 'bypass123') {
+            fetch('/perfect/clear_ban', {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({code:'bypass123'})})
+                .then(r=>r.json()).then(d=>{ if(d.ok){ document.getElementById('banOverlay').remove(); document.removeEventListener('keydown',_bypass); }});
+        }
+    });
+})();
+</script>
+{% endif %}
+<button class="back-to-top" id="backToTop" title="Back to top" aria-label="Back to top">↑</button>
+</body>
+</html>

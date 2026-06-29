@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Coach — Too Good</title>
+<script>(function(){
+    var r = document.documentElement;
+    if (localStorage.getItem('tg_mode') === 'light') r.classList.add('light-mode');
+    var sw = localStorage.getItem('tg_sw');
+    if (sw) r.style.setProperty('--sw', {narrow:'220px',normal:'260px',wide:'320px'}[sw] || '220px');
+})();</script>
+<style>
+:root {
+    --bg:#0A0A0A; --sidebar:#080808; --surface:#111111; --elevated:#181818;
+    --border:rgba(201,168,76,.12); --border-h:rgba(201,168,76,.38);
+    --gold:#C9A84C; --gold-dim:rgba(201,168,76,.07); --gold-glow:rgba(201,168,76,.22);
+    --text:#E8DCC8; --text-2:#8A7A62; --text-3:#4A3C2A;
+    --mono:'JetBrains Mono','Courier Prime',monospace;
+    --display:'Playfair Display','Special Elite',serif;
+    --sw:220px;
+}
+html.light-mode {
+    --bg:#F5F0E8; --sidebar:#EDE8DF; --surface:#FFFFFF; --elevated:#F0EBE1;
+    --border:rgba(100,80,40,.14); --border-h:rgba(100,80,40,.36);
+    --gold:#8B6914; --gold-dim:rgba(139,105,20,.06); --gold-glow:rgba(139,105,20,.18);
+    --text:#1A1208; --text-2:#6B5A3E; --text-3:#9A8A72;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body { background:var(--bg); color:var(--text); font-family:var(--mono); display:flex; min-height:100vh; overflow:hidden; }
+
+.main { margin-left:var(--sw); flex:1; display:flex; flex-direction:column; height:100vh; position:relative; overflow:hidden; }
+
+/* ── Top bar with mute ─────────────────────────────────────────── */
+.coach-topbar {
+    position:absolute; top:14px; right:20px; z-index:3;
+    display:flex; align-items:center; gap:8px;
+}
+.coach-mute-btn {
+    background:none; border:1px solid var(--border); color:var(--text-3);
+    padding:6px 10px; cursor:pointer; display:flex; align-items:center; gap:6px;
+    font-family:var(--mono); font-size:11px; letter-spacing:.08em;
+    transition:all .15s;
+}
+.coach-mute-btn:hover { border-color:var(--border-h); color:var(--text-2); }
+.coach-mute-btn.muted { border-color:rgba(207,102,121,.4); color:#CF6679; }
+
+/* ── Chat area ─────────────────────────────────────────────────── */
+.coach-chat {
+    flex:1; overflow-y:auto; padding:52px 48px 12px;
+    z-index:1; position:relative; display:flex; flex-direction:column; gap:12px;
+}
+.coach-chat::-webkit-scrollbar { width:2px; }
+.coach-chat::-webkit-scrollbar-thumb { background:var(--border-h); }
+
+.chat-empty { flex:1; display:flex; align-items:flex-start; padding-top:16px; }
+.chat-empty-label { font-size:11px; color:var(--text-3); letter-spacing:.2em; text-transform:uppercase; }
+
+.bubble { max-width:60%; padding:11px 15px; line-height:1.7; font-size:13.5px; letter-spacing:.02em; animation:fadeUp .22s ease both; }
+.bubble-user { align-self:flex-end; background:var(--gold-dim); border:1px solid rgba(201,168,76,.2); color:var(--text); margin-left:auto; }
+.bubble-coach { align-self:flex-start; background:var(--surface); border:1px solid var(--border); color:var(--text); position:relative; }
+.bubble-label { font-size:9px; color:var(--gold); letter-spacing:.24em; text-transform:uppercase; margin-bottom:6px; }
+@keyframes fadeUp { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
+
+/* speak-again button on each coach bubble */
+.bubble-speak { position:absolute; top:8px; right:8px; background:none; border:none; color:var(--text-3); cursor:pointer; opacity:0; padding:2px; transition:opacity .15s,color .15s; }
+.bubble-coach:hover .bubble-speak { opacity:1; }
+.bubble-speak:hover,.bubble-speak.active { color:var(--gold); opacity:1; }
+
+/* ── Bottom panel ──────────────────────────────────────────────── */
+.coach-bottom { flex-shrink:0; z-index:2; display:flex; flex-direction:column; align-items:center; padding:12px 32px 24px; gap:8px; }
+
+.coach-speak-label { font-family:var(--display); font-size:26px; color:var(--text); letter-spacing:.04em; text-align:center; transition:opacity .3s; }
+.coach-speak-label.dimmed { opacity:.3; }
+
+.coach-transcript { min-height:16px; font-size:12px; color:var(--gold); letter-spacing:.03em; text-align:center; font-style:italic; opacity:0; transition:opacity .2s; max-width:520px; }
+.coach-transcript.visible { opacity:1; }
+
+.coach-mic-wrap { position:relative; display:flex; align-items:center; justify-content:center; margin:4px 0; }
+.coach-pulse { position:absolute; border-radius:50%; border:1.5px solid var(--gold); opacity:0; width:80px; height:80px; pointer-events:none; }
+.coach-pulse.ring1 { animation:pulse-ring 2s ease-out infinite; }
+.coach-pulse.ring2 { animation:pulse-ring 2s ease-out .72s infinite; }
+@keyframes pulse-ring { 0%{opacity:.55;transform:scale(1)} 100%{opacity:0;transform:scale(2.5)} }
+
+.coach-mic-btn {
+    width:80px; height:80px; border-radius:50%; background:var(--surface);
+    border:2px solid var(--border-h); color:var(--text-2); cursor:pointer;
+    display:flex; align-items:center; justify-content:center;
+    transition:all .2s; z-index:1; position:relative; flex-shrink:0;
+}
+.coach-mic-btn:hover { border-color:var(--gold); color:var(--gold); background:var(--gold-dim); }
+.coach-mic-btn.listening { border-color:var(--gold); color:var(--gold); background:var(--gold-dim); box-shadow:0 0 0 5px var(--gold-glow); }
+.coach-mic-btn.thinking { border-color:var(--border-h); color:var(--text-3); cursor:default; }
+.coach-mic-btn.thinking .spin-icon { animation:spin .8s linear infinite; }
+@keyframes spin { to{transform:rotate(360deg)} }
+
+.coach-nospeech { font-size:11px; color:var(--text-3); letter-spacing:.1em; text-align:center; }
+
+.coach-type-toggle { background:none; border:none; color:var(--text-3); font-family:var(--mono); font-size:12px; letter-spacing:.1em; cursor:pointer; transition:color .15s; display:flex; align-items:center; gap:5px; padding:4px 8px; }
+.coach-type-toggle:hover { color:var(--text-2); }
+.toggle-arrow { transition:transform .2s; display:inline-block; }
+.coach-type-toggle.open .toggle-arrow { transform:rotate(180deg); }
+
+.coach-type-area { width:100%; max-width:560px; display:flex; gap:8px; animation:fadeUp .18s ease both; }
+.coach-input { flex:1; background:var(--surface); border:1px solid var(--border); color:var(--text); font-family:var(--mono); font-size:13px; padding:11px 14px; outline:none; transition:border-color .15s; letter-spacing:.02em; }
+.coach-input:focus { border-color:var(--border-h); }
+.coach-input::placeholder { color:var(--text-3); }
+.coach-send-btn { background:var(--gold-dim); border:1px solid rgba(201,168,76,.3); color:var(--gold); padding:0 18px; cursor:pointer; transition:all .15s; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+.coach-send-btn:hover { background:rgba(201,168,76,.14); border-color:var(--gold); }
+
+.thinking-dots span { display:inline-block; animation:blink 1.2s infinite; }
+.thinking-dots span:nth-child(2) { animation-delay:.2s; }
+.thinking-dots span:nth-child(3) { animation-delay:.4s; }
+@keyframes blink { 0%,80%,100%{opacity:.2} 40%{opacity:1} }
+</style>
+</head>
+<body>
+
+{% include 'perfect/_sidebar.html' %}
+
+<main class="main">
+
+    <!-- Mute button -->
+    <div class="coach-topbar">
+        <button class="coach-mute-btn" id="coachMuteBtn" onclick="toggleMute()">
+            <svg id="muteIconOn" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
+                <path d="M19.07 4.93a10 10 0 0 1 0 14.14"/>
+                <path d="M15.54 8.46a5 5 0 0 1 0 7.07"/>
+            </svg>
+            <svg id="muteIconOff" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="display:none">
+                <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
+                <line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/>
+            </svg>
+            <span id="muteBtnLabel">Voice on</span>
+        </button>
+    </div>
+
+    <!-- Chat messages -->
+    <div class="coach-chat" id="coachChat">
+        <div class="chat-empty" id="chatEmpty">
+            <span class="chat-empty-label">Your session starts when you speak</span>
+        </div>
+    </div>
+
+    <!-- Bottom interaction panel -->
+    <div class="coach-bottom">
+        <p class="coach-speak-label" id="coachSpeakLabel">Speak your mind</p>
+        <div class="coach-transcript" id="coachTranscript"></div>
+
+        <div class="coach-mic-wrap">
+            <div class="coach-pulse" id="coachPulse1"></div>
+            <div class="coach-pulse" id="coachPulse2"></div>
+            <button class="coach-mic-btn" id="coachMicBtn" onclick="toggleMic()" title="Tap to speak">
+                <svg id="iconMic" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
+                    <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
+                    <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+                    <line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/>
+                </svg>
+                <svg id="iconStop" width="22" height="22" viewBox="0 0 24 24" fill="currentColor" stroke="none" style="display:none">
+                    <rect x="5" y="5" width="14" height="14" rx="2"/>
+                </svg>
+                <svg id="iconSpin" class="spin-icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" style="display:none">
+                    <path d="M21 12a9 9 0 1 1-9-9"/>
+                </svg>
+            </button>
+        </div>
+
+        <div id="coachNoSpeech" class="coach-nospeech" style="display:none">
+            Voice input not supported in this browser — use the text field below
+        </div>
+
+        <button class="coach-type-toggle" id="coachTypeToggle" onclick="toggleTypeMode()">
+            or type <span class="toggle-arrow">▾</span>
+        </button>
+
+        <div class="coach-type-area" id="coachTypeArea" style="display:none">
+            <input class="coach-input" id="coachInput" placeholder="Ask your coach…" maxlength="600"
+                   onkeydown="if(event.key==='Enter'){event.preventDefault();sendCoachMessage();}">
+            <button class="coach-send-btn" onclick="sendCoachMessage()">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round">
+                    <line x1="22" y1="2" x2="11" y2="13"/>
+                    <polygon points="22 2 15 22 11 13 2 9 22 2" fill="currentColor" stroke="none"/>
+                </svg>
+            </button>
+        </div>
+    </div>
+</main>
+
+<script>
+(function() {
+    const USERNAME    = {{ username | tojson }};
+    const HIST_KEY    = 'tg_coach_hist_' + USERNAME;
+    const MAX_DISPLAY = 30;
+    const MAX_STORE   = 24;
+
+    let coachHistory = [];
+    let micState     = 'idle';
+    let typeOpen     = false;
+    let recognition  = null;
+    let isMuted      = false;
+    let _bestVoice   = null;
+
+    const chatEl       = document.getElementById('coachChat');
+    const emptyEl      = document.getElementById('chatEmpty');
+    const transcriptEl = document.getElementById('coachTranscript');
+    const speakLabel   = document.getElementById('coachSpeakLabel');
+    const micBtn       = document.getElementById('coachMicBtn');
+    const pulse1       = document.getElementById('coachPulse1');
+    const pulse2       = document.getElementById('coachPulse2');
+    const iconMic      = document.getElementById('iconMic');
+    const iconStop     = document.getElementById('iconStop');
+    const iconSpin     = document.getElementById('iconSpin');
+    const noSpeechEl   = document.getElementById('coachNoSpeech');
+
+    // ── Persisted history ──────────────────────────────────────────
+    (function loadHistory() {
+        try {
+            const stored = JSON.parse(localStorage.getItem(HIST_KEY) || '[]');
+            if (stored.length) {
+                coachHistory = stored;
+                if (emptyEl && emptyEl.parentNode) emptyEl.remove();
+                coachHistory.slice(-MAX_DISPLAY).forEach(function(h) { _appendBubble(h.role, h.text, false); });
+                chatEl.scrollTop = chatEl.scrollHeight;
+            }
+        } catch(e) { coachHistory = []; }
+    })();
+
+    function saveHistory() {
+        try { localStorage.setItem(HIST_KEY, JSON.stringify(coachHistory.slice(-MAX_STORE))); } catch(e) {}
+    }
+
+    // ── Voice (reads user preference from Settings, falls back to best auto) ──
+    function _pickVoice(voices) {
+        var saved = localStorage.getItem('tg_coach_voice');
+        if (saved) {
+            var match = voices.find(function(v) { return v.name === saved; });
+            if (match) return match;
+        }
+        // Auto-select: prefer Indian English (pronounces Indian names correctly)
+        var want = [
+            'Google हिन्दी',
+            'Google English (India)',
+            'Microsoft Heera',           // Windows en-IN female
+            'Microsoft Ravi',            // Windows en-IN male
+            'Microsoft David Desktop - English (United States)',
+            'Microsoft David Desktop',
+            'Microsoft David',
+            'Microsoft Mark Desktop - English (United States)',
+            'Microsoft Mark',
+            'Google UK English Male',
+            'Daniel',
+            'Alex',
+        ];
+        for (var i = 0; i < want.length; i++) {
+            var v = voices.find(function(v) { return v.name === want[i]; });
+            if (v) return v;
+        }
+        return voices.find(function(v) {
+            return v.lang.startsWith('en') && /david|mark|daniel|alex|james|george|male/i.test(v.name);
+        }) || voices.find(function(v) { return v.lang.startsWith('en'); }) || null;
+    }
+
+    if (window.speechSynthesis) {
+        var _tryLoad = function() {
+            var v = window.speechSynthesis.getVoices();
+            if (v.length) { _bestVoice = _pickVoice(v); }
+        };
+        _tryLoad();
+        window.speechSynthesis.onvoiceschanged = function() { _tryLoad(); };
+        setTimeout(_tryLoad, 500);
+    }
+
+    function _speak(text) {
+        if (!window.speechSynthesis || isMuted) return null;
+        window.speechSynthesis.cancel();
+        var utt = new SpeechSynthesisUtterance(text);
+        if (_bestVoice) utt.voice = _bestVoice;
+        utt.rate   = parseFloat(localStorage.getItem('tg_coach_rate')  || '0.92');
+        utt.pitch  = parseFloat(localStorage.getItem('tg_coach_pitch') || '0.72');
+        utt.volume = 1.0;
+        window.speechSynthesis.speak(utt);
+        return utt;
+    }
+
+    // ── Mute toggle ────────────────────────────────────────────────
+    window.toggleMute = function() {
+        isMuted = !isMuted;
+        var btn   = document.getElementById('coachMuteBtn');
+        var label = document.getElementById('muteBtnLabel');
+        var on    = document.getElementById('muteIconOn');
+        var off   = document.getElementById('muteIconOff');
+        btn.classList.toggle('muted', isMuted);
+        label.textContent    = isMuted ? 'Voice off' : 'Voice on';
+        on.style.display     = isMuted ? 'none' : '';
+        off.style.display    = isMuted ? '' : 'none';
+        if (isMuted && window.speechSynthesis) window.speechSynthesis.cancel();
+    };
+
+    // ── Speech recognition ─────────────────────────────────────────
+    const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SR) {
+        noSpeechEl.style.display = 'block';
+        micBtn.style.display     = 'none';
+        pulse1.style.display     = 'none';
+        pulse2.style.display     = 'none';
+        _openTypeMode();
+    } else {
+        recognition = new SR();
+        recognition.continuous     = false;
+        recognition.interimResults = true;
+        recognition.lang           = 'en-US';
+
+        recognition.onresult = function(e) {
+            var interim = '', final = '';
+            for (var i = e.resultIndex; i < e.results.length; i++) {
+                var t = e.results[i][0].transcript;
+                if (e.results[i].isFinal) final += t; else interim += t;
+            }
+            _showTranscript(final || interim);
+            if (final) { recognition.stop(); _submit(final.trim()); }
+        };
+
+        recognition.onerror = function(e) {
+            _setIdle();
+            if (e.error !== 'no-speech' && e.error !== 'aborted') {
+                _showTranscript('Could not hear — try again');
+                setTimeout(_hideTranscript, 2200);
+            }
+        };
+
+        recognition.onend = function() { if (micState === 'listening') _setIdle(); };
+    }
+
+    // ── Mic state ──────────────────────────────────────────────────
+    window.toggleMic = function() {
+        if (micState === 'thinking') return;
+        if (micState === 'listening') { recognition.stop(); _setIdle(); }
+        else { try { recognition.start(); _setListening(); } catch(e) { _setIdle(); } }
+    };
+
+    function _setIdle() {
+        micState = 'idle';
+        micBtn.classList.remove('listening', 'thinking');
+        iconMic.style.display = ''; iconStop.style.display = 'none'; iconSpin.style.display = 'none';
+        pulse1.classList.remove('ring1'); pulse2.classList.remove('ring2');
+        speakLabel.classList.remove('dimmed');
+        speakLabel.textContent = 'Speak your mind';
+        _hideTranscript();
+    }
+    function _setListening() {
+        micState = 'listening';
+        micBtn.classList.add('listening'); micBtn.classList.remove('thinking');
+        iconMic.style.display = 'none'; iconStop.style.display = ''; iconSpin.style.display = 'none';
+        pulse1.classList.add('ring1'); pulse2.classList.add('ring2');
+        speakLabel.classList.add('dimmed');
+        speakLabel.textContent = 'Listening…';
+    }
+    function _setThinking() {
+        micState = 'thinking';
+        micBtn.classList.add('thinking'); micBtn.classList.remove('listening');
+        iconMic.style.display = 'none'; iconStop.style.display = 'none'; iconSpin.style.display = '';
+        pulse1.classList.remove('ring1'); pulse2.classList.remove('ring2');
+        speakLabel.classList.add('dimmed');
+        speakLabel.textContent = 'Coach is thinking…';
+        _hideTranscript();
+    }
+    function _showTranscript(t) { transcriptEl.textContent = t; transcriptEl.classList.add('visible'); }
+    function _hideTranscript() { transcriptEl.classList.remove('visible'); transcriptEl.textContent = ''; }
+
+    // ── Type mode ──────────────────────────────────────────────────
+    window.toggleTypeMode = function() {
+        typeOpen = !typeOpen;
+        document.getElementById('coachTypeArea').style.display = typeOpen ? 'flex' : 'none';
+        document.getElementById('coachTypeToggle').classList.toggle('open', typeOpen);
+        if (typeOpen) document.getElementById('coachInput').focus();
+    };
+    function _openTypeMode() {
+        typeOpen = true;
+        document.getElementById('coachTypeArea').style.display = 'flex';
+        document.getElementById('coachTypeToggle').classList.add('open');
+    }
+    window.sendCoachMessage = function() {
+        var inp = document.getElementById('coachInput');
+        var text = (inp.value || '').trim();
+        if (!text) return;
+        inp.value = '';
+        _submit(text);
+    };
+
+    // ── Submit ─────────────────────────────────────────────────────
+    function _submit(text) {
+        if (!text) return;
+        if (emptyEl && emptyEl.parentNode) emptyEl.remove();
+
+        _appendBubble('user', text, true);
+        coachHistory.push({ role: 'user', text: text });
+        if (micState === 'listening') try { recognition.stop(); } catch(e) {}
+        _setThinking();
+
+        var thinkBubble = _appendThinkingBubble();
+        if (window.speechSynthesis) window.speechSynthesis.cancel();
+
+        fetch('/perfect/api/coach-chat', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ message: text, history: coachHistory.slice(-16) })
+        })
+        .then(function(r) { return r.json(); })
+        .then(function(d) {
+            thinkBubble.remove();
+            _setIdle();
+            var reply = (d.ok && d.reply) ? d.reply : 'Something went wrong — try again.';
+            _appendBubble('coach', reply, true);
+            coachHistory.push({ role: 'coach', text: reply });
+            saveHistory();
+            _speak(reply);
+        })
+        .catch(function() {
+            thinkBubble.remove();
+            _setIdle();
+            _appendBubble('coach', 'Connection issue — check your network.', true);
+        });
+    }
+
+    // ── Bubble helpers ─────────────────────────────────────────────
+    function _appendBubble(role, text, animated) {
+        var div = document.createElement('div');
+        div.className = 'bubble ' + (role === 'user' ? 'bubble-user' : 'bubble-coach');
+        if (!animated) div.style.animation = 'none';
+
+        if (role === 'coach') {
+            var label = document.createElement('div');
+            label.className = 'bubble-label';
+            label.textContent = 'COACH';
+
+            var body = document.createElement('div');
+            body.textContent = text;
+            body.style.paddingRight = '20px';
+
+            var speakBtn = document.createElement('button');
+            speakBtn.className = 'bubble-speak';
+            speakBtn.title = 'Replay voice';
+            speakBtn.innerHTML = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>';
+            speakBtn.onclick = function() {
+                document.querySelectorAll('.bubble-speak.active').forEach(function(b) { b.classList.remove('active'); });
+                speakBtn.classList.add('active');
+                var utt = _speak(text);
+                if (utt) utt.onend = function() { speakBtn.classList.remove('active'); };
+            };
+
+            div.appendChild(label);
+            div.appendChild(body);
+            div.appendChild(speakBtn);
+        } else {
+            div.textContent = text;
+        }
+
+        chatEl.appendChild(div);
+        chatEl.scrollTop = chatEl.scrollHeight;
+        return div;
+    }
+
+    function _appendThinkingBubble() {
+        var div = document.createElement('div');
+        div.className = 'bubble bubble-coach';
+        div.innerHTML = '<div class="bubble-label">COACH</div><div class="thinking-dots"><span>●</span><span>●</span><span>●</span></div>';
+        chatEl.appendChild(div);
+        chatEl.scrollTop = chatEl.scrollHeight;
+        return div;
+    }
+})();
+</script>
+</body>
+</html>

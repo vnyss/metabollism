@@ -1,0 +1,38 @@
+# Environment and secrets — never upload these
+.env
+*.pem
+cert.pem
+key.pem
+
+# Database — each deployment gets its own fresh DB
+*.db
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+venv/
+.venv/
+*.egg-info/
+python/
+
+# Node
+node_modules/
+npm-debug.log
+yarn-error.log
+
+# Expo / React Native
+.expo/
+.gradle/
+**/.gradle/
+**/build/
+**/.idea/
+*.keystore
+
+# Claude local settings (contains machine-specific config)
+.claude/
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini

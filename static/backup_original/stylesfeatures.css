@@ -1,0 +1,182 @@
+/* ===========================
+   NAVBAR
+=========================== */
+.custom-navbar {
+    background: #0A0A0A;
+    border-bottom: 1px solid rgba(255, 255, 255, .45);
+}
+.custom-navbar .nav-link,
+.custom-navbar .navbar-brand {
+    font-family: "Jim Nightshade", monospace;
+    color: #67C090 !important;
+    text-shadow: 0 0 .4px rgba(255, 255, 255, .7);
+    letter-spacing: 1px;
+    transition: .25s;
+    font-size: 25px;
+}
+.custom-navbar .active-page {
+    color: #67C090 !important;
+    background: rgba(220, 220, 220, .12);
+    border-radius: 10px;
+    padding: 8px 16px;
+    box-shadow: 0 0 10px rgba(255, 255, 255, .05);
+}
+.custom-navbar .nav-link:hover {
+    color: #8FD4AC !important;
+    background: rgba(255, 255, 255, .05);
+    border-radius: 10px;
+}
+.custom-navbar .navbar-brand img {
+    filter: drop-shadow(0 0 .9px rgba(255, 255, 255, .8));
+}
+body {
+    background: black;
+}
+
+/* ===========================
+   HERO (bg-body-tertiary)
+=========================== */
+.bg-body-tertiary {
+    background: #080808 !important;
+    border: 1px solid #67C090;
+    border-radius: 18px;
+    color: white;
+    margin: 76px auto 0 auto;
+    width: 90%;
+    max-width: 1400px;
+    min-height: calc(100vh - 100px);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    box-sizing: border-box;
+}
+.bg-body-tertiary h1 {
+    font-size: 100px;
+    color: #67C090;
+    font-family: "Jim Nightshade", monospace;
+}
+.bg-body-tertiary p {
+    margin-top: 20px;
+    color: #A8A8A8;
+    font-family: "Jim Nightshade", monospace;
+    font-size: 35px !important;
+}
+
+/* ===========================
+   FEATURE JUMBOTRON (Track your Health)
+=========================== */
+.feature-jumbotron {
+    background: #080808 !important;
+    border: 1px solid #67C090;
+    border-radius: 18px;
+    color: white;
+    margin: 40px auto 0 auto;
+    width: 90%;
+    max-width: 1400px;
+    box-sizing: border-box;
+}
+.feature-jumbotron h1 {
+    font-size: 100px;
+    color: #67C090;
+    font-family: "Jim Nightshade", monospace;
+}
+.feature-jumbotron p {
+    margin-top: 20px;
+    color: #A8A8A8;
+    font-family: "Jim Nightshade", monospace;
+    font-size: 40px !important;
+}
+
+/* ===========================
+   AI ASSISTANT CARD
+=========================== */
+.ai-card {
+    background: #080808 !important;
+    border: 1px solid #67C090;
+    border-radius: 18px;
+    color: white;
+}
+.ai-card h2 {
+    color: #67C090;
+    font-family: "Jim Nightshade", monospace;
+    font-size: 80px;
+}
+.ai-card p {
+    color: #A8A8A8;
+    font-family: "Jim Nightshade", monospace;
+    font-size: 35px !important;
+}
+
+/* ===========================
+   NO ERRORS CARD
+=========================== */
+.error-card {
+    background: #080808 !important;
+    border: 1px solid #67C090;
+    border-radius: 18px;
+    color: #67C090;
+
+}
+.error-card h2 {
+    color: #67C090;
+    font-family: "Jim Nightshade", monospace;
+    font-size: 80px;
+}
+.error-card p {
+    color: #A8A8A8;
+    font-family: "Jim Nightshade", monospace;
+    font-size: 35px !important;
+}
+/* ===========================
+   PRIMARY BUTTON
+=========================== */
+.btn-primary {
+    margin-top: 20px;
+    background: #67C090 !important;
+    border: 1px solid #1a1a1a !important;
+    color: #2E2E2E !important;
+    font-family: "Jim Nightshade", monospace;
+    font-size: 35px !important;
+}
+.btn-primary:hover {
+    background: #8FD4AC !important;
+}
+
+/* ===========================
+   SECONDARY BUTTON
+=========================== */
+.btn-outline-secondary {
+    margin-top: 20px;
+    background: #67C090 !important;
+    border: 1px solid #1a1a1a !important;
+    color: #2E2E2E !important;
+    font-family: "Jim Nightshade", monospace;
+    font-size: 35px;
+}
+.btn-outline-secondary:hover {
+    background: #8FD4AC !important;
+}
+
+/* ===========================
+   OUTLINE LIGHT BUTTON (AI card)
+=========================== */
+.btn-outline-light {
+    margin-top: 40px !important;
+    background: #67C090 !important;
+    border: 1px solid #1a1a1a !important;
+    color: #2E2E2E !important;
+    font-family: "Jim Nightshade", monospace;
+    font-size: 35px;
+}
+.btn-outline-light:hover {
+    background: #8FD4AC !important;
+}/* ===========================
+   SHARED ROW WIDTH ALIGNMENT
+=========================== */
+.feature-jumbotron,
+.row.align-items-md-stretch {
+    width: 90%;
+    max-width: 1400px;
+    margin: 40px auto 0 auto;
+    box-sizing: border-box;
+}

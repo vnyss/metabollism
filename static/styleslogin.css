@@ -1,0 +1,326 @@
+/* ============================================================
+   METABOLISM — Login (Black & Gold / Old Money)
+   ============================================================ */
+
+:root {
+    --bg:           #080808;
+    --surface:      #0F0F0F;
+    --elevated:     #161616;
+    --border:       rgba(201, 168, 76, 0.18);
+    --border-h:     rgba(201, 168, 76, 0.42);
+    --border-input: rgba(201, 168, 76, 0.22);
+    --gold:         #C9A84C;
+    --gold-h:       #DFC070;
+    --text:         #E8DCC8;
+    --text-2:       #8A7A62;
+    --text-3:       #50422E;
+    --mono:         'Courier Prime', 'Courier New', monospace;
+    --display:      'Special Elite', 'Courier New', monospace;
+}
+
+body {
+    background: var(--bg);
+    font-family: var(--mono);
+    color: var(--text);
+    -webkit-font-smoothing: antialiased;
+}
+
+/* ── Navbar ─────────────────────────────────────────────── */
+.custom-navbar {
+    background: #080808;
+    border-bottom: 1px solid var(--border);
+    padding: 0 32px;
+}
+
+.custom-navbar .navbar-brand img {
+    opacity: 0.85;
+    filter: sepia(0.3) saturate(1.5) hue-rotate(5deg);
+    transition: opacity 0.2s;
+}
+.custom-navbar .navbar-brand:hover img { opacity: 1; }
+
+.custom-navbar .nav-link,
+.custom-navbar .navbar-brand {
+    font-family: var(--mono) !important;
+    font-size: 13px !important;
+    font-weight: 400 !important;
+    color: var(--text-2) !important;
+    letter-spacing: 0.08em !important;
+    text-shadow: none !important;
+    text-transform: uppercase;
+    transition: color 0.2s;
+}
+
+.custom-navbar .nav-link:hover {
+    color: var(--gold) !important;
+    background: transparent !important;
+}
+
+.custom-navbar .active-page {
+    color: var(--gold) !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    border-bottom: 1px solid var(--gold);
+}
+
+.custom-navbar ul.navbar-nav:last-child .nav-item:last-child .nav-link {
+    background: var(--gold) !important;
+    color: #080808 !important;
+    font-weight: 700 !important;
+    border-radius: 2px !important;
+    padding: 6px 16px !important;
+    letter-spacing: 0.1em !important;
+}
+.custom-navbar ul.navbar-nav:last-child .nav-item:last-child .nav-link:hover {
+    background: var(--gold-h) !important;
+}
+
+/* ── Auth Layout ────────────────────────────────────────── */
+.auth-page {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 100px 20px 60px;
+}
+
+/* ── Auth Card ──────────────────────────────────────────── */
+.auth-card {
+    width: 100%;
+    max-width: 420px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 0;
+    padding: 44px 40px;
+    position: relative;
+}
+
+.auth-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0;
+    width: 40px;
+    height: 2px;
+    background: var(--gold);
+}
+
+/* ── Typography ─────────────────────────────────────────── */
+.auth-tag {
+    font-family: var(--mono);
+    color: var(--text-3);
+    font-size: 11px;
+    font-weight: 400;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    margin: 0 0 16px;
+}
+
+.auth-title {
+    font-family: var(--display);
+    color: var(--text);
+    font-size: 30px;
+    font-weight: 400;
+    line-height: 1.15;
+    letter-spacing: 0.02em;
+    margin: 0 0 8px;
+    text-shadow: none;
+    animation: none;
+}
+
+.auth-subtitle {
+    font-family: var(--mono);
+    color: var(--text-2);
+    font-size: 13px;
+    font-weight: 400;
+    line-height: 1.7;
+    letter-spacing: 0.02em;
+    margin: 0 0 30px;
+    font-style: italic;
+}
+
+/* ── Form ───────────────────────────────────────────────── */
+.auth-form .field-group { margin-bottom: 20px; }
+
+.auth-form label {
+    display: block;
+    font-family: var(--mono);
+    color: var(--text-2);
+    font-size: 11px;
+    font-weight: 400;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+}
+
+.auth-form input {
+    width: 100%;
+    background: var(--elevated);
+    border: none;
+    border-bottom: 1px solid var(--border-input);
+    border-radius: 0;
+    color: var(--text);
+    font-family: var(--mono);
+    font-size: 14px;
+    font-weight: 400;
+    padding: 10px 2px;
+    transition: border-color 0.2s;
+    outline: none;
+    letter-spacing: 0.04em;
+}
+
+.auth-form input::placeholder { color: var(--text-3); }
+.auth-form input:focus { border-bottom-color: var(--gold); }
+
+.pw-wrap {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+.pw-wrap input { flex: 1; padding-right: 36px; }
+.pw-eye {
+    position: absolute;
+    right: 0;
+    background: none;
+    border: none;
+    color: var(--text-3);
+    cursor: pointer;
+    padding: 4px;
+    display: flex;
+    align-items: center;
+    transition: color 0.2s;
+}
+.pw-eye:hover { color: var(--gold); }
+
+/* ── Submit ─────────────────────────────────────────────── */
+.auth-submit {
+    width: 100%;
+    margin-top: 8px;
+    padding: 13px;
+    background: var(--gold);
+    border: 1px solid var(--gold);
+    border-radius: 0;
+    color: #080808;
+    font-family: var(--mono);
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: background 0.2s;
+    animation: none;
+    box-shadow: none;
+}
+.auth-submit:hover { background: var(--gold-h); border-color: var(--gold-h); }
+
+/* ── Divider ────────────────────────────────────────────── */
+.auth-divider {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin: 22px 0 18px;
+}
+
+.auth-divider::before,
+.auth-divider::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+}
+
+.auth-divider span {
+    font-family: var(--mono);
+    color: var(--text-3);
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+}
+
+/* ── Google Button ──────────────────────────────────────── */
+.google-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    width: 100%;
+    padding: 12px;
+    background: transparent;
+    border: 1px solid var(--border);
+    border-radius: 0;
+    color: var(--text-2);
+    font-family: var(--mono);
+    font-size: 12px;
+    font-weight: 400;
+    letter-spacing: 0.08em;
+    text-decoration: none;
+    text-transform: uppercase;
+    transition: border-color 0.2s, color 0.2s;
+}
+.google-btn:hover {
+    border-color: var(--border-h);
+    color: var(--text);
+}
+
+.google-icon { width: 18px; height: 18px; flex-shrink: 0; }
+
+/* ── Switch ─────────────────────────────────────────────── */
+.auth-switch {
+    font-family: var(--mono);
+    color: var(--text-2);
+    font-size: 13px;
+    text-align: center;
+    margin: 22px 0 0;
+    letter-spacing: 0.02em;
+}
+
+.auth-switch a {
+    color: var(--gold);
+    text-decoration: none;
+    transition: color 0.2s;
+}
+.auth-switch a:hover { color: var(--gold-h); }
+
+/* ── Flash ──────────────────────────────────────────────── */
+.alert {
+    background: transparent;
+    border: 1px solid var(--border);
+    border-radius: 0;
+    color: var(--text-2);
+    font-family: var(--mono);
+    font-size: 13px;
+    padding: 11px 14px;
+    margin-bottom: 18px;
+    letter-spacing: 0.02em;
+}
+
+/* ── Field errors & shake ───────────────────────────── */
+@keyframes shake {
+    0%,100% { transform: translateX(0); }
+    15%     { transform: translateX(-7px); }
+    30%     { transform: translateX(7px); }
+    45%     { transform: translateX(-5px); }
+    60%     { transform: translateX(5px); }
+    75%     { transform: translateX(-3px); }
+    90%     { transform: translateX(3px); }
+}
+
+.field-group.shaking { animation: shake 0.42s cubic-bezier(.36,.07,.19,.97); }
+
+.field-error {
+    display: block;
+    font-family: var(--mono);
+    font-size: 11px;
+    color: #d94f4f;
+    letter-spacing: 0.04em;
+    margin-top: 6px;
+    line-height: 1.4;
+}
+
+.field-group.has-error input {
+    border-bottom-color: #d94f4f !important;
+}
+
+@media (max-width: 480px) {
+    .auth-card { padding: 36px 24px; }
+    .auth-title { font-size: 24px; }
+}

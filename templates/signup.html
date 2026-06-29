@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Too Good — Create Account</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='stylessignup.css') }}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Courier+Prime:ital,wght@0,400;0,700;1,400&family=Special+Elite&display=swap" rel="stylesheet">
+    <style>
+        .role-card, .mobility-card, .goal-card, .activity-card {
+            display: flex; align-items: center; justify-content: center;
+            padding: 10px 16px;
+            background: var(--elevated); border: 1px solid var(--border);
+            cursor: pointer; user-select: none;
+            transition: border-color 0.15s, background 0.15s;
+        }
+        .role-card:hover, .mobility-card:hover, .goal-card:hover, .activity-card:hover { border-color: var(--gold); background: var(--gold-dim); }
+        .role-card.selected, .mobility-card.selected, .goal-card.selected, .activity-card.selected { border-color: var(--gold); background: var(--gold-dim); }
+        .role-label { font-family: var(--mono); font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-2); }
+        .role-card.selected .role-label, .mobility-card.selected .role-label,
+        .goal-card.selected .role-label, .activity-card.selected .role-label { color: var(--gold); }
+        .card-hint { font-size: 10px; color: var(--text-3); letter-spacing: 0.02em; font-family: var(--mono); margin-top: 2px; }
+        .activity-card { flex-direction: column; align-items: flex-start; gap: 2px; padding: 11px 16px; width: 100%; }
+
+        /* Section dividers inside the form */
+        .form-section-label {
+            font-family: var(--mono);
+            font-size: 9px;
+            color: var(--text-3);
+            letter-spacing: 0.28em;
+            text-transform: uppercase;
+            margin: 28px 0 14px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .form-section-label::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: var(--border);
+        }
+        .field-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 18px;
+        }
+        .auth-form select {
+            width: 100%;
+            background: var(--elevated);
+            border: none;
+            border-bottom: 1px solid var(--border-input);
+            border-radius: 0;
+            color: var(--text);
+            font-family: var(--mono);
+            font-size: 14px;
+            padding: 10px 0;
+            outline: none;
+            appearance: none;
+            cursor: pointer;
+            transition: border-color 0.2s;
+            letter-spacing: 0.04em;
+        }
+        .auth-form select:focus { border-bottom-color: var(--gold); }
+        .auth-form select option { background: #161616; }
+        .input-unit-wrap { position: relative; display: flex; align-items: center; }
+        .input-unit-wrap input { padding-right: 36px; }
+        .input-unit { position: absolute; right: 0; font-size: 11px; color: var(--text-3); letter-spacing: 0.08em; pointer-events: none; }
+
+        /* Hide default browser number spinners globally */
+        input[type=number]::-webkit-outer-spin-button,
+        input[type=number]::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+        input[type=number] { -moz-appearance: textfield; }
+
+        /* ── Custom stepper (age) ── */
+        .stepper-wrap {
+            display: flex;
+            align-items: center;
+            border-bottom: 1px solid var(--border-input);
+            transition: border-color 0.2s;
+        }
+        .stepper-wrap:focus-within { border-bottom-color: var(--gold); }
+        .stepper-btn {
+            background: none;
+            border: none;
+            color: var(--text-3);
+            font-family: var(--mono);
+            font-size: 18px;
+            line-height: 1;
+            padding: 6px 10px;
+            cursor: pointer;
+            transition: color 0.15s;
+            flex-shrink: 0;
+            user-select: none;
+        }
+        .stepper-btn:hover { color: var(--gold); }
+        .stepper-btn:active { color: var(--gold-h, #DFC070); }
+        .stepper-input {
+            flex: 1;
+            background: transparent;
+            border: none;
+            outline: none;
+            color: var(--text);
+            font-family: var(--mono);
+            font-size: 14px;
+            text-align: center;
+            padding: 10px 0;
+            letter-spacing: 0.06em;
+            min-width: 0;
+        }
+        .stepper-unit { font-size: 11px; color: var(--text-3); letter-spacing: 0.08em; padding-right: 4px; flex-shrink: 0; }
+
+        /* ── Height unit toggle ── */
+        .height-label-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; }
+        .height-label-row label { margin-bottom: 0; }
+        .unit-toggle {
+            display: flex;
+            background: var(--elevated);
+            border: 1px solid var(--border-input);
+            border-radius: 2px;
+            overflow: hidden;
+            gap: 0;
+        }
+        .unit-toggle-opt {
+            background: none;
+            border: none;
+            color: var(--text-3);
+            font-family: var(--mono);
+            font-size: 10px;
+            letter-spacing: 0.10em;
+            padding: 3px 9px;
+            cursor: pointer;
+            transition: background 0.15s, color 0.15s;
+        }
+        .unit-toggle-opt.active {
+            background: var(--gold);
+            color: #080808;
+        }
+        .unit-toggle-opt:not(.active):hover { color: var(--gold); }
+
+        /* Height ft+in split row */
+        .height-in-wrap {
+            display: none;
+            align-items: center;
+            border-bottom: 1px solid var(--border-input);
+            transition: border-color 0.2s;
+            gap: 0;
+        }
+        .height-in-wrap:focus-within { border-bottom-color: var(--gold); }
+        .height-in-wrap input {
+            flex: 1;
+            background: transparent;
+            border: none;
+            outline: none;
+            color: var(--text);
+            font-family: var(--mono);
+            font-size: 14px;
+            text-align: center;
+            padding: 10px 0;
+            letter-spacing: 0.06em;
+            min-width: 0;
+        }
+        .height-sep { font-size: 11px; color: var(--text-3); padding: 0 6px; flex-shrink: 0; }
+        .height-in-label { font-size: 11px; color: var(--text-3); letter-spacing: 0.08em; flex-shrink: 0; }
+        .height-in-label:last-child { padding-right: 4px; }
+
+        /* ── Food preference tags ── */
+        .food-tags { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 4px; }
+        .food-tag {
+            background: var(--elevated);
+            border: 1px solid var(--border-input);
+            border-radius: 20px;
+            color: var(--text-2);
+            font-family: var(--mono);
+            font-size: 12px;
+            letter-spacing: 0.04em;
+            padding: 5px 13px;
+            cursor: pointer;
+            user-select: none;
+            transition: background 0.15s, border-color 0.15s, color 0.15s;
+        }
+        .food-tag:hover { border-color: var(--gold); color: var(--gold); }
+        .food-tag.selected { background: var(--gold); border-color: var(--gold); color: #080808; font-weight: 700; }
+    </style>
+</head>
+<body>
+
+<nav class="navbar navbar-expand-md fixed-top custom-navbar">
+    <div class="container-fluid">
+        <a class="navbar-brand" href="{{ url_for('home') }}">
+            <img src="{{ url_for('static', filename='images/logo.svg') }}" alt="Too Good Logo" width="40" height="40">
+        </a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav me-auto mb-2 mb-md-0">
+                <li class="nav-item"><a class="nav-link active" href="{{ url_for('home') }}">Home</a></li>
+                <li class="nav-item"><a class="nav-link active" href="{{ url_for('features') }}">Features</a></li>
+                <li class="nav-item"><a class="nav-link active" href="{{ url_for('about') }}">About</a></li>
+            </ul>
+            <ul class="navbar-nav">
+                <li class="nav-item"><a class="nav-link active" href="{{ url_for('login') }}">Login</a></li>
+                <li class="nav-item"><a class="nav-link active active-page" href="{{ url_for('signup') }}">Sign Up</a></li>
+            </ul>
+        </div>
+    </div>
+</nav>
+
+<main class="auth-page">
+    <div class="auth-card" style="max-width:480px">
+        <p class="auth-tag">NEW SPECIMEN // INTAKE</p>
+        <h1 class="auth-title">Begin your arc</h1>
+        <p class="auth-subtitle">Tell us a little about yourself so we can personalise your plan.</p>
+
+        <form class="auth-form" id="signupForm" action="{{ url_for('signup') }}" method="post" novalidate>
+
+            <!-- ── About you ── -->
+            <p class="form-section-label">About you</p>
+
+            <div class="field-group" id="fg-full_name">
+                <label for="full_name">Full name <span style="color:var(--text-3);font-size:10px">(optional)</span></label>
+                <input type="text" id="full_name" name="full_name"
+                       placeholder="e.g. Saksham"
+                       value="{{ prev_full_name or '' }}"
+                       autocomplete="name">
+            </div>
+
+            <div class="field-group" id="fg-country">
+                <label for="country">Country <span style="color:var(--text-3);font-size:10px">(helps personalise your plan)</span></label>
+                <input type="text" id="country" name="country" list="country-list"
+                       placeholder="Start typing your country…"
+                       value="{{ prev_country or '' }}"
+                       autocomplete="country-name">
+                <datalist id="country-list">
+                    <option value="India">
+                    <option value="United States">
+                    <option value="United Kingdom">
+                    <option value="Canada">
+                    <option value="Australia">
+                    <option value="Afghanistan"><option value="Albania"><option value="Algeria">
+                    <option value="Argentina"><option value="Armenia"><option value="Austria">
+                    <option value="Azerbaijan"><option value="Bahrain"><option value="Bangladesh">
+                    <option value="Belarus"><option value="Belgium"><option value="Bolivia">
+                    <option value="Bosnia and Herzegovina"><option value="Brazil"><option value="Bulgaria">
+                    <option value="Cambodia"><option value="Cameroon"><option value="Chile">
+                    <option value="China"><option value="Colombia"><option value="Croatia">
+                    <option value="Cuba"><option value="Czech Republic"><option value="Denmark">
+                    <option value="Ecuador"><option value="Egypt"><option value="Ethiopia">
+                    <option value="Finland"><option value="France"><option value="Georgia">
+                    <option value="Germany"><option value="Ghana"><option value="Greece">
+                    <option value="Guatemala"><option value="Hungary"><option value="Indonesia">
+                    <option value="Iran"><option value="Iraq"><option value="Ireland">
+                    <option value="Israel"><option value="Italy"><option value="Japan">
+                    <option value="Jordan"><option value="Kazakhstan"><option value="Kenya">
+                    <option value="Kuwait"><option value="Kyrgyzstan"><option value="Lebanon">
+                    <option value="Libya"><option value="Malaysia"><option value="Mexico">
+                    <option value="Morocco"><option value="Myanmar"><option value="Nepal">
+                    <option value="Netherlands"><option value="New Zealand"><option value="Nigeria">
+                    <option value="Norway"><option value="Oman"><option value="Pakistan">
+                    <option value="Palestine"><option value="Peru"><option value="Philippines">
+                    <option value="Poland"><option value="Portugal"><option value="Qatar">
+                    <option value="Romania"><option value="Russia"><option value="Saudi Arabia">
+                    <option value="Senegal"><option value="Serbia"><option value="Singapore">
+                    <option value="South Africa"><option value="South Korea"><option value="Spain">
+                    <option value="Sri Lanka"><option value="Sudan"><option value="Sweden">
+                    <option value="Switzerland"><option value="Syria"><option value="Taiwan">
+                    <option value="Tajikistan"><option value="Tanzania"><option value="Thailand">
+                    <option value="Tunisia"><option value="Turkey"><option value="Uganda">
+                    <option value="Ukraine"><option value="United Arab Emirates"><option value="Uzbekistan">
+                    <option value="Venezuela"><option value="Vietnam"><option value="Yemen">
+                    <option value="Zambia"><option value="Zimbabwe">
+                </datalist>
+            </div>
+
+            <!-- ── Account ── -->
+            <p class="form-section-label">Your account</p>
+
+            <div class="field-group" id="fg-email">
+                <label for="email">Email address</label>
+                <input type="email" id="email" name="email"
+                       placeholder="you@example.com"
+                       value="{{ prev_email or '' }}"
+                       autocomplete="email">
+                <span class="field-error" id="err-email"></span>
+            </div>
+
+            <div class="field-group" id="fg-username">
+                <label for="username">Username</label>
+                <input type="text" id="username" name="username"
+                       placeholder="choose a username"
+                       value="{{ prev_username or '' }}"
+                       autocomplete="username">
+                <span class="field-hint">3–20 characters · letters, numbers, underscore only</span>
+            </div>
+
+            <div class="field-group" id="fg-password">
+                <label for="password">Passphrase</label>
+                <div class="pw-wrap">
+                    <input type="password" id="password" name="password" placeholder="••••••••" autocomplete="new-password">
+                    <button type="button" class="pw-eye" onclick="togglePw('password',this)" tabindex="-1">
+                        <svg class="eye-open" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                        <svg class="eye-shut" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" style="display:none"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+                    </button>
+                </div>
+                <span class="field-hint">Minimum 8 characters</span>
+            </div>
+
+            <div class="field-group" id="fg-confirm">
+                <label for="confirm_password">Confirm passphrase</label>
+                <div class="pw-wrap">
+                    <input type="password" id="confirm_password" name="confirm_password" placeholder="••••••••" autocomplete="new-password">
+                    <button type="button" class="pw-eye" onclick="togglePw('confirm_password',this)" tabindex="-1">
+                        <svg class="eye-open" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                        <svg class="eye-shut" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" style="display:none"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+                    </button>
+                </div>
+            </div>
+
+            <button type="submit" class="auth-submit" style="margin-top:24px">Create account</button>
+        </form>
+
+        <p class="auth-switch">Already have an account? <a href="{{ url_for('login') }}">Log in</a></p>
+    </div>
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+/* ── Password toggle ── */
+function togglePw(id, btn) {
+    const input = document.getElementById(id);
+    const hidden = input.type === 'password';
+    input.type = hidden ? 'text' : 'password';
+    btn.querySelector('.eye-open').style.display = hidden ? 'none' : '';
+    btn.querySelector('.eye-shut').style.display = hidden ? '' : 'none';
+}
+
+/* ── Error helpers ── */
+const USERNAME_RE = /^[a-zA-Z0-9_]+$/;
+
+function showError(groupId, message) {
+    const group = document.getElementById(groupId);
+    if (!group) return;
+    const old = group.querySelector('.field-error');
+    if (old) old.remove();
+    group.classList.add('has-error');
+    const span = document.createElement('span');
+    span.className = 'field-error';
+    span.textContent = message;
+    group.appendChild(span);
+    group.classList.remove('shaking');
+    void group.offsetWidth;
+    group.classList.add('shaking');
+    group.addEventListener('animationend', () => group.classList.remove('shaking'), { once: true });
+}
+
+function clearError(groupId) {
+    const group = document.getElementById(groupId);
+    if (!group) return;
+    group.classList.remove('has-error');
+    const old = group.querySelector('.field-error');
+    if (old) old.remove();
+}
+
+/* ── Form submit validation ── */
+document.getElementById('signupForm').addEventListener('submit', function (e) {
+    ['fg-email','fg-username','fg-password','fg-confirm'].forEach(clearError);
+    const email    = document.getElementById('email').value.trim();
+    const username = document.getElementById('username').value.trim();
+    const password = document.getElementById('password').value;
+    const confirm  = document.getElementById('confirm_password').value;
+    let firstError = null;
+    function fail(id, msg) { showError(id, msg); firstError = firstError || id; }
+
+    if (!email) fail('fg-email', 'Email address is required.');
+    else if (!email.includes('@') || !email.includes('.')) fail('fg-email', 'Please enter a valid email address.');
+
+    if (!username) fail('fg-username', 'Username is required.');
+    else if (username.length < 3) fail('fg-username', 'Username must be at least 3 characters.');
+    else if (username.length > 20) fail('fg-username', 'Username cannot be longer than 20 characters.');
+    else if (!USERNAME_RE.test(username)) fail('fg-username', 'Only letters, numbers, and underscores — no spaces.');
+
+    if (!password) fail('fg-password', 'Password is required.');
+    else if (password.length < 8) fail('fg-password', 'Password must be at least 8 characters.');
+
+    if (!confirm) fail('fg-confirm', 'Please confirm your password.');
+    else if (password && confirm !== password) fail('fg-confirm', 'Passwords do not match.');
+
+    if (firstError) {
+        e.preventDefault();
+        const el = document.querySelector('#' + firstError + ' input');
+        if (el) el.focus();
+    }
+});
+
+['username','password','confirm_password'].forEach(id => {
+    const gid = id === 'confirm_password' ? 'fg-confirm' : 'fg-' + id;
+    const el = document.getElementById(id);
+    if (el) el.addEventListener('input', () => clearError(gid));
+});
+
+{% if server_error_field and server_error_msg %}
+document.addEventListener('DOMContentLoaded', function () {
+    showError('fg-{{ server_error_field }}', '{{ server_error_msg }}');
+    const el = document.querySelector('#fg-{{ server_error_field }} input');
+    if (el) el.focus();
+});
+{% endif %}
+</script>
+</body>
+</html>

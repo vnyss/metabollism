@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Too Good</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css"
+          rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='stylesfeatures.css') }}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Courier+Prime:ital,wght@0,400;0,700;1,400&family=Special+Elite&display=swap" rel="stylesheet">
+</head>
+
+<body>
+
+<!-- Navbar starts -->
+<nav class="navbar navbar-expand-md fixed-top custom-navbar">
+    <div class="container-fluid">
+
+        <a class="navbar-brand" href="{{ url_for('home') }}">
+            <img src="{{ url_for('static', filename='images/logo.svg') }}" alt="Too Good Logo" width="40" height="40">
+        </a>
+
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="navbarCollapse">
+
+            <!-- Left side -->
+            <ul class="navbar-nav me-auto mb-2 mb-md-0">
+                <li class="nav-item">
+                    <a class="nav-link active" href="{{ url_for('home') }}">Home</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link active" href="{{ url_for('features') }}">Features</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link active" href="{{ url_for('about') }}">About</a>
+                </li>
+            </ul>
+
+            <!-- Right side -->
+            <ul class="navbar-nav">
+                <li class="nav-item">
+                    <a class="nav-link active" href="{{ url_for('login') }}">Login</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link active" href="{{ url_for('signup') }}">Sign Up</a>
+                </li>
+            </ul>
+
+        </div>
+    </div>
+</nav>
+
+<!-- Hero (jumbotron 1) -->
+<div class="p-5 mb-4 bg-body-tertiary rounded-3">
+    <div class="container-fluid py-5">
+        <h1 class="display-5 fw-bold">Get Custom Diets in the blink of an eye!</h1>
+        <p class="col-md-8 fs-4">Personalised plans just for you, to allow you to achieve your goals in no time!</p>
+        <a href="{{ url_for('signup') }}" class="btn btn-outline-secondary btn-lg px-4 rounded-pill">
+            Get Started
+        </a>
+    </div>
+</div>
+
+<!-- Track Your Health (jumbotron 2) -->
+<div class="p-5 mb-4 feature-jumbotron rounded-3">
+    <div class="container-fluid py-5">
+        <h1 class="display-5 fw-bold">Track your Health</h1>
+        <p class="col-md-8 fs-4">Scan barcodes behind food items to receive their nutritional value and get pro-tips on whether to consume or not, thus allowing you to reach your deficit/gain faster!</p>
+       <a href="{{ url_for('signup') }}" class="btn btn-outline-secondary btn-lg px-4 rounded-pill">
+            Get Started
+        </a>
+    </div>
+</div>
+
+<!-- Two column row -->
+<div class="row align-items-md-stretch">
+    <div class="col-md-6">
+        <div class="h-100 p-5 ai-card rounded-3">
+            <h2>Use our AI assistant</h2>
+            <p>Use our AI assistant, trained on diverse data from around the globe, to answer questions, provide clarifications, and support understanding of your personalized diet plan.</p>
+            <a href="{{ url_for('signup') }}" class="btn btn-outline-secondary btn-lg px-4 rounded-pill">
+            Get Started
+        </a>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="h-100 p-5 error-card border rounded-3">
+            <h2>No Errors</h2>
+            <p>Our software minimizes errors in diet planning by analyzing nutritional data, applying validated rules, adapting to user preferences, and continuously checking recommendations for balance, consistency, and suitability.</p>
+            <a href="{{ url_for('signup') }}" class="btn btn-outline-secondary btn-lg px-4 rounded-pill">
+            Get Started
+        </a>
+        </div>
+    </div>
+</div>
+
+<!-- Stats bar -->
+<div class="stats-bar">
+    <div class="stat-item">
+        <span class="stat-num">50+</span>
+        <span class="stat-label">diet frameworks supported</span>
+    </div>
+    <div class="stat-sep"></div>
+    <div class="stat-item">
+        <span class="stat-num">1,000+</span>
+        <span class="stat-label">nutrition studies in training data</span>
+    </div>
+    <div class="stat-sep"></div>
+    <div class="stat-item">
+        <span class="stat-num">Real-time</span>
+        <span class="stat-label">AI responses, no queue waiting</span>
+    </div>
+</div>
+
+<!-- AI Feature detail -->
+<div class="p-5 feature-jumbotron rounded-3">
+    <div class="container-fluid py-5">
+        <p class="section-eyebrow">The AI</p>
+        <h1 class="display-5 fw-bold">An assistant that actually knows nutrition</h1>
+        <p class="col-md-8 fs-4">Ask it anything — macros, meal timing, gut health, sports nutrition, or why you are always hungry at 3 pm. It answers like a nutritionist who has read everything and has infinite patience.</p>
+        <div class="feature-detail-grid">
+            <div class="feature-detail-item">
+                <span class="fd-label">Contextual Memory</span>
+                <p class="fd-desc">Remembers your goals, restrictions, and history throughout the conversation. No need to re-explain yourself every message.</p>
+            </div>
+            <div class="feature-detail-item">
+                <span class="fd-label">Meal Plan Builder</span>
+                <p class="fd-desc">Detects when you want a full plan and asks two quick intake questions before generating a complete, usable week of meals.</p>
+            </div>
+            <div class="feature-detail-item">
+                <span class="fd-label">Evidence Grounded</span>
+                <p class="fd-desc">Every answer is anchored in nutrition science. It will tell you when evidence is weak or contested — honesty is part of the service.</p>
+            </div>
+            <div class="feature-detail-item">
+                <span class="fd-label">Voice Input</span>
+                <p class="fd-desc">Speak your question directly. Useful when you are cooking, shopping, or just do not feel like typing at the end of a long day.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Personalisation detail -->
+<div class="p-5 feature-jumbotron rounded-3">
+    <div class="container-fluid py-5">
+        <p class="section-eyebrow">Personalisation</p>
+        <h1 class="display-5 fw-bold">Not a template. A plan built for you.</h1>
+        <p class="col-md-8 fs-4">Generic diet plans fail because generic bodies do not exist. Too Good asks about your lifestyle, food preferences, schedule, and goal — then builds something you can actually follow.</p>
+        <div class="feature-detail-grid">
+            <div class="feature-detail-item">
+                <span class="fd-label">Goal Targeting</span>
+                <p class="fd-desc">Fat loss, muscle gain, clean eating, maintenance — your goal shapes every macro ratio and food choice the AI suggests.</p>
+            </div>
+            <div class="feature-detail-item">
+                <span class="fd-label">Dietary Styles</span>
+                <p class="fd-desc">Omnivore, vegetarian, vegan, gluten-free, or anything in between. The AI adapts without compromising your nutritional targets.</p>
+            </div>
+            <div class="feature-detail-item">
+                <span class="fd-label">Flexible Plans</span>
+                <p class="fd-desc">Do not like a meal? Ask to swap it. Want more protein? Ask. The plan is a living document, not a printout.</p>
+            </div>
+            <div class="feature-detail-item">
+                <span class="fd-label">No Extremes</span>
+                <p class="fd-desc">Too Good never recommends crash diets, extreme deficits, or supplements with questionable evidence. Sustainable is the default.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Smart Memory detail -->
+<div class="p-5 feature-jumbotron rounded-3">
+    <div class="container-fluid py-5">
+        <p class="section-eyebrow">Smart Memory</p>
+        <h1 class="display-5 fw-bold">It remembers. So you do not have to repeat yourself.</h1>
+        <p class="col-md-8 fs-4">After every conversation, the AI quietly picks out what it learned about you — your preferences, intolerances, lifestyle habits — and carries that knowledge into every future chat.</p>
+        <div class="feature-detail-grid">
+            <div class="feature-detail-item">
+                <span class="fd-label">Learns As You Chat</span>
+                <p class="fd-desc">Tells itself what matters from each conversation. No forms to fill. No settings to update. It just knows.</p>
+            </div>
+            <div class="feature-detail-item">
+                <span class="fd-label">Personalised From Day Two</span>
+                <p class="fd-desc">The more you use it, the better it gets at predicting what you need before you ask.</p>
+            </div>
+            <div class="feature-detail-item">
+                <span class="fd-label">Indian Nutrition Database</span>
+                <p class="fd-desc">Powered by the Anuvaad INDB — over 1,000 Indian foods with verified nutrition data. Ask about dal, paneer, dosa, or anything in between.</p>
+            </div>
+            <div class="feature-detail-item">
+                <span class="fd-label">Image Analysis</span>
+                <p class="fd-desc">Photograph your meal and ask for a calorie estimate or ingredient breakdown. Point and ask — no manual logging.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Appearance + Celebrations detail -->
+<div class="p-5 feature-jumbotron rounded-3">
+    <div class="container-fluid py-5">
+        <p class="section-eyebrow">Your Space</p>
+        <h1 class="display-5 fw-bold">Built around you. Down to the last detail.</h1>
+        <p class="col-md-8 fs-4">From the colour of the interface to the animations on a rainy day — every part of the experience is something you can tune to exactly how you like it.</p>
+        <div class="feature-detail-grid">
+            <div class="feature-detail-item">
+                <span class="fd-label">Live Weather Effects</span>
+                <p class="fd-desc">Rain, snow, fog, or sunshine — the dashboard reflects your real local weather with live animations. Toggle it off any time.</p>
+            </div>
+            <div class="feature-detail-item">
+                <span class="fd-label">Full Appearance Control</span>
+                <p class="fd-desc">Eight colour themes, light and dark mode, font size, corner style, chat density, sidebar width, and animation speed. All change instantly.</p>
+            </div>
+            <div class="feature-detail-item">
+                <span class="fd-label">Family Celebrations</span>
+                <p class="fd-desc">Tell us your family role and we will greet you on your day — Father's Day, Mother's Day, Grandparents' Day, and more.</p>
+            </div>
+            <div class="feature-detail-item">
+                <span class="fd-label">Festival Greetings</span>
+                <p class="fd-desc">Based on your country, the dashboard wishes you on local festivals — Diwali, Eid, Dussehra, Holi, and dozens more from 35+ countries.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- History + Privacy -->
+<div class="row align-items-md-stretch">
+    <div class="col-md-6">
+        <div class="h-100 p-5 ai-card rounded-3">
+            <h2>Full Chat History</h2>
+            <p>Every conversation is saved and labelled. Go back to a plan you discussed last month and continue where you left off. Nothing is lost, nothing expires.</p>
+            <a href="{{ url_for('ai') }}" class="btn btn-outline-secondary btn-lg px-4 rounded-pill">Try the AI</a>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="h-100 p-5 error-card border rounded-3">
+            <h2>Safe &amp; Private</h2>
+            <p>Your health data is yours. We store only what is necessary to run your sessions, never sell it, and never use it to train AI models without consent.</p>
+            <a href="{{ url_for('signup') }}" class="btn btn-outline-secondary btn-lg px-4 rounded-pill">Sign Up Free</a>
+        </div>
+    </div>
+</div>
+
+<!-- Features CTA -->
+<div class="p-5 mb-4 feature-jumbotron rounded-3 section-center">
+    <div class="container-fluid py-5">
+        <p class="section-eyebrow">Get Started</p>
+        <h1 class="display-5 fw-bold">All of this. Free to try.</h1>
+        <p class="cta-sub">No subscription required to start. No credit card. No fine print worth worrying about.</p>
+        <a href="{{ url_for('signup') }}" class="btn btn-primary btn-lg px-4 rounded-pill">Create Free Account</a>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
+
+</body>
+</html>

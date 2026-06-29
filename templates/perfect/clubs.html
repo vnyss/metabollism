@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Clubs — Too Good</title>
+    <link href="https://fonts.googleapis.com/css2?family=Courier+Prime:wght@400;700&family=Special+Elite&family=Playfair+Display:wght@400;700&display=swap" rel="stylesheet">
+    <script>(function(){var r=document.documentElement;if(localStorage.getItem('tg_mode')==='light')r.classList.add('light-mode');var sw=localStorage.getItem('tg_sw');if(sw)r.style.setProperty('--sw',{narrow:'220px',normal:'260px',wide:'320px'}[sw]||'260px');var cr=localStorage.getItem('tg_corner');if(cr)r.style.setProperty('--radius',{sharp:'0px',soft:'6px',rounded:'14px'}[cr]||'6px');})();</script>
+    <style>
+        :root{--bg:#080808;--sidebar:#060606;--surface:#0F0F0F;--elevated:#161616;--border:rgba(201,168,76,0.12);--border-h:rgba(201,168,76,0.38);--gold:#C9A84C;--gold-dim:rgba(201,168,76,0.07);--text:#EDE3CE;--text-2:#9A8B72;--text-3:#554430;--green:#4CAF82;--red:#E05555;--mono:'Courier Prime',monospace;--display:'Special Elite',monospace;--sw:260px;--radius:6px}
+        html.light-mode{--bg:#F5F0E8;--sidebar:#EDE8DF;--surface:#FFFFFF;--elevated:#F0EBE1;--border:rgba(100,80,40,0.14);--border-h:rgba(100,80,40,0.36);--gold-dim:rgba(201,168,76,0.10);--text:#2C2010;--text-2:#6B5B3E;--text-3:#A89070}
+        *{box-sizing:border-box;margin:0;padding:0}
+        body{background:var(--bg);color:var(--text);font-family:var(--mono);font-size:14px;display:flex;min-height:100vh}
+        /* Left panel */
+        .left-panel{position:fixed;top:0;left:var(--sw);width:280px;height:100vh;background:var(--sidebar);border-right:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden}
+        .lp-head{padding:24px 20px 16px;border-bottom:1px solid var(--border);flex-shrink:0}
+        .lp-title{font-family:'Playfair Display',serif;font-size:20px;color:var(--text);margin-bottom:12px}
+        .btn-create{width:100%;padding:9px;font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--gold);border:1px solid rgba(201,168,76,.45);background:none;cursor:pointer;transition:background .15s}
+        .btn-create:hover{background:var(--gold-dim)}
+        .tab-row{display:flex;border-bottom:1px solid var(--border);flex-shrink:0}
+        .tab{flex:1;padding:10px;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--text-3);cursor:pointer;text-align:center;border-bottom:2px solid transparent;transition:color .15s,border-color .15s}
+        .tab.active{color:var(--gold);border-color:var(--gold)}
+        .club-scroll{flex:1;overflow-y:auto}
+        .club-item{padding:14px 20px;border-bottom:1px solid var(--border);cursor:pointer;transition:background .12s}
+        .club-item:hover,.club-item.active{background:var(--gold-dim)}
+        .club-item-name{font-size:13px;color:var(--text);margin-bottom:3px}
+        .club-item-meta{font-size:10px;color:var(--text-3);letter-spacing:.04em}
+        .club-item-join{font-size:10px;color:var(--gold);letter-spacing:.08em;margin-top:4px;cursor:pointer}
+        /* Main */
+        .main{margin-left:calc(var(--sw) + 280px);flex:1;padding:44px 48px;min-height:100vh}
+        .empty-state{padding:60px 0;text-align:center;color:var(--text-3);font-size:13px;line-height:2}
+        /* Club detail */
+        .club-hero{display:flex;align-items:center;gap:20px;padding:28px 32px;background:var(--surface);border:1px solid var(--border);margin-bottom:20px}
+        .club-av{width:56px;height:56px;background:var(--gold-dim);border:1px solid var(--border-h);display:flex;align-items:center;justify-content:center;font-family:var(--display);font-size:28px;color:var(--gold);flex-shrink:0}
+        .club-name{font-family:'Playfair Display',serif;font-size:24px;color:var(--text);margin-bottom:4px}
+        .club-desc{font-size:11px;color:var(--text-3);line-height:1.7}
+        .club-actions{margin-left:auto;display:flex;gap:8px;flex-shrink:0}
+        .btn-join{padding:8px 18px;font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--gold);border:1px solid rgba(201,168,76,.5);background:none;cursor:pointer;transition:background .15s}
+        .btn-join:hover{background:var(--gold-dim)}
+        .btn-leave{padding:8px 18px;font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--text-3);border:1px solid var(--border);background:none;cursor:pointer}
+        /* Two column layout */
+        .detail-cols{display:grid;grid-template-columns:1fr 280px;gap:16px}
+        .section-head{font-size:10px;color:var(--text-3);letter-spacing:.18em;text-transform:uppercase;margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid var(--border)}
+        /* Feed */
+        .feed-card{background:var(--surface);border:1px solid var(--border);padding:14px 16px;margin-bottom:2px}
+        .feed-top{display:flex;align-items:center;gap:10px}
+        .feed-av{width:28px;height:28px;background:var(--gold-dim);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:12px;color:var(--gold);flex-shrink:0}
+        .feed-who{font-size:12px;color:var(--text-2)}
+        .feed-who strong{color:var(--text)}
+        .feed-xp{margin-left:auto;font-family:'Playfair Display',serif;font-size:13px;color:var(--gold);white-space:nowrap}
+        .feed-time{font-size:10px;color:var(--text-3);white-space:nowrap;margin-left:8px}
+        /* Member leaderboard */
+        .mb-row{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border)}
+        .mb-row:last-child{border:none}
+        .mb-rank{font-size:12px;color:var(--text-3);width:20px;text-align:center;flex-shrink:0}
+        .mb-name{flex:1;font-size:12px;color:var(--text)}
+        .mb-name.me{color:var(--gold)}
+        .mb-xp{font-size:11px;color:var(--text-3)}
+        .panel-box{background:var(--surface);border:1px solid var(--border);padding:20px}
+        /* Create modal */
+        .modal-bd{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:9000;align-items:center;justify-content:center}
+        .modal-bd.open{display:flex}
+        .modal{background:var(--elevated);border:1px solid var(--border-h);padding:32px;min-width:360px;max-width:460px}
+        .modal-title{font-family:'Playfair Display',serif;font-size:20px;color:var(--text);margin-bottom:20px}
+        .form-field{margin-bottom:14px}
+        .form-label{font-size:10px;color:var(--text-3);letter-spacing:.14em;text-transform:uppercase;margin-bottom:6px;display:block}
+        .form-inp{width:100%;background:var(--bg);border:1px solid var(--border);color:var(--text);padding:9px 12px;font-family:var(--mono);font-size:13px}
+        .form-inp:focus{outline:none;border-color:var(--border-h)}
+        .form-row{display:flex;gap:10px;justify-content:flex-end;margin-top:20px}
+        .btn-cancel{padding:9px 18px;font-family:var(--mono);font-size:11px;letter-spacing:.1em;color:var(--text-3);border:1px solid var(--border);background:none;cursor:pointer}
+        .btn-submit{padding:9px 18px;font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;background:var(--gold);color:#0A0A0A;border:none;cursor:pointer;font-weight:700}
+    </style>
+</head>
+<body>
+{% include 'perfect/_sidebar.html' %}
+
+<div class="left-panel">
+    <div class="lp-head">
+        <div class="lp-title">Clubs</div>
+        <button class="btn-create" onclick="openCreate()">+ Create Club</button>
+    </div>
+    <div class="tab-row">
+        <div class="tab active" id="tabMine" onclick="switchTab('mine')">My Clubs</div>
+        <div class="tab" id="tabDiscover" onclick="switchTab('discover')">Discover</div>
+    </div>
+    <div class="club-scroll" id="clubList">
+        <div style="padding:16px;font-size:11px;color:var(--text-3)">Loading…</div>
+    </div>
+</div>
+
+<div class="main" id="mainPanel">
+    <div class="empty-state">
+        Select a club to view its feed and members.<br>
+        Or create one and invite your buddies.
+    </div>
+</div>
+
+<!-- Create club modal -->
+<div class="modal-bd" id="createModal" onclick="if(event.target===this)closeCreate()">
+    <div class="modal">
+        <div class="modal-title">Create a Club</div>
+        <div class="form-field">
+            <label class="form-label">Club Name</label>
+            <input class="form-inp" id="clubNameInp" placeholder="e.g. Morning Warriors" maxlength="40">
+        </div>
+        <div class="form-field">
+            <label class="form-label">Description (optional)</label>
+            <input class="form-inp" id="clubDescInp" placeholder="What's this club about?" maxlength="120">
+        </div>
+        <div class="form-row">
+            <button class="btn-cancel" onclick="closeCreate()">Cancel</button>
+            <button class="btn-submit" onclick="createClub()">Create</button>
+        </div>
+    </div>
+</div>
+
+<script>
+const ICONS = {login:'☀️',food_log:'🍎',calorie_goal:'🎯',exercise:'🏃',blood_report:'💉'};
+const LBLS  = {login:'checked in',food_log:'logged meals',calorie_goal:'hit calorie goal',exercise:'completed a workout',blood_report:'analyzed blood report'};
+const MEDALS= ['🥇','🥈','🥉'];
+
+let currentTab     = 'mine';
+let allClubs       = {my_clubs:[], discover:[]};
+let activeClubId   = null;
+
+async function loadList() {
+    const res  = await fetch('/perfect/api/clubs');
+    const data = await res.json();
+    allClubs   = data;
+    renderList();
+}
+
+function renderList() {
+    const clubs = currentTab === 'mine' ? allClubs.my_clubs : allClubs.discover;
+    const el    = document.getElementById('clubList');
+    if (!clubs.length) {
+        el.innerHTML = `<div style="padding:16px;font-size:11px;color:var(--text-3)">${currentTab==='mine'?'You haven\'t joined any clubs yet.':'No clubs to discover.'}</div>`;
+        return;
+    }
+    el.innerHTML = clubs.map(c => `
+        <div class="club-item${c.id===activeClubId?' active':''}" onclick="selectClub(${c.id})">
+            <div class="club-item-name">${c.name}</div>
+            <div class="club-item-meta">${c.member_count} member${c.member_count!==1?'s':''}</div>
+            ${currentTab==='discover'?`<div class="club-item-join" onclick="event.stopPropagation();joinClub(${c.id})">+ Join</div>`:''}
+        </div>`).join('');
+}
+
+function switchTab(tab) {
+    currentTab = tab;
+    document.getElementById('tabMine').classList.toggle('active', tab==='mine');
+    document.getElementById('tabDiscover').classList.toggle('active', tab==='discover');
+    renderList();
+}
+
+async function selectClub(id) {
+    activeClubId = id;
+    renderList();
+    const main = document.getElementById('mainPanel');
+    main.innerHTML = '<div style="padding:40px;font-size:12px;color:var(--text-3)">Loading…</div>';
+
+    const [detRes, feedRes] = await Promise.all([
+        fetch('/perfect/api/clubs/' + id),
+        fetch('/perfect/api/clubs/' + id + '/feed'),
+    ]);
+    const det  = await detRes.json();
+    const feed = await feedRes.json();
+
+    if (!det.ok) { main.innerHTML = '<div style="padding:40px;font-size:12px;color:var(--text-3)">Club not found.</div>'; return; }
+
+    const c       = det.club;
+    const members = det.members;
+    const isMem   = det.is_member;
+
+    const feedHtml = feed.ok && feed.feed.length
+        ? feed.feed.map(e => `
+            <div class="feed-card">
+                <div class="feed-top">
+                    <div class="feed-av">${(e.name||e.username)[0].toUpperCase()}</div>
+                    <div class="feed-who"><strong>${e.name||'@'+e.username}</strong> ${LBLS[e.event_type]||e.event_type}</div>
+                    <div class="feed-xp">+${e.xp} XP</div>
+                    <div class="feed-time">${(e.at||'').slice(0,10)}</div>
+                </div>
+            </div>`).join('')
+        : '<div style="padding:20px;font-size:12px;color:var(--text-3)">No activity yet from club members.</div>';
+
+    const mbHtml = members.map(m => `
+        <div class="mb-row">
+            <div class="mb-rank">${MEDALS[m.rank-1]||m.rank}</div>
+            <div class="mb-name${m.is_me?' me':''}">@${m.username}${m.role==='admin'?' 👑':''}</div>
+            <div class="mb-xp">${m.month_xp.toLocaleString()} XP this month</div>
+        </div>`).join('');
+
+    main.innerHTML = `
+        <div class="club-hero">
+            <div class="club-av">${c.name[0].toUpperCase()}</div>
+            <div>
+                <div class="club-name">${c.name}</div>
+                <div class="club-desc">${c.description||'No description.'}</div>
+            </div>
+            <div class="club-actions">
+                ${isMem
+                    ? `<button class="btn-leave" onclick="leaveClub(${c.id})">Leave</button>`
+                    : `<button class="btn-join" onclick="joinClub(${c.id})">+ Join</button>`
+                }
+            </div>
+        </div>
+        <div class="detail-cols">
+            <div>
+                <div class="section-head">Activity Feed</div>
+                ${feedHtml}
+            </div>
+            <div>
+                <div class="panel-box">
+                    <div class="section-head">Monthly Leaderboard</div>
+                    ${mbHtml}
+                </div>
+            </div>
+        </div>`;
+}
+
+async function joinClub(id) {
+    await fetch('/perfect/api/clubs/' + id + '/join', {method:'POST'});
+    await loadList();
+    selectClub(id);
+}
+
+async function leaveClub(id) {
+    await fetch('/perfect/api/clubs/' + id + '/leave', {method:'POST'});
+    activeClubId = null;
+    await loadList();
+    document.getElementById('mainPanel').innerHTML = '<div class="empty-state">Select a club to view its feed and members.<br>Or create one and invite your buddies.</div>';
+}
+
+function openCreate()  { document.getElementById('createModal').classList.add('open'); document.getElementById('clubNameInp').focus(); }
+function closeCreate() { document.getElementById('createModal').classList.remove('open'); }
+
+async function createClub() {
+    const name = document.getElementById('clubNameInp').value.trim();
+    const desc = document.getElementById('clubDescInp').value.trim();
+    if (!name) return;
+    const res  = await fetch('/perfect/api/clubs/create', {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name,description:desc})});
+    const data = await res.json();
+    closeCreate();
+    document.getElementById('clubNameInp').value = '';
+    document.getElementById('clubDescInp').value = '';
+    await loadList();
+    if (data.ok) selectClub(data.club_id);
+}
+
+loadList();
+</script>
+</body>
+</html>

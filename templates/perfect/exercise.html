@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Exercise Schedule — Too Good</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Courier+Prime:ital,wght@0,400;0,700;1,400&family=Special+Elite&display=swap" rel="stylesheet">
+    <script>(function(){
+        var r = document.documentElement;
+        if (localStorage.getItem('tg_mode') === 'light') r.classList.add('light-mode');
+        var sw = localStorage.getItem('tg_sw'); if (sw) r.style.setProperty('--sw', {narrow:'220px',normal:'260px',wide:'320px'}[sw]||'260px');
+        var an = localStorage.getItem('tg_anim'); if (an) r.style.setProperty('--anim', {none:'0ms',normal:'200ms',snappy:'80ms'}[an]||'200ms');
+    })();</script>
+    <style>
+        :root {
+            --bg:#0A0A0A; --sidebar:#080808; --surface:#111111; --elevated:#181818;
+            --border:rgba(201,168,76,0.12); --border-h:rgba(201,168,76,0.38);
+            --gold:#C9A84C; --gold-h:#DFC070; --gold-dim:rgba(201,168,76,0.07);
+            --accent:#C9A84C; --green:#4CAF7C; --red:#CF6679;
+            --text:#E8DCC8; --text-2:#8A7A62; --text-3:#4A3C2A;
+            --mono:'Courier Prime',monospace; --display:'Special Elite',monospace;
+            --sw:260px; --anim:200ms; --radius:4px;
+        }
+        html.light-mode {
+            --bg:#F5F0E8; --sidebar:#EDE8DF; --surface:#FFFFFF; --elevated:#F0EBE1;
+            --border:rgba(100,80,40,0.14); --border-h:rgba(100,80,40,0.36);
+            --gold-dim:rgba(201,168,76,0.10); --text:#1A1208; --text-2:#6B5A3E; --text-3:#9A8A72;
+        }
+        *,*::before,*::after { box-sizing:border-box; margin:0; padding:0; }
+        body { background:var(--bg); font-family:var(--mono); color:var(--text); height:100vh; overflow:hidden; -webkit-font-smoothing:antialiased; }
+        .app { display:flex; height:100vh; }
+
+        /* sidebar */
+        .sidebar { width:var(--sw); min-width:var(--sw); background:var(--sidebar); border-right:1px solid var(--border); display:flex; flex-direction:column; height:100vh; position:fixed; left:0; top:0; z-index:100; }
+        .sb-top { padding:14px 12px 12px; border-bottom:1px solid var(--border); flex-shrink:0; }
+        .sb-brand { display:flex; align-items:center; gap:10px; text-decoration:none; margin-bottom:12px; }
+        .sb-logo { width:26px; height:26px; flex-shrink:0; display:block; color:var(--gold); }
+        .sb-brand-name { font-family:var(--display); font-size:15px; color:var(--text); letter-spacing:0.06em; }
+        .new-chat-btn { width:100%; display:flex; align-items:center; gap:8px; padding:8px 10px; background:transparent; border:1px solid var(--border); color:var(--text-2); font-family:var(--mono); font-size:13px; letter-spacing:0.06em; cursor:pointer; transition:all .18s; }
+        .new-chat-btn:hover { border-color:var(--border-h); color:var(--gold); background:var(--gold-dim); }
+        .sb-nav { flex:1; overflow-y:auto; padding:8px 0 6px; }
+        .sb-nav::-webkit-scrollbar { width:2px; }
+        .sb-section-label { font-size:10px; color:var(--text-3); letter-spacing:0.24em; text-transform:uppercase; padding:12px 14px 4px; display:block; }
+        .sb-item { display:flex; align-items:center; gap:9px; width:100%; padding:8px 14px; background:none; border:none; color:var(--text-2); font-family:var(--mono); font-size:13px; letter-spacing:0.025em; cursor:pointer; text-align:left; text-decoration:none; transition:background .15s,color .15s; }
+        .sb-item:hover { background:var(--gold-dim); color:var(--text); }
+        .sb-item.active { background:rgba(201,168,76,0.09); color:var(--gold); }
+        .sb-item svg { flex-shrink:0; opacity:0.55; transition:opacity .15s; }
+        .sb-item:hover svg,.sb-item.active svg { opacity:1; }
+        .sb-chevron { margin-left:auto; font-size:9px; opacity:0.4; transition:transform .2s; }
+        .sb-sub { overflow:hidden; max-height:0; transition:max-height .25s; }
+        .sb-sub.open { max-height:400px; }
+        .sb-sub-item { display:flex; align-items:center; gap:8px; padding:7px 14px 7px 32px; color:var(--text-2); font-family:var(--mono); font-size:12px; text-decoration:none; transition:color .15s; cursor:pointer; background:none; border:none; width:100%; text-align:left; }
+        .sb-sub-item:hover { color:var(--gold); }
+        .sb-sub-item.highlight { color:var(--gold); }
+        .sb-empty { padding:8px 14px 8px 32px; color:var(--text-3); font-size:11px; }
+        .sb-bottom { padding:10px 12px; border-top:1px solid var(--border); flex-shrink:0; position:relative; }
+        .profile-btn { display:flex; align-items:center; gap:10px; width:100%; background:none; border:none; cursor:pointer; padding:6px 4px; border-radius:var(--radius); transition:background .15s; }
+        .profile-btn:hover { background:var(--gold-dim); }
+        .profile-avatar { width:26px; height:26px; border-radius:50%; background:var(--gold-dim); border:1px solid var(--border); display:flex; align-items:center; justify-content:center; font-size:12px; color:var(--gold); font-weight:700; flex-shrink:0; }
+        .profile-name { font-size:12px; color:var(--text-2); letter-spacing:0.04em; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+        .profile-popup { display:none; position:absolute; bottom:56px; left:8px; right:8px; background:var(--elevated); border:1px solid var(--border); border-radius:var(--radius); padding:12px; z-index:200; }
+        .profile-popup.open { display:block; }
+        .pp-head { display:flex; gap:10px; align-items:center; margin-bottom:10px; }
+        .pp-avatar { width:34px; height:34px; border-radius:50%; background:var(--gold-dim); border:1px solid var(--border); display:flex; align-items:center; justify-content:center; font-size:14px; color:var(--gold); font-weight:700; flex-shrink:0; }
+        .pp-info { display:flex; flex-direction:column; gap:2px; overflow:hidden; }
+        .pp-name { font-size:13px; color:var(--text); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+        .pp-email,.pp-since { font-size:10px; color:var(--text-2); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+        .pp-actions { display:flex; gap:6px; }
+        .pp-btn { flex:1; padding:6px; background:var(--gold-dim); border:1px solid var(--border); color:var(--text-2); font-family:var(--mono); font-size:11px; cursor:pointer; text-align:center; text-decoration:none; border-radius:var(--radius); transition:all .15s; }
+        .pp-btn:hover { border-color:var(--border-h); color:var(--gold); }
+        .pp-btn.red { background:rgba(207,102,121,0.07); border-color:rgba(207,102,121,0.2); color:var(--red); }
+        .pp-btn.red:hover { background:rgba(207,102,121,0.14); }
+
+        /* main */
+        .main { margin-left:var(--sw); flex:1; display:flex; flex-direction:column; height:100vh; overflow:hidden; }
+
+        /* header */
+        .page-header { padding:20px 28px 16px; border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; flex-shrink:0; }
+        .page-title { font-family:var(--display); font-size:18px; color:var(--text); letter-spacing:0.06em; }
+        .page-subtitle { font-size:11px; color:var(--text-2); margin-top:3px; }
+        .header-actions { display:flex; gap:8px; align-items:center; }
+        .save-btn { padding:8px 20px; background:var(--gold); color:#080808; border:none; font-family:var(--mono); font-size:12px; font-weight:700; letter-spacing:0.08em; cursor:pointer; border-radius:var(--radius); transition:all .18s; }
+        .save-btn:hover { background:var(--gold-h); }
+        .save-btn:disabled { opacity:0.4; cursor:not-allowed; }
+        .saved-indicator { font-size:11px; color:var(--green); opacity:0; transition:opacity .3s; letter-spacing:0.06em; }
+        .saved-indicator.show { opacity:1; }
+
+        /* scroll body */
+        .page-body { flex:1; overflow-y:auto; padding:24px 28px 40px; }
+        .page-body::-webkit-scrollbar { width:4px; }
+        .page-body::-webkit-scrollbar-thumb { background:var(--border); }
+
+        /* section */
+        .section { margin-bottom:32px; }
+        .section-title { font-size:11px; color:var(--text-3); letter-spacing:0.22em; text-transform:uppercase; margin-bottom:12px; }
+
+        /* pool */
+        .pool-wrap { display:flex; flex-wrap:wrap; gap:8px; align-items:center; padding:16px; background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); }
+        .pool-chip { display:flex; align-items:center; gap:6px; padding:6px 10px; background:var(--gold-dim); border:1px solid var(--border); border-radius:var(--radius); font-size:12px; color:var(--text); transition:border-color .15s; }
+        .pool-chip-del { background:none; border:none; color:var(--text-3); cursor:pointer; font-size:14px; line-height:1; padding:0 0 0 4px; transition:color .15s; }
+        .pool-chip-del:hover { color:var(--red); }
+        .pool-add { display:flex; gap:6px; align-items:center; }
+        .pool-input { background:transparent; border:1px solid var(--border); color:var(--text); font-family:var(--mono); font-size:12px; padding:6px 10px; border-radius:var(--radius); outline:none; width:140px; transition:border-color .15s; }
+        .pool-input:focus { border-color:var(--border-h); }
+        .pool-input::placeholder { color:var(--text-3); }
+        .pool-add-btn { padding:6px 12px; background:transparent; border:1px solid var(--border-h); color:var(--gold); font-family:var(--mono); font-size:12px; cursor:pointer; border-radius:var(--radius); transition:all .15s; white-space:nowrap; }
+        .pool-add-btn:hover { background:var(--gold-dim); }
+        .pool-empty { color:var(--text-3); font-size:12px; font-style:italic; }
+
+        /* days list */
+        .days-list { display:flex; flex-direction:column; gap:10px; }
+        .day-card { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); overflow:hidden; transition:border-color .15s; }
+        .day-card.rest-day { opacity:0.6; }
+        .day-header { display:flex; align-items:center; gap:12px; padding:14px 16px; cursor:pointer; user-select:none; }
+        .day-name { font-size:13px; color:var(--text); font-weight:700; letter-spacing:0.08em; width:88px; flex-shrink:0; }
+        .day-toggle-wrap { display:flex; align-items:center; gap:6px; }
+        .toggle-label { font-size:11px; color:var(--text-2); letter-spacing:0.06em; min-width:34px; }
+        .toggle { position:relative; width:36px; height:20px; flex-shrink:0; }
+        .toggle input { opacity:0; width:0; height:0; position:absolute; }
+        .toggle-track { position:absolute; inset:0; background:var(--elevated); border:1px solid var(--border); border-radius:10px; cursor:pointer; transition:all .2s; }
+        .toggle input:checked + .toggle-track { background:var(--gold-dim); border-color:var(--gold); }
+        .toggle-thumb { position:absolute; top:3px; left:3px; width:12px; height:12px; background:var(--text-3); border-radius:50%; transition:all .2s; pointer-events:none; }
+        .toggle input:checked ~ .toggle-thumb { left:19px; background:var(--gold); }
+        .day-summary { flex:1; display:flex; flex-wrap:wrap; gap:6px; margin-left:8px; }
+        .day-sum-chip { font-size:10px; color:var(--text-2); background:var(--elevated); border:1px solid var(--border); padding:3px 8px; border-radius:2px; letter-spacing:0.04em; }
+        .day-expand-icon { font-size:11px; color:var(--text-3); margin-left:auto; transition:transform .2s; }
+        .day-card.open .day-expand-icon { transform:rotate(180deg); }
+
+        /* day body */
+        .day-body { padding:0 16px 16px; border-top:1px solid var(--border); display:none; }
+        .day-card.open .day-body { display:block; }
+        .day-body-inner { padding-top:14px; display:flex; flex-direction:column; gap:10px; }
+        .day-ex-row { display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
+        .day-ex-check { display:flex; align-items:center; gap:7px; cursor:pointer; }
+        .day-ex-check input[type=checkbox] { width:14px; height:14px; accent-color:var(--gold); cursor:pointer; }
+        .day-ex-name { font-size:12px; color:var(--text); width:110px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+        .day-ex-time { display:flex; align-items:center; gap:5px; }
+        .time-input { background:var(--elevated); border:1px solid var(--border); color:var(--text); font-family:var(--mono); font-size:12px; padding:4px 8px; border-radius:var(--radius); outline:none; width:70px; text-align:center; transition:border-color .15s; }
+        .time-input:focus { border-color:var(--border-h); }
+        .time-sep { color:var(--text-3); font-size:11px; }
+        .no-exercises { font-size:12px; color:var(--text-3); font-style:italic; padding:4px 0; }
+        .apply-all-btn { font-size:11px; color:var(--gold); background:none; border:none; cursor:pointer; letter-spacing:0.04em; text-decoration:underline; padding:0; margin-top:4px; opacity:0.7; transition:opacity .15s; }
+        .apply-all-btn:hover { opacity:1; }
+
+        @media(max-width:600px) {
+            .main { margin-left:0; }
+            .sidebar { transform:translateX(-100%); }
+            .page-body { padding:16px; }
+        }
+    </style>
+</head>
+<body>
+<div class="app">
+    {% include 'perfect/_sidebar.html' %}
+    <div class="main">
+        <div class="page-header">
+            <div>
+                <div class="page-title">Exercise Schedule</div>
+                <div class="page-subtitle">Customise what you do each day of the week</div>
+            </div>
+            <div class="header-actions">
+                <span class="saved-indicator" id="savedIndicator">Saved</span>
+                <button class="save-btn" id="saveBtn" onclick="saveSchedule()">Save changes</button>
+            </div>
+        </div>
+
+        <div class="page-body">
+            <!-- Exercise Pool -->
+            <div class="section">
+                <div class="section-title">My exercises</div>
+                <div class="pool-wrap" id="poolWrap">
+                    <span class="pool-empty" id="poolEmpty" style="display:none">No exercises added yet.</span>
+                    <div class="pool-add">
+                        <input class="pool-input" id="poolInput" placeholder="e.g. Swimming" maxlength="40"
+                               onkeydown="if(event.key==='Enter')addToPool()">
+                        <button class="pool-add-btn" onclick="addToPool()">+ Add exercise</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Weekly Schedule -->
+            <div class="section">
+                <div class="section-title">Weekly plan</div>
+                <div class="days-list" id="daysList"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+const DAYS   = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
+const EX_TYPES_RAW = {{ (exercise_types or '') | tojson }};
+const DAY_SCHED_RAW = {{ day_schedule_json | safe }};
+
+// ── State ─────────────────────────────────────────────────────────────────────
+let pool = [];      // [{name}]
+let schedule = {};  // {dayName: {active:bool, exercises:[{name,startH,endH}]}}
+
+// ── Init ──────────────────────────────────────────────────────────────────────
+function init() {
+    // Build pool from exercise_types
+    const rawTypes = (EX_TYPES_RAW || '').split(',').map(s => s.trim()).filter(Boolean);
+
+    if (DAY_SCHED_RAW && typeof DAY_SCHED_RAW === 'object') {
+        // Restore from saved day schedule
+        schedule = DAY_SCHED_RAW;
+        // Build pool from all exercise names found in schedule
+        const namesInSched = new Set();
+        Object.values(schedule).forEach(d => (d.exercises || []).forEach(e => namesInSched.add(e.name)));
+        rawTypes.forEach(n => namesInSched.add(n));
+        pool = [...namesInSched].map(n => ({ name: n }));
+        // Fill any missing days
+        DAYS.forEach(d => { if (!schedule[d]) schedule[d] = { active: true, exercises: [] }; });
+    } else {
+        // First time: build from exercise_types, all days active with same exercises, default times
+        pool = rawTypes.map(n => ({ name: n }));
+        DAYS.forEach((d, i) => {
+            const isWeekend = i >= 5;
+            schedule[d] = {
+                active: !isWeekend,
+                exercises: pool.map(p => ({ name: p.name, startH: 7, endH: 8 }))
+            };
+        });
+    }
+
+    renderPool();
+    renderDays();
+}
+
+// ── Pool ──────────────────────────────────────────────────────────────────────
+function renderPool() {
+    const wrap = document.getElementById('poolWrap');
+    const addEl = wrap.querySelector('.pool-add');
+    const emptyEl = document.getElementById('poolEmpty');
+
+    // Remove old chips
+    wrap.querySelectorAll('.pool-chip').forEach(c => c.remove());
+
+    pool.forEach(({ name }) => {
+        const chip = document.createElement('div');
+        chip.className = 'pool-chip';
+        chip.innerHTML = `<span>${name}</span><button class="pool-chip-del" title="Remove" onclick="removeFromPool(${JSON.stringify(name)})">×</button>`;
+        wrap.insertBefore(chip, addEl);
+    });
+
+    emptyEl.style.display = pool.length ? 'none' : '';
+
+    // Sync all day rows
+    renderDays();
+}
+
+function addToPool() {
+    const inp = document.getElementById('poolInput');
+    const name = inp.value.trim();
+    if (!name) return;
+    if (pool.find(p => p.name.toLowerCase() === name.toLowerCase())) { inp.select(); return; }
+    pool.push({ name });
+    // Add to any active day that has no exercises yet (first add convenience)
+    DAYS.forEach(d => {
+        if (schedule[d] && schedule[d].active && schedule[d].exercises.length === 0) {
+            schedule[d].exercises.push({ name, startH: 7, endH: 8 });
+        }
+    });
+    inp.value = '';
+    renderPool();
+}
+
+function removeFromPool(name) {
+    pool = pool.filter(p => p.name !== name);
+    // Remove from all days
+    DAYS.forEach(d => {
+        if (schedule[d]) schedule[d].exercises = schedule[d].exercises.filter(e => e.name !== name);
+    });
+    renderPool();
+}
+
+// ── Days ──────────────────────────────────────────────────────────────────────
+function renderDays() {
+    const list = document.getElementById('daysList');
+    list.innerHTML = '';
+    DAYS.forEach(day => renderDayCard(day, list));
+}
+
+function renderDayCard(day, container) {
+    const d = schedule[day] || { active: true, exercises: [] };
+    const card = document.createElement('div');
+    card.className = 'day-card' + (d.active ? '' : ' rest-day');
+    card.id = 'card-' + day;
+
+    // Summary chips
+    const sumChips = d.active && d.exercises.length
+        ? d.exercises.map(e => `<span class="day-sum-chip">${e.name} ${fmtH(e.startH)}&ndash;${fmtH(e.endH)}</span>`).join('')
+        : d.active ? '<span class="day-sum-chip" style="color:var(--text-3)">No exercises selected</span>'
+                   : '<span class="day-sum-chip" style="color:var(--text-3)">Rest day</span>';
+
+    card.innerHTML = `
+        <div class="day-header" onclick="toggleDayOpen('${day}')">
+            <span class="day-name">${day}</span>
+            <div class="day-toggle-wrap" onclick="event.stopPropagation()">
+                <span class="toggle-label">${d.active ? 'Active' : 'Rest'}</span>
+                <label class="toggle">
+                    <input type="checkbox" id="tog-${day}" ${d.active ? 'checked' : ''}
+                           onchange="toggleActive('${day}', this.checked)">
+                    <div class="toggle-track"></div>
+                    <div class="toggle-thumb"></div>
+                </label>
+            </div>
+            <div class="day-summary">${sumChips}</div>
+            <span class="day-expand-icon">▾</span>
+        </div>
+        <div class="day-body">
+            <div class="day-body-inner" id="body-${day}"></div>
+        </div>`;
+
+    container.appendChild(card);
+    renderDayBody(day);
+}
+
+function renderDayBody(day) {
+    const d = schedule[day] || { active: true, exercises: [] };
+    const body = document.getElementById('body-' + day);
+    if (!body) return;
+    body.innerHTML = '';
+
+    if (!d.active) {
+        body.innerHTML = '<span class="no-exercises">Rest day — no workout scheduled.</span>';
+        return;
+    }
+
+    if (!pool.length) {
+        body.innerHTML = '<span class="no-exercises">Add exercises to "My exercises" above first.</span>';
+        return;
+    }
+
+    pool.forEach(({ name }) => {
+        const sel = d.exercises.find(e => e.name === name);
+        const isChecked = !!sel;
+        const sh = sel ? sel.startH : 7;
+        const eh = sel ? sel.endH : 8;
+
+        const row = document.createElement('div');
+        row.className = 'day-ex-row';
+        row.id = `row-${day}-${name}`;
+        row.innerHTML = `
+            <label class="day-ex-check">
+                <input type="checkbox" ${isChecked ? 'checked' : ''}
+                       onchange="toggleExercise('${day}','${name}',this.checked)">
+                <span class="day-ex-name" title="${name}">${name}</span>
+            </label>
+            <div class="day-ex-time" style="${isChecked ? '' : 'opacity:0.3;pointer-events:none'}">
+                <input class="time-input" type="time" id="sh-${day}-${name}"
+                       value="${hToTime(sh)}"
+                       onchange="updateTime('${day}','${name}')">
+                <span class="time-sep">to</span>
+                <input class="time-input" type="time" id="eh-${day}-${name}"
+                       value="${hToTime(eh)}"
+                       onchange="updateTime('${day}','${name}')">
+            </div>`;
+        body.appendChild(row);
+    });
+
+    // Apply-to-all-days button
+    if (d.exercises.length) {
+        const btn = document.createElement('button');
+        btn.className = 'apply-all-btn';
+        btn.textContent = 'Apply this day\'s schedule to all active days';
+        btn.onclick = () => applyToAll(day);
+        body.appendChild(btn);
+    }
+}
+
+// ── Interactions ──────────────────────────────────────────────────────────────
+function toggleDayOpen(day) {
+    const card = document.getElementById('card-' + day);
+    if (card) card.classList.toggle('open');
+}
+
+function toggleActive(day, active) {
+    if (!schedule[day]) schedule[day] = { active: true, exercises: [] };
+    schedule[day].active = active;
+    const card = document.getElementById('card-' + day);
+    if (card) {
+        card.classList.toggle('rest-day', !active);
+        const label = card.querySelector('.toggle-label');
+        if (label) label.textContent = active ? 'Active' : 'Rest';
+    }
+    renderDayBody(day);
+    refreshSummary(day);
+}
+
+function toggleExercise(day, name, checked) {
+    if (!schedule[day]) schedule[day] = { active: true, exercises: [] };
+    if (checked) {
+        if (!schedule[day].exercises.find(e => e.name === name)) {
+            schedule[day].exercises.push({ name, startH: 7, endH: 8 });
+        }
+    } else {
+        schedule[day].exercises = schedule[day].exercises.filter(e => e.name !== name);
+    }
+    // Toggle time inputs
+    const row = document.getElementById(`row-${day}-${name}`);
+    if (row) {
+        const timeDiv = row.querySelector('.day-ex-time');
+        if (timeDiv) { timeDiv.style.opacity = checked ? '' : '0.3'; timeDiv.style.pointerEvents = checked ? '' : 'none'; }
+    }
+    refreshSummary(day);
+    // Re-render body to show/hide apply-to-all
+    renderDayBody(day);
+}
+
+function updateTime(day, name) {
+    const shEl = document.getElementById(`sh-${day}-${name}`);
+    const ehEl = document.getElementById(`eh-${day}-${name}`);
+    if (!shEl || !ehEl) return;
+    const sh = timeToH(shEl.value);
+    const eh = timeToH(ehEl.value);
+    const ex = schedule[day] && schedule[day].exercises.find(e => e.name === name);
+    if (ex) { ex.startH = sh; ex.endH = eh; }
+    refreshSummary(day);
+}
+
+function applyToAll(sourceDay) {
+    const src = schedule[sourceDay];
+    if (!src) return;
+    DAYS.forEach(day => {
+        if (day === sourceDay || !schedule[day] || !schedule[day].active) return;
+        schedule[day].exercises = src.exercises.map(e => ({ ...e }));
+    });
+    renderDays();
+}
+
+function refreshSummary(day) {
+    const d = schedule[day] || { active: true, exercises: [] };
+    const card = document.getElementById('card-' + day);
+    if (!card) return;
+    const sumEl = card.querySelector('.day-summary');
+    if (!sumEl) return;
+    if (d.active && d.exercises.length) {
+        sumEl.innerHTML = d.exercises.map(e => `<span class="day-sum-chip">${e.name} ${fmtH(e.startH)}&ndash;${fmtH(e.endH)}</span>`).join('');
+    } else if (d.active) {
+        sumEl.innerHTML = '<span class="day-sum-chip" style="color:var(--text-3)">No exercises selected</span>';
+    } else {
+        sumEl.innerHTML = '<span class="day-sum-chip" style="color:var(--text-3)">Rest day</span>';
+    }
+}
+
+// ── Helpers ───────────────────────────────────────────────────────────────────
+function hToTime(h) {
+    const hh = Math.floor(h); const mm = Math.round((h - hh) * 60);
+    return String(hh).padStart(2,'0') + ':' + String(mm).padStart(2,'0');
+}
+function timeToH(str) {
+    if (!str) return 0;
+    const [h, m] = str.split(':').map(Number);
+    return h + (m || 0) / 60;
+}
+function fmtH(h) {
+    const hh = Math.floor(h) % 12 || 12;
+    const mm = Math.round((h - Math.floor(h)) * 60);
+    const suf = Math.floor(h) < 12 ? 'am' : 'pm';
+    return mm ? `${hh}:${String(mm).padStart(2,'0')}${suf}` : `${hh}${suf}`;
+}
+
+// ── Save ──────────────────────────────────────────────────────────────────────
+async function saveSchedule() {
+    // Flush any open time inputs by reading from DOM
+    DAYS.forEach(day => {
+        const d = schedule[day];
+        if (!d || !d.active) return;
+        d.exercises.forEach(ex => {
+            const sh = document.getElementById(`sh-${day}-${ex.name}`);
+            const eh = document.getElementById(`eh-${day}-${ex.name}`);
+            if (sh) ex.startH = timeToH(sh.value);
+            if (eh) ex.endH   = timeToH(eh.value);
+        });
+    });
+
+    const btn = document.getElementById('saveBtn');
+    btn.disabled = true; btn.textContent = 'Saving…';
+
+    try {
+        const res = await fetch('/perfect/api/save-day-schedule', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ schedule, pool: pool.map(p => p.name) })
+        });
+        const data = await res.json();
+        if (data.ok) {
+            const ind = document.getElementById('savedIndicator');
+            ind.classList.add('show');
+            setTimeout(() => ind.classList.remove('show'), 2500);
+
+            // Also push exercise_schedule_json for nutrition AI
+            const exTimes = {};
+            Object.values(schedule).forEach(d => {
+                if (!d.active) return;
+                (d.exercises || []).forEach(e => {
+                    const key = e.name.toLowerCase().trim();
+                    if (!exTimes[key]) exTimes[key] = { startH: e.startH, endH: e.endH };
+                });
+            });
+            if (Object.keys(exTimes).length) {
+                fetch('/perfect/api/save-exercise-times', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ times: exTimes })
+                }).catch(() => {});
+            }
+        }
+    } catch {}
+
+    btn.disabled = false; btn.textContent = 'Save changes';
+}
+
+// ── Profile popup ─────────────────────────────────────────────────────────────
+window.sbToggleProfile = function(e) {
+    e.stopPropagation();
+    document.getElementById('profilePopup').classList.toggle('open');
+};
+document.addEventListener('click', e => {
+    const p = document.getElementById('profilePopup');
+    if (p && p.classList.contains('open') && !p.contains(e.target) && e.target.id !== 'profileBtn')
+        p.classList.remove('open');
+});
+
+init();
+</script>
+</body>
+</html>

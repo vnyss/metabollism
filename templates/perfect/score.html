@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Score — Too Good</title>
+<script>(function(){
+    var r = document.documentElement;
+    if (localStorage.getItem('tg_mode') === 'light') r.classList.add('light-mode');
+    var sw = localStorage.getItem('tg_sw');
+    if (sw) r.style.setProperty('--sw', {narrow:'220px',normal:'260px',wide:'320px'}[sw] || '220px');
+})();</script>
+<style>
+:root {
+    --bg:#0A0A0A; --sidebar:#080808; --surface:#111111; --elevated:#181818;
+    --border:rgba(201,168,76,.13); --border-h:rgba(201,168,76,.32);
+    --gold:#C9A84C; --gold-h:#D4B45A; --gold-dim:rgba(201,168,76,.07);
+    --text:#E8DCC8; --text-2:rgba(232,220,200,.6); --text-3:rgba(232,220,200,.35);
+    --mono:'Courier Prime',monospace; --display:'Playfair Display',serif;
+    --sw:260px;
+}
+.light-mode {
+    --bg:#F5F0E8; --sidebar:#EDE8DF; --surface:#FDFAF4; --elevated:#F0EBE0;
+    --border:rgba(139,110,56,.15); --border-h:rgba(139,110,56,.35);
+    --gold:#8B6E38; --gold-h:#A07840; --gold-dim:rgba(139,110,56,.08);
+    --text:#2A1F0A; --text-2:rgba(42,31,10,.6); --text-3:rgba(42,31,10,.35);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:var(--mono);display:flex;min-height:100vh}
+.main{margin-left:var(--sw);flex:1;padding:32px 28px;max-width:820px}
+h1{font-family:var(--display);font-size:22px;font-weight:400;letter-spacing:.04em;color:var(--text);margin-bottom:4px}
+.subtitle{font-size:12px;color:var(--text-3);letter-spacing:.1em;text-transform:uppercase;margin-bottom:32px}
+
+/* Level hero */
+.level-hero{display:flex;align-items:center;gap:28px;padding:28px;background:var(--surface);border:1px solid var(--border);margin-bottom:24px}
+.level-ring{position:relative;width:110px;height:110px;flex-shrink:0}
+.level-ring svg{transform:rotate(-90deg)}
+.level-ring-num{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px}
+.level-label{font-size:8px;color:var(--text-3);letter-spacing:.32em;text-transform:uppercase;margin-bottom:1px}
+.level-num{font-family:var(--display);font-size:36px;color:var(--gold);line-height:1}
+.level-info{flex:1;min-width:0}
+.level-title{font-family:var(--display);font-size:26px;color:var(--text);margin-bottom:6px}
+.level-sub{font-size:12px;color:var(--text-2);margin-bottom:14px}
+.xp-bar-wrap{margin-bottom:8px}
+.xp-bar-track{height:6px;background:rgba(255,255,255,.05);border-radius:3px;overflow:hidden}
+.xp-bar-fill{height:100%;background:linear-gradient(90deg,var(--gold),var(--gold-h));border-radius:3px;transition:width 1s cubic-bezier(.4,0,.2,1)}
+.xp-bar-labels{display:flex;justify-content:space-between;font-size:10px;color:var(--text-3);margin-top:5px;letter-spacing:.04em}
+.streak-badge{display:inline-flex;align-items:center;gap:6px;padding:5px 12px;border:1px solid var(--border-h);font-size:11px;color:var(--gold);letter-spacing:.08em;margin-top:10px}
+
+/* Stats row */
+.stats-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:24px}
+.stat-card{padding:18px 16px;background:var(--surface);border:1px solid var(--border)}
+.stat-val{font-family:var(--display);font-size:24px;color:var(--gold);margin-bottom:4px}
+.stat-label{font-size:10px;color:var(--text-3);letter-spacing:.1em;text-transform:uppercase}
+
+/* Milestones */
+.section-head{font-size:11px;color:var(--text-3);letter-spacing:.18em;text-transform:uppercase;margin-bottom:14px;padding-bottom:8px;border-bottom:1px solid var(--border)}
+.milestones{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px;margin-bottom:28px}
+.milestone{padding:14px;background:var(--surface);border:1px solid var(--border);transition:border-color .2s}
+.milestone.reached{border-color:rgba(201,168,76,.4)}
+.ms-level{font-size:10px;color:var(--text-3);letter-spacing:.12em;margin-bottom:4px}
+.ms-title{font-size:13px;color:var(--text-2);font-family:var(--display)}
+.milestone.reached .ms-title{color:var(--gold)}
+.ms-lock{font-size:18px;opacity:.18;margin-bottom:4px}
+
+/* Leaderboard */
+.lb-wrap{display:flex;flex-direction:column;gap:2px}
+.lb-gap{height:10px;display:flex;align-items:center;padding:0 14px}
+.lb-gap::before{content:'···';color:var(--text-3);font-family:var(--mono);font-size:11px;letter-spacing:.1em}
+.lb-row{display:flex;align-items:center;gap:14px;padding:13px 16px;background:var(--surface);border:1px solid var(--border);position:relative;transition:border-color .2s}
+.lb-row.me{border-color:rgba(201,168,76,.45);background:rgba(201,168,76,.04)}
+.lb-row.gold{border-color:rgba(201,168,76,.6);background:rgba(201,168,76,.07)}
+.lb-rank{font-family:'Playfair Display',serif;font-size:22px;color:var(--text-3);width:36px;text-align:center;flex-shrink:0;line-height:1}
+.lb-row.gold .lb-rank{color:var(--gold)}
+.lb-row.silver .lb-rank{color:#A8A9AD}
+.lb-row.bronze .lb-rank{color:#CD7F32}
+.lb-medal{font-size:16px;width:24px;text-align:center;flex-shrink:0}
+.lb-name{font-size:13px;color:var(--text);flex:1;font-family:var(--mono);letter-spacing:.03em;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.lb-row.me .lb-name{color:var(--gold)}
+.lb-level{font-size:11px;color:var(--text-3);white-space:nowrap;letter-spacing:.04em}
+.lb-xp{font-family:'Playfair Display',serif;font-size:15px;color:var(--gold);white-space:nowrap;margin-left:10px}
+.lb-you{font-family:var(--mono);font-size:9px;color:var(--gold);letter-spacing:.18em;text-transform:uppercase;padding:2px 6px;border:1px solid rgba(201,168,76,.4);margin-left:8px;flex-shrink:0}
+.lb-summary{font-family:var(--mono);font-size:11px;color:var(--text-3);padding:14px 16px;letter-spacing:.04em;border:1px solid var(--border);border-top:none;background:var(--surface)}
+
+/* Recent events */
+.events-list{display:flex;flex-direction:column;gap:1px}
+.event-row{display:flex;align-items:center;gap:14px;padding:11px 14px;background:var(--surface);border-bottom:1px solid rgba(201,168,76,.06)}
+.event-dot{width:6px;height:6px;border-radius:50%;background:var(--gold);flex-shrink:0}
+.event-type{font-size:12px;color:var(--text-2);flex:1}
+.event-xp{font-size:13px;color:var(--gold);font-family:var(--display);letter-spacing:.04em;white-space:nowrap}
+.event-date{font-size:10px;color:var(--text-3);white-space:nowrap;margin-left:8px}
+
+@media(max-width:640px){
+    .main{margin-left:0;padding:20px 16px}
+    .level-hero{flex-direction:column;text-align:center}
+}
+</style>
+</head>
+<body>
+{% include 'perfect/_sidebar.html' %}
+
+<div class="main">
+    <h1>Your Score</h1>
+    <p class="subtitle">Progress & Achievements</p>
+
+    <!-- Level hero -->
+    <div class="level-hero">
+        <div class="level-ring">
+            <svg width="110" height="110" viewBox="0 0 110 110">
+                <circle cx="55" cy="55" r="48" fill="none" stroke="rgba(201,168,76,.1)" stroke-width="7"/>
+                <circle id="ringArc" cx="55" cy="55" r="48" fill="none" stroke="var(--gold)" stroke-width="7"
+                    stroke-linecap="round"
+                    stroke-dasharray="301.6" stroke-dashoffset="301.6"
+                    style="transition:stroke-dashoffset 1.2s cubic-bezier(.4,0,.2,1)"/>
+            </svg>
+            <div class="level-ring-num">
+                <span class="level-label">LEVEL</span>
+                <span class="level-num" id="levelNum">—</span>
+            </div>
+        </div>
+        <div class="level-info">
+            <div class="level-title" id="levelTitle">Loading…</div>
+            <div class="level-sub" id="levelSub"></div>
+            <div class="xp-bar-wrap">
+                <div class="xp-bar-track"><div class="xp-bar-fill" id="xpBar" style="width:0%"></div></div>
+                <div class="xp-bar-labels">
+                    <span id="xpInLabel">0 XP</span>
+                    <span id="xpMaxLabel">30 XP to next level</span>
+                </div>
+            </div>
+            <div class="streak-badge" id="streakBadge" style="display:none">
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="var(--gold)" stroke="none"><path d="M17.66 11.2C17.43 10.9 17.15 10.64 16.89 10.38C16.22 9.78 15.46 9.35 14.82 8.72C13.33 7.26 13 4.85 13.95 3C13 3.23 12.17 3.75 11.46 4.32C8.87 6.4 7.85 10.07 9.07 13.22C9.11 13.32 9.15 13.42 9.15 13.55C9.15 13.77 9 13.97 8.8 14.05C8.57 14.15 8.33 14.09 8.14 13.93C8.08 13.88 8.04 13.83 8 13.76C6.87 12.33 6.69 10.28 7.45 8.64C5.78 10 4.87 12.3 5 14.47C5.06 14.97 5.12 15.47 5.29 15.97C5.43 16.57 5.7 17.17 6 17.7C7.08 19.43 8.95 20.67 10.96 20.92C13.1 21.19 15.39 20.8 17.03 19.32C18.86 17.66 19.5 15 18.56 12.72L18.43 12.46C18.22 12 17.66 11.2 17.66 11.2Z"/></svg>
+                <span id="streakText">0 day streak</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Stats row -->
+    <div class="stats-row">
+        <div class="stat-card">
+            <div class="stat-val" id="statXP">—</div>
+            <div class="stat-label">Total XP</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-val" id="statStreak">—</div>
+            <div class="stat-label">Day Streak</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-val" id="statToMax">—</div>
+            <div class="stat-label">Levels to Max</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-val" id="statEvents">—</div>
+            <div class="stat-label">XP Events</div>
+        </div>
+    </div>
+
+    <!-- How to earn XP -->
+    <div class="section-head">How to Earn XP</div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px;margin-bottom:28px">
+
+        <div style="padding:16px;background:var(--surface);border:1px solid var(--border);display:flex;align-items:center;gap:14px">
+            <div style="width:36px;height:36px;background:var(--gold-dim);border:1px solid var(--border-h);display:flex;align-items:center;justify-content:center;flex-shrink:0">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" stroke-width="1.8" stroke-linecap="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+            </div>
+            <div>
+                <div style="font-size:12px;color:var(--text);margin-bottom:2px">Daily check-in</div>
+                <div style="font-size:10px;color:var(--text-3);letter-spacing:.04em">Visit any page · once per day</div>
+            </div>
+            <div style="margin-left:auto;font-family:var(--display);font-size:18px;color:var(--gold);white-space:nowrap">+5 XP</div>
+        </div>
+
+        <div style="padding:16px;background:var(--surface);border:1px solid var(--border);display:flex;align-items:center;gap:14px">
+            <div style="width:36px;height:36px;background:var(--gold-dim);border:1px solid var(--border-h);display:flex;align-items:center;justify-content:center;flex-shrink:0">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" stroke-width="1.8" stroke-linecap="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+            </div>
+            <div>
+                <div style="font-size:12px;color:var(--text);margin-bottom:2px">Log food</div>
+                <div style="font-size:10px;color:var(--text-3);letter-spacing:.04em">Add a meal in Log Today · once per day</div>
+            </div>
+            <div style="margin-left:auto;font-family:var(--display);font-size:18px;color:var(--gold);white-space:nowrap">+8 XP</div>
+        </div>
+
+        <div style="padding:16px;background:var(--surface);border:1px solid var(--border);display:flex;align-items:center;gap:14px">
+            <div style="width:36px;height:36px;background:var(--gold-dim);border:1px solid var(--border-h);display:flex;align-items:center;justify-content:center;flex-shrink:0">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" stroke-width="1.8" stroke-linecap="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+            </div>
+            <div>
+                <div style="font-size:12px;color:var(--text);margin-bottom:2px">Log exercise</div>
+                <div style="font-size:10px;color:var(--text-3);letter-spacing:.04em">Fill workout field in Log Today · once per day</div>
+            </div>
+            <div style="margin-left:auto;font-family:var(--display);font-size:18px;color:var(--gold);white-space:nowrap">+8 XP</div>
+        </div>
+
+        <div style="padding:16px;background:var(--surface);border:1px solid var(--border);display:flex;align-items:center;gap:14px">
+            <div style="width:36px;height:36px;background:var(--gold-dim);border:1px solid var(--border-h);display:flex;align-items:center;justify-content:center;flex-shrink:0">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" stroke-width="1.8" stroke-linecap="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+            </div>
+            <div>
+                <div style="font-size:12px;color:var(--text);margin-bottom:2px">Hit calorie goal</div>
+                <div style="font-size:10px;color:var(--text-3);letter-spacing:.04em">Within 200 kcal of your target · once per day</div>
+            </div>
+            <div style="margin-left:auto;font-family:var(--display);font-size:18px;color:var(--gold);white-space:nowrap">+12 XP</div>
+        </div>
+
+        <div style="padding:16px;background:var(--surface);border:1px solid var(--border);display:flex;align-items:center;gap:14px">
+            <div style="width:36px;height:36px;background:var(--gold-dim);border:1px solid var(--border-h);display:flex;align-items:center;justify-content:center;flex-shrink:0">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" stroke-width="1.8" stroke-linecap="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/><circle cx="12" cy="12" r="1" fill="var(--gold)"/></svg>
+            </div>
+            <div>
+                <div style="font-size:12px;color:var(--text);margin-bottom:2px">Blood report</div>
+                <div style="font-size:10px;color:var(--text-3);letter-spacing:.04em">Analyze in Blood Monitor · once per month</div>
+            </div>
+            <div style="margin-left:auto;font-family:var(--display);font-size:18px;color:var(--gold);white-space:nowrap">+100 XP</div>
+        </div>
+
+        <div style="padding:16px;background:var(--surface);border:1px solid rgba(201,168,76,.3);display:flex;align-items:center;gap:14px">
+            <div style="width:36px;height:36px;background:rgba(201,168,76,.12);border:1px solid rgba(201,168,76,.4);display:flex;align-items:center;justify-content:center;flex-shrink:0">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="var(--gold)" stroke="none"><path d="M17.66 11.2C17.43 10.9 17.15 10.64 16.89 10.38C16.22 9.78 15.46 9.35 14.82 8.72C13.33 7.26 13 4.85 13.95 3C13 3.23 12.17 3.75 11.46 4.32C8.87 6.4 7.85 10.07 9.07 13.22C9.11 13.32 9.15 13.42 9.15 13.55C9.15 13.77 9 13.97 8.8 14.05C8.57 14.15 8.33 14.09 8.14 13.93C8.08 13.88 8.04 13.83 8 13.76C6.87 12.33 6.69 10.28 7.45 8.64C5.78 10 4.87 12.3 5 14.47C5.06 14.97 5.12 15.47 5.29 15.97C5.43 16.57 5.7 17.17 6 17.7C7.08 19.43 8.95 20.67 10.96 20.92C13.1 21.19 15.39 20.8 17.03 19.32C18.86 17.66 19.5 15 18.56 12.72L18.43 12.46C18.22 12 17.66 11.2 17.66 11.2Z"/></svg>
+            </div>
+            <div>
+                <div style="font-size:12px;color:var(--gold);margin-bottom:2px">Streak bonuses <span style="font-size:10px;font-family:var(--mono);opacity:.7">(added on daily check-in)</span></div>
+                <div style="font-size:10px;color:var(--text-3);letter-spacing:.04em;line-height:1.9">
+                    7-day streak: <span style="color:var(--gold)">+5 XP</span><br>
+                    30-day streak: <span style="color:var(--gold)">+50 XP</span><br>
+                    100-day streak: <span style="color:var(--gold)">+70 XP</span>
+                </div>
+            </div>
+        </div>
+
+        <div style="padding:16px;background:var(--surface);border:1px solid rgba(201,168,76,.3);display:flex;align-items:center;gap:14px;grid-column:1/-1">
+            <div style="width:36px;height:36px;background:rgba(201,168,76,.12);border:1px solid rgba(201,168,76,.4);display:flex;align-items:center;justify-content:center;flex-shrink:0">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" stroke-width="1.8" stroke-linecap="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+            </div>
+            <div style="flex:1">
+                <div style="font-size:12px;color:var(--gold);margin-bottom:4px">Level multipliers — all XP earned is multiplied by your tier</div>
+                <div style="display:flex;gap:16px;flex-wrap:wrap">
+                    <span style="font-size:10px;color:var(--text-3)">Level 1–99: <span style="color:var(--text-2)">1× (base)</span></span>
+                    <span style="font-size:10px;color:var(--text-3)">Level 100–199: <span style="color:var(--gold)">5× all XP</span></span>
+                    <span style="font-size:10px;color:var(--text-3)">Level 200–300: <span style="color:var(--gold)">20× all XP</span></span>
+                </div>
+                <div style="font-size:10px;color:var(--text-3);margin-top:4px">
+                    Example at Level 200+: daily check-in = 100 XP · food log = 160 XP · blood report = 2,000 XP
+                </div>
+            </div>
+            <div style="font-family:var(--display);font-size:14px;color:var(--gold);white-space:nowrap;text-align:right">
+                Your tier:<br><span id="curMultiplierBadge" style="font-size:24px">—</span>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Milestones -->
+    <div class="section-head">Milestones</div>
+    <div class="milestones" id="milestones"></div>
+
+    <!-- Recent activity -->
+    <div class="section-head">Recent XP Activity</div>
+    <div class="events-list" id="eventsList"><div style="padding:20px;color:var(--text-3);font-size:12px">No XP events yet. Log food, exercise, or analyze a blood report to earn XP.</div></div>
+
+    <!-- Global Leaderboard -->
+    <div class="section-head" style="margin-top:32px">World Rankings</div>
+    <div id="leaderboard" style="margin-bottom:28px">
+        <div style="padding:20px;color:var(--text-3);font-size:12px">Loading rankings…</div>
+    </div>
+</div>
+
+<script>
+const USERNAME = {{ username | tojson }};
+
+const MILESTONES = [
+    { level:  1,  title: 'First Step' },
+    { level:  5,  title: 'Getting Started' },
+    { level: 10,  title: 'Health Curious' },
+    { level: 25,  title: 'Consistent' },
+    { level: 50,  title: 'Committed' },
+    { level: 75,  title: 'Disciplined' },
+    { level: 100, title: 'Century Club' },
+    { level: 150, title: 'Half-Way Hero' },
+    { level: 200, title: 'Elite Tracker' },
+    { level: 250, title: 'Master Tier' },
+    { level: 300, title: 'Perfection' },
+];
+
+const ACTION_LABELS = {
+    login:        'Daily check-in',
+    food_log:     'Food logged',
+    calorie_goal: 'Calorie goal achieved',
+    exercise:     'Exercise logged',
+    blood_report: 'Blood report analyzed',
+};
+
+async function loadScore() {
+    try {
+        const res  = await fetch('/perfect/api/score');
+        const data = await res.json();
+        if (!data.ok) return;
+
+        const { level, max_level, xp_in_level, xp_per_level, total_xp, streak, events } = data;
+        const pct = Math.round(xp_in_level / xp_per_level * 100);
+
+        // Ring
+        const circ = 2 * Math.PI * 48;
+        const levelPct = level / max_level;
+        document.getElementById('ringArc').style.strokeDashoffset = circ * (1 - levelPct);
+
+        // Level
+        document.getElementById('levelNum').textContent   = level;
+        document.getElementById('levelTitle').textContent = levelTitle(level);
+        document.getElementById('levelSub').textContent   = level >= max_level
+            ? 'Maximum level achieved — legendary!'
+            : `${xp_in_level} XP into Level ${level}`;
+
+        // XP bar
+        document.getElementById('xpBar').style.width    = pct + '%';
+        document.getElementById('xpInLabel').textContent = `${xp_in_level} / ${xp_per_level} XP`;
+        document.getElementById('xpMaxLabel').textContent = level < max_level
+            ? `${xp_per_level - xp_in_level} XP to Level ${level + 1}`
+            : 'Max level!';
+
+        // Streak badge
+        if (streak > 0) {
+            document.getElementById('streakBadge').style.display = 'inline-flex';
+            document.getElementById('streakText').textContent = `${streak} day streak`;
+        }
+
+        // Stats
+        document.getElementById('statXP').textContent     = Math.round(total_xp).toLocaleString();
+        document.getElementById('statStreak').textContent = streak;
+        document.getElementById('statToMax').textContent  = max_level - level;
+        document.getElementById('statEvents').textContent = events.length;
+
+        // Multiplier badge
+        const mult = data.multiplier || 1;
+        const multEl = document.getElementById('curMultiplierBadge');
+        if (multEl) multEl.textContent = mult + '×';
+
+        // Milestones
+        const ms = document.getElementById('milestones');
+        ms.innerHTML = MILESTONES.map(m => {
+            const reached = level >= m.level;
+            return `<div class="milestone${reached ? ' reached' : ''}">
+                <div class="ms-lock">${reached ? '★' : '○'}</div>
+                <div class="ms-level">Level ${m.level}</div>
+                <div class="ms-title">${m.title}</div>
+            </div>`;
+        }).join('');
+
+        // Events
+        const el = document.getElementById('eventsList');
+        if (events.length) {
+            el.innerHTML = events.map(e => {
+                const dt = e.awarded_at ? e.awarded_at.split('T')[0] : '';
+                const label = ACTION_LABELS[e.event_type] || e.event_type;
+                const note  = e.note ? ` · ${e.note}` : '';
+                return `<div class="event-row">
+                    <div class="event-dot"></div>
+                    <div class="event-type">${label}${note}</div>
+                    <div class="event-xp">+${e.xp_awarded} XP</div>
+                    <div class="event-date">${dt}</div>
+                </div>`;
+            }).join('');
+        }
+    } catch (e) {}
+}
+
+function levelTitle(n) {
+    if (n >= 300) return 'Perfect';
+    if (n >= 250) return 'Grandmaster';
+    if (n >= 200) return 'Elite';
+    if (n >= 150) return 'Expert';
+    if (n >= 100) return 'Advanced';
+    if (n >= 75)  return 'Skilled';
+    if (n >= 50)  return 'Committed';
+    if (n >= 25)  return 'Consistent';
+    if (n >= 10)  return 'Curious';
+    if (n >= 5)   return 'Beginner';
+    return 'Novice';
+}
+
+async function loadLeaderboard() {
+    const wrap = document.getElementById('leaderboard');
+    if (!wrap) return;
+    try {
+        const res  = await fetch('/perfect/api/leaderboard');
+        const data = await res.json();
+        if (!data.ok) { wrap.innerHTML = '<div style="padding:16px;color:var(--text-3);font-size:12px">Could not load rankings.</div>'; return; }
+
+        const medals = {1:'🥇', 2:'🥈', 3:'🥉'};
+        const cls    = {1:'gold', 2:'silver', 3:'bronze'};
+
+        let html = '<div class="lb-wrap">';
+        let prevRank = 0;
+        data.board.forEach((e, i) => {
+            if (e.gap && e.rank > prevRank + 1) {
+                html += '<div class="lb-gap"></div>';
+            }
+            const tier = cls[e.rank] || '';
+            const meClass = e.is_me ? ' me' : '';
+            const medal   = medals[e.rank] || '';
+            html += `<div class="lb-row ${tier}${meClass}">
+                <div class="lb-rank">${e.rank}</div>
+                <div class="lb-medal">${medal}</div>
+                <div class="lb-name">${e.name}</div>
+                <div class="lb-level">Lv ${e.level.toLocaleString()}</div>
+                <div class="lb-xp">${e.xp.toLocaleString()} XP</div>
+                ${e.is_me ? '<div class="lb-you">You</div>' : ''}
+            </div>`;
+            prevRank = e.rank;
+        });
+        html += '</div>';
+
+        const rankText = data.my_rank === 1
+            ? 'You are ranked <strong style="color:var(--gold)">#1 in the world</strong>!'
+            : `Your global rank: <strong style="color:var(--gold)">#${data.my_rank.toLocaleString()}</strong> out of ${data.total_users.toLocaleString()} users`;
+        html += `<div class="lb-summary">${rankText}</div>`;
+
+        wrap.innerHTML = html;
+    } catch {
+        wrap.innerHTML = '<div style="padding:16px;color:var(--text-3);font-size:12px">Could not load rankings.</div>';
+    }
+}
+
+// Award daily login XP then load
+fetch('/perfect/api/score/award', {
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({action:'login'})
+}).then(() => loadScore()).catch(() => loadScore());
+loadLeaderboard();
+</script>
+</body>
+</html>

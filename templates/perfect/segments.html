@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Segments — Too Good</title>
+    <link href="https://fonts.googleapis.com/css2?family=Courier+Prime:wght@400;700&family=Special+Elite&family=Playfair+Display:wght@400;700&display=swap" rel="stylesheet">
+    <script>(function(){var r=document.documentElement;if(localStorage.getItem('tg_mode')==='light')r.classList.add('light-mode');var sw=localStorage.getItem('tg_sw');if(sw)r.style.setProperty('--sw',{narrow:'220px',normal:'260px',wide:'320px'}[sw]||'260px');var cr=localStorage.getItem('tg_corner');if(cr)r.style.setProperty('--radius',{sharp:'0px',soft:'6px',rounded:'14px'}[cr]||'6px');})();</script>
+    <style>
+        :root{--bg:#080808;--sidebar:#060606;--surface:#0F0F0F;--elevated:#161616;--border:rgba(201,168,76,0.12);--border-h:rgba(201,168,76,0.38);--gold:#C9A84C;--gold-dim:rgba(201,168,76,0.07);--text:#EDE3CE;--text-2:#9A8B72;--text-3:#554430;--green:#4CAF82;--red:#E05555;--mono:'Courier Prime',monospace;--display:'Special Elite',monospace;--sw:260px;--radius:6px}
+        html.light-mode{--bg:#F5F0E8;--sidebar:#EDE8DF;--surface:#FFFFFF;--elevated:#F0EBE1;--border:rgba(100,80,40,0.14);--border-h:rgba(100,80,40,0.36);--gold-dim:rgba(201,168,76,0.10);--text:#2C2010;--text-2:#6B5B3E;--text-3:#A89070}
+        *{box-sizing:border-box;margin:0;padding:0}
+        body{background:var(--bg);color:var(--text);font-family:var(--mono);font-size:14px;display:flex;min-height:100vh}
+
+        /* Left panel */
+        .left-panel{position:fixed;top:0;left:var(--sw);width:280px;height:100vh;background:var(--sidebar);border-right:1px solid var(--border);display:flex;flex-direction:column}
+        .lp-head{padding:24px 20px 14px;border-bottom:1px solid var(--border);flex-shrink:0}
+        .lp-title{font-family:'Playfair Display',serif;font-size:20px;color:var(--text);margin-bottom:12px}
+        .btn-create{width:100%;padding:9px;font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--gold);border:1px solid rgba(201,168,76,.45);background:none;cursor:pointer;transition:background .15s}
+        .btn-create:hover{background:var(--gold-dim)}
+        .filter-row{display:flex;gap:4px;padding:10px 14px;border-bottom:1px solid var(--border);flex-wrap:wrap;flex-shrink:0}
+        .filter-btn{padding:4px 10px;font-size:10px;letter-spacing:.08em;border:1px solid var(--border);color:var(--text-3);background:none;cursor:pointer;transition:all .12s}
+        .filter-btn.active{border-color:rgba(201,168,76,.5);color:var(--gold);background:var(--gold-dim)}
+        .seg-scroll{flex:1;overflow-y:auto}
+        .seg-item{padding:14px 20px;border-bottom:1px solid var(--border);cursor:pointer;transition:background .12s}
+        .seg-item:hover,.seg-item.sel{background:var(--gold-dim)}
+        .seg-top{display:flex;align-items:center;gap:8px;margin-bottom:4px}
+        .seg-emoji{font-size:16px}
+        .seg-name{font-size:13px;color:var(--text);flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+        .seg-kom{font-size:10px;color:var(--gold)}
+        .seg-meta{font-size:10px;color:var(--text-3);letter-spacing:.03em}
+
+        /* Main */
+        .main{margin-left:calc(var(--sw) + 280px);flex:1;padding:40px 48px;min-height:100vh}
+        .empty-state{padding:80px 0;text-align:center;color:var(--text-3);font-size:13px;line-height:2.2}
+
+        /* Segment detail */
+        .seg-hero{display:flex;align-items:flex-start;gap:20px;padding:28px 32px;background:var(--surface);border:1px solid var(--border);margin-bottom:20px}
+        .seg-hero-icon{font-size:40px;flex-shrink:0;line-height:1}
+        .seg-hero-name{font-family:'Playfair Display',serif;font-size:26px;color:var(--text);margin-bottom:6px}
+        .seg-hero-meta{font-size:11px;color:var(--text-3);line-height:1.9}
+        .seg-hero-actions{margin-left:auto;display:flex;flex-direction:column;gap:8px;align-items:flex-end;flex-shrink:0}
+        .btn-log{padding:10px 22px;font-family:var(--mono);font-size:12px;letter-spacing:.1em;text-transform:uppercase;background:var(--gold);color:#0A0A0A;border:none;cursor:pointer;font-weight:700}
+        .btn-del{font-size:10px;color:var(--text-3);border:none;background:none;cursor:pointer;letter-spacing:.06em}
+        .btn-del:hover{color:var(--red)}
+
+        /* KOM banner */
+        .kom-banner{display:flex;align-items:center;gap:16px;padding:18px 24px;background:linear-gradient(135deg,rgba(201,168,76,.1),rgba(201,168,76,.03));border:1px solid rgba(201,168,76,.4);margin-bottom:20px}
+        .kom-crown{font-size:32px}
+        .kom-label{font-size:10px;color:var(--gold);letter-spacing:.2em;text-transform:uppercase;margin-bottom:3px}
+        .kom-name{font-family:'Playfair Display',serif;font-size:20px;color:var(--text)}
+        .kom-pb{margin-left:auto;font-family:'Playfair Display',serif;font-size:22px;color:var(--gold)}
+
+        /* Two col */
+        .detail-cols{display:grid;grid-template-columns:1fr 260px;gap:16px}
+        .section-head{font-size:10px;color:var(--text-3);letter-spacing:.18em;text-transform:uppercase;margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid var(--border)}
+        .panel-box{background:var(--surface);border:1px solid var(--border);padding:20px}
+
+        /* Leaderboard */
+        .lb-row{display:flex;align-items:center;gap:12px;padding:9px 0;border-bottom:1px solid var(--border)}
+        .lb-row:last-child{border:none}
+        .lb-rank{font-size:14px;width:24px;text-align:center;flex-shrink:0;color:var(--text-3)}
+        .lb-name{flex:1;font-size:12px;color:var(--text)}
+        .lb-name.me{color:var(--gold);font-weight:700}
+        .lb-val{font-family:'Playfair Display',serif;font-size:14px;color:var(--text-2);white-space:nowrap}
+        .lb-date{font-size:10px;color:var(--text-3);white-space:nowrap}
+
+        /* My history */
+        .hist-row{display:flex;align-items:center;gap:12px;padding:7px 0;border-bottom:1px solid var(--border)}
+        .hist-row:last-child{border:none}
+        .hist-val{font-family:'Playfair Display',serif;font-size:15px;color:var(--gold)}
+        .hist-note{flex:1;font-size:11px;color:var(--text-3)}
+        .hist-date{font-size:10px;color:var(--text-3)}
+
+        /* My PB card */
+        .pb-card{padding:16px;background:var(--surface);border:1px solid var(--border);text-align:center;margin-bottom:16px}
+        .pb-label{font-size:10px;color:var(--text-3);letter-spacing:.16em;text-transform:uppercase;margin-bottom:6px}
+        .pb-val{font-family:'Playfair Display',serif;font-size:28px;color:var(--gold);margin-bottom:4px}
+        .pb-rank{font-size:12px;color:var(--text-2)}
+
+        /* Log effort modal */
+        .modal-bd{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:9000;align-items:center;justify-content:center}
+        .modal-bd.open{display:flex}
+        .modal{background:var(--elevated);border:1px solid var(--border-h);padding:32px;min-width:360px;max-width:440px}
+        .modal-title{font-family:'Playfair Display',serif;font-size:20px;color:var(--text);margin-bottom:4px}
+        .modal-sub{font-size:11px;color:var(--text-3);margin-bottom:20px}
+        .form-field{margin-bottom:14px}
+        .form-label{font-size:10px;color:var(--text-3);letter-spacing:.14em;text-transform:uppercase;margin-bottom:6px;display:block}
+        .form-inp{width:100%;background:var(--bg);border:1px solid var(--border);color:var(--text);padding:9px 12px;font-family:var(--mono);font-size:13px}
+        .form-inp:focus{outline:none;border-color:var(--border-h)}
+        .form-row{display:flex;gap:10px;justify-content:flex-end;margin-top:20px}
+        .btn-cancel{padding:9px 18px;font-family:var(--mono);font-size:11px;color:var(--text-3);border:1px solid var(--border);background:none;cursor:pointer}
+        .btn-submit{padding:9px 18px;font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;background:var(--gold);color:#0A0A0A;border:none;cursor:pointer;font-weight:700}
+
+        /* Create segment modal */
+        .select-inp{width:100%;background:var(--bg);border:1px solid var(--border);color:var(--text);padding:9px 12px;font-family:var(--mono);font-size:13px;-webkit-appearance:none;cursor:pointer}
+        .select-inp:focus{outline:none;border-color:var(--border-h)}
+        option{background:var(--elevated)}
+    </style>
+</head>
+<body>
+{% include 'perfect/_sidebar.html' %}
+
+<div class="left-panel">
+    <div class="lp-head">
+        <div class="lp-title">Segments</div>
+        <button class="btn-create" onclick="openCreate()">+ Create Segment</button>
+    </div>
+    <div class="filter-row" id="filterRow">
+        <button class="filter-btn active" data-cat="all" onclick="setFilter('all',this)">All</button>
+        <button class="filter-btn" data-cat="run"   onclick="setFilter('run',this)">🏃 Run</button>
+        <button class="filter-btn" data-cat="gym"   onclick="setFilter('gym',this)">💪 Gym</button>
+        <button class="filter-btn" data-cat="cycle" onclick="setFilter('cycle',this)">🚴 Cycle</button>
+        <button class="filter-btn" data-cat="swim"  onclick="setFilter('swim',this)">🏊 Swim</button>
+    </div>
+    <div class="seg-scroll" id="segList">
+        <div style="padding:16px;font-size:11px;color:var(--text-3)">Loading…</div>
+    </div>
+</div>
+
+<div class="main" id="mainPanel">
+    <div class="empty-state">
+        Select a segment to view its leaderboard.<br>
+        Create one to challenge everyone on the app.<br>
+        <span style="font-size:11px;color:var(--text-3)">Segments are workout challenges — fastest time, most reps, or longest distance wins.</span>
+    </div>
+</div>
+
+<!-- Log effort modal -->
+<div class="modal-bd" id="logModal" onclick="if(event.target===this)closeLog()">
+    <div class="modal">
+        <div class="modal-title" id="logModalTitle">Log Effort</div>
+        <div class="modal-sub" id="logModalSub"></div>
+        <div class="form-field">
+            <label class="form-label" id="logValueLabel">Value</label>
+            <input class="form-inp" id="logValueInp" type="number" min="0.01" step="0.01" placeholder="0">
+        </div>
+        <div class="form-field">
+            <label class="form-label">Note (optional)</label>
+            <input class="form-inp" id="logNoteInp" placeholder="How did it go?" maxlength="100">
+        </div>
+        <div class="form-row">
+            <button class="btn-cancel" onclick="closeLog()">Cancel</button>
+            <button class="btn-submit" onclick="submitEffort()">Log It</button>
+        </div>
+    </div>
+</div>
+
+<!-- Create segment modal -->
+<div class="modal-bd" id="createModal" onclick="if(event.target===this)closeCreate()">
+    <div class="modal">
+        <div class="modal-title">Create a Segment</div>
+        <div class="form-field">
+            <label class="form-label">Name</label>
+            <input class="form-inp" id="csName" placeholder="e.g. 5km Morning Run" maxlength="50">
+        </div>
+        <div class="form-field">
+            <label class="form-label">Description (optional)</label>
+            <input class="form-inp" id="csDesc" placeholder="What is this segment?" maxlength="120">
+        </div>
+        <div class="form-field">
+            <label class="form-label">Category</label>
+            <select class="select-inp" id="csCat">
+                <option value="run">🏃 Running</option>
+                <option value="gym">💪 Gym</option>
+                <option value="cycle">🚴 Cycling</option>
+                <option value="swim">🏊 Swimming</option>
+                <option value="general">⚡ General</option>
+            </select>
+        </div>
+        <div class="form-field">
+            <label class="form-label">Measure by</label>
+            <select class="select-inp" id="csMetric">
+                <option value="time">⏱ Time — fastest wins (minutes)</option>
+                <option value="reps">🔢 Reps / Count — most wins</option>
+                <option value="distance">📏 Distance — furthest wins (km)</option>
+            </select>
+        </div>
+        <div class="form-row">
+            <button class="btn-cancel" onclick="closeCreate()">Cancel</button>
+            <button class="btn-submit" onclick="createSegment()">Create</button>
+        </div>
+    </div>
+</div>
+
+<script>
+const MEDALS = ['🥇','🥈','🥉'];
+let allSegs      = [];
+let activeFilter = 'all';
+let activeSeg    = null;
+let activeSegId  = null;
+
+async function loadList() {
+    const res  = await fetch('/perfect/api/segments');
+    const data = await res.json();
+    allSegs    = data.segments || [];
+    renderList();
+}
+
+function renderList() {
+    const filtered = activeFilter === 'all' ? allSegs : allSegs.filter(s => s.category === activeFilter);
+    const el       = document.getElementById('segList');
+    if (!filtered.length) {
+        el.innerHTML = `<div style="padding:16px;font-size:11px;color:var(--text-3)">${activeFilter==='all'?'No segments yet — create one!':'No segments in this category.'}</div>`;
+        return;
+    }
+    el.innerHTML = filtered.map(s => `
+        <div class="seg-item${s.id===activeSegId?' sel':''}" onclick="selectSeg(${s.id})">
+            <div class="seg-top">
+                <span class="seg-emoji">${s.cat_emoji}</span>
+                <span class="seg-name">${s.name}</span>
+            </div>
+            <div class="seg-meta">${s.athlete_count} athlete${s.athlete_count!==1?'s':''} · ${s.effort_count} effort${s.effort_count!==1?'s':''} · ${s.metric_unit}</div>
+        </div>`).join('');
+}
+
+function setFilter(cat, btn) {
+    activeFilter = cat;
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    renderList();
+}
+
+async function selectSeg(id) {
+    activeSegId = id;
+    renderList();
+    const main = document.getElementById('mainPanel');
+    main.innerHTML = '<div style="padding:40px;font-size:12px;color:var(--text-3)">Loading…</div>';
+
+    const res  = await fetch('/perfect/api/segments/' + id);
+    const data = await res.json();
+    if (!data.ok) { main.innerHTML = '<div style="padding:40px;font-size:12px;color:var(--text-3)">Not found.</div>'; return; }
+
+    activeSeg = data;
+    const seg = data.segment;
+    const kom = data.kom;
+    const myPb = data.my_pb;
+
+    const komHtml = kom ? `
+        <div class="kom-banner">
+            <div class="kom-crown">👑</div>
+            <div>
+                <div class="kom-label">King of the Segment</div>
+                <div class="kom-name">${kom.name}</div>
+            </div>
+            <div class="kom-pb">${kom.pb_fmt}</div>
+        </div>` : '';
+
+    const lbRows = data.board.map(b => `
+        <div class="lb-row">
+            <div class="lb-rank">${MEDALS[b.rank-1]||b.rank}</div>
+            <div class="lb-name${b.is_me?' me':''}">${b.name||'@'+b.username}</div>
+            <div class="lb-val">${b.pb_fmt}</div>
+            <div class="lb-date">${b.last_at}</div>
+        </div>`).join('') || '<div style="font-size:11px;color:var(--text-3);padding:8px 0">No efforts yet — be first!</div>';
+
+    const histRows = data.my_history.map(h => `
+        <div class="hist-row">
+            <div class="hist-val">${h.fmt}</div>
+            <div class="hist-note">${h.note||''}</div>
+            <div class="hist-date">${h.at}</div>
+        </div>`).join('') || '<div style="font-size:11px;color:var(--text-3);padding:8px 0">No efforts logged yet.</div>';
+
+    const deleteBtn = data.is_mine ? `<button class="btn-del" onclick="deleteSeg(${seg.id})">Delete segment</button>` : '';
+
+    main.innerHTML = `
+        <div class="seg-hero">
+            <div class="seg-hero-icon">${seg.cat_emoji}</div>
+            <div>
+                <div class="seg-hero-name">${seg.name}</div>
+                <div class="seg-hero-meta">
+                    ${seg.cat_label} &nbsp;·&nbsp; Measured by: ${seg.metric_label}<br>
+                    ${seg.description||''}
+                </div>
+            </div>
+            <div class="seg-hero-actions">
+                <button class="btn-log" onclick="openLog()">+ Log Effort</button>
+                ${deleteBtn}
+            </div>
+        </div>
+        ${komHtml}
+        <div class="detail-cols">
+            <div>
+                <div class="section-head">Leaderboard — Personal Bests</div>
+                ${lbRows}
+            </div>
+            <div>
+                ${myPb ? `<div class="pb-card">
+                    <div class="pb-label">Your Personal Best</div>
+                    <div class="pb-val">${myPb.pb_fmt}</div>
+                    <div class="pb-rank">Rank #${myPb.rank}</div>
+                </div>` : ''}
+                <div class="panel-box">
+                    <div class="section-head">Your History</div>
+                    ${histRows}
+                </div>
+            </div>
+        </div>`;
+}
+
+function openLog() {
+    if (!activeSeg) return;
+    const seg  = activeSeg.segment;
+    const unit = {'time':'minutes','reps':'reps','distance':'km'}[seg.metric]||'';
+    document.getElementById('logModalTitle').textContent = 'Log Effort — ' + seg.name;
+    document.getElementById('logModalSub').textContent   = seg.metric==='time'?'Enter your time. Fastest time wins.':seg.metric==='reps'?'Enter your rep count. Most wins.':'Enter distance in km. Furthest wins.';
+    document.getElementById('logValueLabel').textContent = {'time':'Time (minutes)','reps':'Reps','distance':'Distance (km)'}[seg.metric]||'Value';
+    document.getElementById('logValueInp').value  = '';
+    document.getElementById('logNoteInp').value   = '';
+    document.getElementById('logModal').classList.add('open');
+    document.getElementById('logValueInp').focus();
+}
+function closeLog() { document.getElementById('logModal').classList.remove('open'); }
+
+async function submitEffort() {
+    const val  = parseFloat(document.getElementById('logValueInp').value);
+    const note = document.getElementById('logNoteInp').value.trim();
+    if (!val || val <= 0) { document.getElementById('logValueInp').focus(); return; }
+    const res  = await fetch('/perfect/api/segments/' + activeSegId + '/effort', {
+        method:'POST', headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({value: val, note})
+    });
+    const d = await res.json();
+    closeLog();
+    if (d.ok) {
+        if (d.is_kom) showToast('👑 You are now King of the Segment with ' + d.fmt + '!');
+        else          showToast('Effort logged — ' + d.fmt + (d.rank ? ' · Rank #' + d.rank : ''));
+        await loadList();
+        selectSeg(activeSegId);
+    }
+}
+
+async function deleteSeg(id) {
+    if (!confirm('Delete this segment and all its efforts?')) return;
+    await fetch('/perfect/api/segments/' + id + '/delete', {method:'POST'});
+    activeSegId = null;
+    activeSeg   = null;
+    document.getElementById('mainPanel').innerHTML = '<div class="empty-state">Segment deleted.</div>';
+    await loadList();
+}
+
+function openCreate()  { document.getElementById('createModal').classList.add('open'); document.getElementById('csName').focus(); }
+function closeCreate() { document.getElementById('createModal').classList.remove('open'); }
+
+async function createSegment() {
+    const name   = document.getElementById('csName').value.trim();
+    const desc   = document.getElementById('csDesc').value.trim();
+    const cat    = document.getElementById('csCat').value;
+    const metric = document.getElementById('csMetric').value;
+    if (!name) { document.getElementById('csName').focus(); return; }
+    const res  = await fetch('/perfect/api/segments/create', {
+        method:'POST', headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({name, description:desc, category:cat, metric})
+    });
+    const d = await res.json();
+    closeCreate();
+    document.getElementById('csName').value = '';
+    document.getElementById('csDesc').value = '';
+    await loadList();
+    if (d.ok) selectSeg(d.segment_id);
+}
+
+function showToast(msg) {
+    const t = document.createElement('div');
+    t.style.cssText = 'position:fixed;bottom:24px;right:24px;background:var(--elevated);border:1px solid rgba(201,168,76,.5);color:var(--text);font-family:"Courier Prime",monospace;font-size:12px;padding:12px 20px;z-index:9500;letter-spacing:.04em;opacity:0;transition:opacity .2s;max-width:320px;line-height:1.5';
+    t.textContent = msg;
+    document.body.appendChild(t);
+    requestAnimationFrame(() => t.style.opacity='1');
+    setTimeout(() => { t.style.opacity='0'; setTimeout(()=>t.remove(),250); }, 4000);
+}
+
+loadList();
+</script>
+</body>
+</html>

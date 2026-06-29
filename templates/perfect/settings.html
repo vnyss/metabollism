@@ -1,0 +1,1767 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Settings — Too Good</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Courier+Prime:ital,wght@0,400;0,700;1,400&family=Special+Elite&display=swap" rel="stylesheet">
+    <script>(function(){
+        var r = document.documentElement;
+        if (localStorage.getItem('tg_mode') === 'light') r.classList.add('light-mode');
+        var fs = localStorage.getItem('tg_fontsize'); if (fs) r.style.setProperty('--fs', {sm:'12px',md:'14px',lg:'16px'}[fs]||'14px');
+        var cr = localStorage.getItem('tg_corner');   if (cr) r.style.setProperty('--radius', {sharp:'0px',soft:'6px',rounded:'14px'}[cr]||'6px');
+        var sw = localStorage.getItem('tg_sw');       if (sw) r.style.setProperty('--sw', {narrow:'220px',normal:'260px',wide:'320px'}[sw]||'260px');
+        var an = localStorage.getItem('tg_anim');     if (an) r.style.setProperty('--anim', {none:'0ms',normal:'200ms',snappy:'80ms'}[an]||'200ms');
+    })();</script>
+    <style>
+        :root {
+            --bg:       #0A0A0A;
+            --sidebar:  #080808;
+            --surface:  #111111;
+            --elevated: #181818;
+            --border:   rgba(201,168,76,0.12);
+            --border-h: rgba(201,168,76,0.38);
+            --gold:     #C9A84C;
+            --gold-h:   #DFC070;
+            --gold-dim: rgba(201,168,76,0.07);
+            --text:     #E8DCC8;
+            --text-2:   #8A7A62;
+            --text-3:   #4A3C2A;
+            --mono:     'Courier Prime', monospace;
+            --display:  'Special Elite', monospace;
+            --fs:       14px;
+            --radius:   6px;
+            --anim:     200ms;
+            --msg-gap:  18px;
+        }
+        html.light-mode {
+            --bg:       #F5F0E8;
+            --sidebar:  #EDE8DF;
+            --surface:  #FFFFFF;
+            --elevated: #F0EBE1;
+            --border:   rgba(100,80,40,0.14);
+            --border-h: rgba(100,80,40,0.36);
+            --gold-dim: rgba(201,168,76,0.10);
+            --text:     #1A1208;
+            --text-2:   #6B5A3E;
+            --text-3:   #9A8A72;
+        }
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        body { background: var(--bg); font-family: var(--mono); color: var(--text); min-height: 100vh; -webkit-font-smoothing: antialiased; }
+
+        /* ── Top bar ── */
+        .top-bar {
+            height: 54px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            padding: 0 28px;
+            gap: 18px;
+            position: sticky;
+            top: 0;
+            background: var(--bg);
+            z-index: 10;
+        }
+        .top-bar-back {
+            display: flex; align-items: center; gap: 7px;
+            color: var(--text-2); font-size: 12px; letter-spacing: 0.06em;
+            text-decoration: none; transition: color var(--anim);
+        }
+        .top-bar-back:hover { color: var(--gold); }
+        .top-bar-divider { width: 1px; height: 18px; background: var(--border); }
+        .top-bar-title { font-family: var(--display); font-size: 15px; color: var(--text); letter-spacing: 0.08em; }
+
+        /* ── Layout ── */
+        .settings-layout {
+            display: flex;
+            max-width: 860px;
+            margin: 0 auto;
+            padding: 40px 28px 80px;
+            gap: 0;
+        }
+
+        /* ── Left nav ── */
+        .settings-nav {
+            width: 190px;
+            min-width: 190px;
+            padding-right: 28px;
+            position: sticky;
+            top: 94px;
+            align-self: flex-start;
+        }
+        .nav-section-label {
+            font-size: 9px;
+            letter-spacing: 0.22em;
+            text-transform: uppercase;
+            color: var(--text-3);
+            margin: 0 0 8px 10px;
+        }
+        .nav-item {
+            display: flex; align-items: center; gap: 10px;
+            padding: 9px 12px;
+            border-radius: var(--radius);
+            font-size: var(--fs);
+            letter-spacing: 0.03em;
+            color: var(--text-2);
+            cursor: pointer;
+            text-decoration: none;
+            transition: background var(--anim), color var(--anim);
+            margin-bottom: 2px;
+            border: none; background: none; width: 100%; text-align: left;
+        }
+        .nav-item svg { flex-shrink: 0; opacity: 0.6; }
+        .nav-item:hover { background: var(--gold-dim); color: var(--text); }
+        .nav-item:hover svg { opacity: 1; }
+        .nav-item.active { background: var(--gold-dim); color: var(--gold); border-left: 2px solid var(--gold); padding-left: 10px; }
+        .nav-item.active svg { opacity: 1; color: var(--gold); }
+        .nav-divider { height: 1px; background: var(--border); margin: 12px 10px; }
+
+        /* ── Content ── */
+        .settings-content {
+            flex: 1;
+            min-width: 0;
+            border-left: 1px solid var(--border);
+            padding-left: 40px;
+        }
+
+        .settings-section { display: none; }
+        .settings-section.active { display: block; }
+
+        .section-title {
+            font-family: var(--display);
+            font-size: 18px;
+            letter-spacing: 0.06em;
+            color: var(--text);
+            margin-bottom: 6px;
+        }
+        .section-sub {
+            font-size: 12px;
+            color: var(--text-2);
+            letter-spacing: 0.03em;
+            margin-bottom: 32px;
+            line-height: 1.6;
+        }
+
+        .ex-q-label {
+            font-family: var(--mono);
+            font-size: 11px;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            color: var(--text-2);
+            margin-bottom: 6px;
+        }
+
+        /* ── Setting row ── */
+        .setting-row {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 24px;
+            padding: 20px 0;
+            border-bottom: 1px solid var(--border);
+        }
+        .setting-row:last-child { border-bottom: none; }
+        .setting-label { font-size: var(--fs); color: var(--text); letter-spacing: 0.03em; margin-bottom: 3px; }
+        .setting-desc  { font-size: calc(var(--fs) * 0.85); color: var(--text-2); letter-spacing: 0.02em; line-height: 1.5; max-width: 280px; }
+        .setting-control { flex-shrink: 0; }
+
+        /* ── Theme swatches ── */
+        .theme-grid { display: flex; flex-wrap: wrap; gap: 10px; }
+        .theme-swatch {
+            width: 28px; height: 28px; border-radius: 50%;
+            cursor: pointer; border: 2px solid transparent;
+            outline: 2px solid transparent; outline-offset: 3px;
+            transition: outline-color var(--anim), transform var(--anim);
+        }
+        .theme-swatch:hover { transform: scale(1.14); }
+        .theme-swatch.active { outline-color: var(--text); }
+        .theme-name { font-size: 10px; color: var(--text-2); letter-spacing: 0.1em; text-transform: uppercase; text-align: center; margin-top: 10px; }
+        .mode-toggle { display: flex; gap: 0; border: 1px solid var(--border); overflow: hidden; }
+        .mode-btn { flex: 1; padding: 9px 18px; background: none; border: none; color: var(--text-2); font-family: var(--mono); font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; cursor: pointer; transition: background var(--anim), color var(--anim); display: flex; align-items: center; justify-content: center; gap: 7px; }
+        .mode-btn.active { background: var(--gold); color: #060606; }
+        .mode-btn:not(.active):hover { background: var(--gold-dim); color: var(--text); }
+        .seg-control { display: flex; border: 1px solid var(--border); overflow: hidden; }
+        .seg-btn { flex: 1; padding: 8px 14px; background: none; border: none; color: var(--text-2); font-family: var(--mono); font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; cursor: pointer; transition: background var(--anim), color var(--anim); border-right: 1px solid var(--border); white-space: nowrap; }
+        .seg-btn:last-child { border-right: none; }
+        .seg-btn.active { background: var(--gold-dim); color: var(--gold); }
+        .seg-btn:not(.active):hover { background: var(--gold-dim); color: var(--text); }
+        .preview-row { display: flex; gap: 10px; margin-top: 12px; flex-wrap: wrap; }
+        .bubble-preview { padding: 8px 14px; font-size: 12px; font-family: var(--mono); cursor: pointer; border: 2px solid var(--border); border-radius: var(--radius); transition: border-color var(--anim); color: var(--text-2); }
+        .bubble-preview.active { border-color: var(--gold); color: var(--text); }
+        /* ── Height unit toggle (Profile) ── */
+        .height-lbl-row { display:flex; align-items:center; justify-content:space-between; margin-bottom:6px; }
+        .height-lbl-row label { margin-bottom:0; }
+        .height-unit-tog { display:flex; border:1px solid var(--border); overflow:hidden; border-radius:3px; }
+        .height-unit-opt { padding:3px 12px; font-family:var(--mono); font-size:10px; letter-spacing:0.08em; text-transform:uppercase; color:var(--text-3); cursor:pointer; border:none; background:none; transition:background var(--anim),color var(--anim); border-right:1px solid var(--border); }
+        .height-unit-opt:last-child { border-right:none; }
+        .height-unit-opt.active { background:var(--gold-dim); color:var(--gold); }
+        .h-unit-row { display:flex; align-items:center; border-bottom:1px solid var(--border-input,rgba(201,168,76,0.18)); transition:border-color 0.2s; }
+        .h-unit-row:focus-within { border-bottom-color:var(--gold); }
+        .h-unit-row input { flex:1; background:transparent; border:none; outline:none; color:var(--text); font-family:var(--mono); font-size:14px; padding:9px 0; letter-spacing:0.05em; min-width:0; }
+        .h-unit-lbl { font-size:11px; color:var(--text-3); letter-spacing:0.08em; flex-shrink:0; }
+        .h-ft-sep { font-size:11px; color:var(--text-3); padding:0 6px; flex-shrink:0; }
+
+        /* Toggle switch */
+        .tog { position: relative; display: inline-block; width: 38px; height: 22px; flex-shrink: 0; cursor: pointer; }
+        .tog input { opacity: 0; width: 0; height: 0; position: absolute; }
+        .tog-track { position: absolute; inset: 0; background: var(--border); border-radius: 20px; transition: background 0.22s; }
+        .tog-thumb { position: absolute; width: 16px; height: 16px; left: 3px; top: 3px; background: var(--text-3); border-radius: 50%; transition: transform 0.22s, background 0.22s; }
+        .tog input:checked ~ .tog-track { background: rgba(201,168,76,0.28); }
+        .tog input:checked ~ .tog-thumb { transform: translateX(16px); background: var(--gold); }
+        .setting-divider { border: none; border-top: 1px solid var(--border); margin: 8px 0 20px; }
+
+        /* ── Form fields ── */
+        .field-group { margin-bottom: 20px; }
+        .field-group label {
+            display: block; font-size: 10px; letter-spacing: 0.18em;
+            text-transform: uppercase; color: var(--text-2); margin-bottom: 7px;
+        }
+        .field-group input, .field-group select {
+            width: 100%; background: var(--elevated);
+            border: 1px solid var(--border); border-radius: var(--radius);
+            color: var(--text); font-family: var(--mono); font-size: var(--fs);
+            padding: 10px 14px; outline: none;
+            transition: border-color var(--anim);
+            letter-spacing: 0.03em;
+            appearance: none;
+        }
+        .field-group input:focus, .field-group select:focus { border-color: var(--gold); }
+        .field-group select option { background: #161616; }
+        .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+        .field-hint { font-size: 10px; color: var(--text-3); letter-spacing: 0.05em; margin-top: 5px; }
+
+        /* ── Food tags ── */
+        .food-tags { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 4px; }
+        .food-tag {
+            background: var(--elevated); border: 1px solid var(--border);
+            border-radius: 20px; color: var(--text-2); font-family: var(--mono);
+            font-size: 12px; letter-spacing: 0.03em; padding: 5px 13px;
+            cursor: pointer; user-select: none;
+            transition: background var(--anim), border-color var(--anim), color var(--anim);
+        }
+        .food-tag:hover { border-color: var(--gold); color: var(--gold); }
+        .food-tag.selected { background: var(--gold); border-color: var(--gold); color: #080808; font-weight: 700; }
+
+        /* ── Save button ── */
+        .btn-save {
+            margin-top: 28px;
+            background: var(--gold); color: #080808;
+            border: none; border-radius: var(--radius);
+            font-family: var(--mono); font-size: var(--fs); font-weight: 700;
+            letter-spacing: 0.1em; padding: 11px 28px;
+            cursor: pointer; transition: background var(--anim), transform var(--anim);
+        }
+        .btn-save:hover { background: var(--gold-h); }
+        .btn-save:active { transform: scale(0.97); }
+
+        /* ── Toast ── */
+        .toast {
+            position: fixed; bottom: 28px; left: 50%; transform: translateX(-50%);
+            background: var(--surface); border: 1px solid var(--gold);
+            color: var(--gold); font-size: 12px; letter-spacing: 0.08em;
+            padding: 10px 22px; border-radius: var(--radius);
+            opacity: 0; transition: opacity 0.3s;
+            pointer-events: none; z-index: 999;
+        }
+        .toast.show { opacity: 1; }
+
+        /* ── Account info card ── */
+        .info-card {
+            background: var(--elevated); border: 1px solid var(--border);
+            border-radius: var(--radius); padding: 20px 22px; margin-bottom: 28px;
+        }
+        .info-row { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; }
+        .info-row + .info-row { border-top: 1px solid var(--border); }
+        .info-key { font-size: calc(var(--fs) * 0.78); color: var(--text-2); letter-spacing: 0.1em; text-transform: uppercase; }
+        .info-val { font-size: var(--fs); color: var(--text); }
+
+        /* ── Delete account modal ── */
+        .del-modal-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,0.55); z-index: 200; display: none; align-items: center; justify-content: center; backdrop-filter: blur(3px); }
+        .del-modal-backdrop.open { display: flex; }
+        .del-modal { background: var(--elevated); border: 1px solid rgba(201,76,76,0.3); border-radius: calc(var(--radius) + 4px); padding: 32px 28px 24px; max-width: 380px; width: 90%; }
+        .del-modal-title { font-family: var(--mono); font-size: 13px; letter-spacing: 0.1em; text-transform: uppercase; color: #C94C4C; margin-bottom: 10px; }
+        .del-modal-body { font-size: 12px; color: var(--text-2); line-height: 1.6; margin-bottom: 22px; }
+        .del-modal-body strong { color: var(--text); }
+        .del-modal input { width: 100%; padding: 10px 14px; background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius); color: var(--text); font-family: var(--mono); font-size: 13px; box-sizing: border-box; margin-bottom: 6px; }
+        .del-modal input:focus { outline: none; border-color: #C94C4C; }
+        .del-modal-err { font-size: 11px; color: #C94C4C; min-height: 16px; margin-bottom: 14px; }
+        .del-modal-actions { display: flex; gap: 10px; justify-content: flex-end; }
+        .del-btn-cancel { background: none; border: 1px solid var(--border); border-radius: var(--radius); color: var(--text-2); font-family: var(--mono); font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; padding: 9px 18px; cursor: pointer; transition: border-color var(--anim); }
+        .del-btn-cancel:hover { border-color: var(--border-h); color: var(--text); }
+        .del-btn-confirm { background: #C94C4C; border: 1px solid #C94C4C; border-radius: var(--radius); color: #fff; font-family: var(--mono); font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; padding: 9px 18px; cursor: pointer; transition: background var(--anim), opacity var(--anim); }
+        .del-btn-confirm:hover { background: #b03a3a; }
+        .del-btn-confirm:disabled { opacity: 0.5; cursor: not-allowed; }
+
+        /* ── Danger zone ── */
+        .danger-label { font-size: 9px; letter-spacing: 0.22em; text-transform: uppercase; color: #C94C4C; margin: 32px 0 12px; }
+        .btn-danger {
+            background: none; border: 1px solid #C94C4C; border-radius: var(--radius);
+            color: #C94C4C; font-family: var(--mono); font-size: calc(var(--fs) * 0.85);
+            letter-spacing: 0.08em; padding: 9px 20px; cursor: pointer;
+            transition: background var(--anim);
+        }
+        .btn-danger:hover { background: rgba(201,76,76,0.08); }
+
+        /* ── Error ── */
+        .field-error { font-size: 11px; color: #C94C4C; margin-top: 5px; letter-spacing: 0.04em; display: block; }
+
+        /* ── Hidden chats ── */
+        .hidden-chat-item {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 12px 16px; border-bottom: 1px solid var(--border);
+        }
+        .hidden-chat-item:last-child { border-bottom: none; }
+        .hc-title { font-size: 13px; color: var(--text); }
+        .hc-date  { font-size: 10px; color: var(--text-3); margin-top: 2px; }
+        .btn-unhide {
+            background: none; border: 1px solid var(--border); border-radius: var(--radius);
+            color: var(--text-2); font-family: var(--mono); font-size: 10px;
+            letter-spacing: 0.08em; padding: 4px 12px; cursor: pointer;
+            transition: border-color var(--anim), color var(--anim);
+        }
+        .btn-unhide:hover { border-color: var(--gold); color: var(--gold); }
+
+        /* ── Diary PIN boxes ── */
+        .pin-row { display:flex; gap:12px; justify-content:center; margin:12px 0; }
+        .pin-box { width:52px; height:62px; background:var(--elevated); border:2px solid var(--border); color:var(--text); font-family:var(--mono); font-size:28px; text-align:center; outline:none; caret-color:transparent; border-radius:var(--radius); transition:border-color 0.15s, box-shadow 0.15s; }
+        .pin-box:focus { border-color:var(--gold); box-shadow:0 0 0 3px rgba(201,168,76,0.15); }
+        .pin-step-label { font-size:11px; color:var(--text-2); letter-spacing:0.08em; text-align:center; margin-bottom:4px; }
+        .pin-modal-wrap { background:var(--elevated); border:1px solid rgba(201,168,76,0.3); border-radius:calc(var(--radius) + 4px); padding:32px 28px 24px; max-width:340px; width:90%; }
+
+        /* number spinners off */
+        input[type=number]::-webkit-outer-spin-button,
+        input[type=number]::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+        input[type=number] { -moz-appearance: textfield; }
+
+        @media (max-width: 640px) {
+            .settings-layout { flex-direction: column; padding: 20px 16px 60px; gap: 24px; }
+            .settings-nav { width: 100%; min-width: 0; padding-right: 0; position: static; }
+            .settings-content { border-left: none; padding-left: 0; border-top: 1px solid var(--border); padding-top: 28px; }
+        }
+        .role-card-s {
+            display: flex; align-items: center; justify-content: center;
+            padding: 10px 16px;
+            background: var(--elevated); border: 1px solid var(--border);
+            cursor: pointer; user-select: none;
+            transition: border-color var(--anim), background var(--anim);
+        }
+        .role-card-s:hover { border-color: var(--gold); background: var(--gold-dim); }
+        .role-card-s.selected { border-color: var(--gold); background: var(--gold-dim); }
+        .role-card-s.selected span:last-child { color: var(--gold) !important; }
+
+        /* ── Live settings preview ── */
+        body { font-size: var(--fs); }
+        .section-title { font-size: calc(var(--fs) * 1.28); }
+        .section-sub, .hc-title { font-size: var(--fs); }
+    </style>
+</head>
+<body>
+
+<!-- Top bar -->
+<div class="top-bar">
+    <a class="top-bar-back" href="/perfect/ai">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="15 18 9 12 15 6"/></svg>
+        Back to AI
+    </a>
+    <div class="top-bar-divider"></div>
+    <span class="top-bar-title">Settings</span>
+</div>
+
+<div class="settings-layout">
+
+    <!-- Left nav -->
+    <nav class="settings-nav">
+        <p class="nav-section-label">Preferences</p>
+        <button class="nav-item" onclick="showSection('appearance')">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>
+            Appearance
+        </button>
+        <button class="nav-item" onclick="showSection('profile')">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            Profile
+        </button>
+        <button class="nav-item" onclick="showSection('family')">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+            Family Role
+        </button>
+        <button class="nav-item" onclick="showSection('food')">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M18 8h1a4 4 0 0 1 0 8h-1"/><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/><line x1="6" y1="1" x2="6" y2="4"/><line x1="10" y1="1" x2="10" y2="4"/><line x1="14" y1="1" x2="14" y2="4"/></svg>
+            Food Preferences
+        </button>
+        <div class="nav-divider"></div>
+        <p class="nav-section-label">Fitness</p>
+        <button class="nav-item" onclick="showSection('exercise')">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M18 8h-2.5a2 2 0 0 0-2 2v4a2 2 0 0 0 2 2H18"/><path d="M6 8H3.5a2 2 0 0 0-2 2v4a2 2 0 0 0 2 2H6"/><path d="M6 12h12"/><circle cx="9" cy="5" r="2"/><circle cx="15" cy="5" r="2"/></svg>
+            Exercise Schedule
+        </button>
+        <div class="nav-divider"></div>
+        <p class="nav-section-label">Account</p>
+        <button class="nav-item" onclick="showSection('account')">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+            Account & Security
+        </button>
+        <button class="nav-item" onclick="showSection('chats')">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+            Hidden Chats
+        </button>
+        <div class="nav-divider"></div>
+        <p class="nav-section-label">Coach</p>
+        <button class="nav-item" onclick="showSection('voice')">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
+            Coach Voice
+        </button>
+    </nav>
+
+    <!-- Content -->
+    <div class="settings-content">
+
+        <!-- ── Appearance ── -->
+        <div class="settings-section" id="sec-appearance">
+            <p class="section-title">Appearance</p>
+            <p class="section-sub">Personalise how the app looks. Changes apply instantly everywhere.</p>
+
+            <!-- Mode -->
+            <div class="setting-row">
+                <div>
+                    <p class="setting-label">Mode</p>
+                    <p class="setting-desc">Dark or light background.</p>
+                </div>
+                <div class="setting-control">
+                    <div class="mode-toggle">
+                        <button class="mode-btn" id="modeBtnDark" onclick="applyMode('dark')">
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>Dark
+                        </button>
+                        <button class="mode-btn" id="modeBtnLight" onclick="applyMode('light')">
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>Light
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <hr class="setting-divider">
+
+            <!-- Accent colour -->
+            <div class="setting-row">
+                <div>
+                    <p class="setting-label">Accent colour</p>
+                    <p class="setting-desc">Highlight colour across buttons, borders, and active states.</p>
+                    <p class="theme-name" id="themeNameLabel">Gold</p>
+                </div>
+                <div class="setting-control">
+                    <div class="theme-grid">
+                        <div class="theme-swatch" data-theme="gold"   data-name="Gold"   style="background:#C9A84C" onclick="applyTheme('gold')"   title="Gold"></div>
+                        <div class="theme-swatch" data-theme="red"    data-name="Red"    style="background:#C94C4C" onclick="applyTheme('red')"    title="Red"></div>
+                        <div class="theme-swatch" data-theme="green"  data-name="Green"  style="background:#4CAF7C" onclick="applyTheme('green')"  title="Green"></div>
+                        <div class="theme-swatch" data-theme="blue"   data-name="Blue"   style="background:#4C8FC9" onclick="applyTheme('blue')"   title="Blue"></div>
+                        <div class="theme-swatch" data-theme="purple" data-name="Purple" style="background:#9B6FCC" onclick="applyTheme('purple')" title="Purple"></div>
+                        <div class="theme-swatch" data-theme="orange" data-name="Orange" style="background:#C97B4C" onclick="applyTheme('orange')" title="Orange"></div>
+                        <div class="theme-swatch" data-theme="pink"   data-name="Pink"   style="background:#C94C8A" onclick="applyTheme('pink')"   title="Pink"></div>
+                        <div class="theme-swatch" data-theme="teal"   data-name="Teal"   style="background:#4CB8B8" onclick="applyTheme('teal')"   title="Teal"></div>
+                    </div>
+                </div>
+            </div>
+            <hr class="setting-divider">
+
+            <!-- Font size -->
+            <div class="setting-row">
+                <div>
+                    <p class="setting-label">Font size</p>
+                    <p class="setting-desc">Base text size across the app.</p>
+                </div>
+                <div class="setting-control">
+                    <div class="seg-control">
+                        <button class="seg-btn" id="fsBtnSm"   onclick="applyFontSize('sm')">Small</button>
+                        <button class="seg-btn" id="fsBtnMd"   onclick="applyFontSize('md')">Medium</button>
+                        <button class="seg-btn" id="fsBtnLg"   onclick="applyFontSize('lg')">Large</button>
+                    </div>
+                </div>
+            </div>
+            <hr class="setting-divider">
+
+            <!-- Corner style -->
+            <div class="setting-row">
+                <div>
+                    <p class="setting-label">Corner style</p>
+                    <p class="setting-desc">How rounded cards and buttons appear.</p>
+                </div>
+                <div class="setting-control">
+                    <div class="seg-control">
+                        <button class="seg-btn" id="cornerBtnSharp"   onclick="applyCorner('sharp')">Sharp</button>
+                        <button class="seg-btn" id="cornerBtnSoft"    onclick="applyCorner('soft')">Soft</button>
+                        <button class="seg-btn" id="cornerBtnRounded" onclick="applyCorner('rounded')">Rounded</button>
+                    </div>
+                </div>
+            </div>
+            <hr class="setting-divider">
+
+            <!-- Chat density -->
+            <div class="setting-row">
+                <div>
+                    <p class="setting-label">Chat density</p>
+                    <p class="setting-desc">Spacing between messages in the AI chat.</p>
+                </div>
+                <div class="setting-control">
+                    <div class="seg-control">
+                        <button class="seg-btn" id="densityBtnCompact"      onclick="applyDensity('compact')">Compact</button>
+                        <button class="seg-btn" id="densityBtnComfortable"  onclick="applyDensity('comfortable')">Comfortable</button>
+                        <button class="seg-btn" id="densityBtnSpacious"     onclick="applyDensity('spacious')">Spacious</button>
+                    </div>
+                </div>
+            </div>
+            <hr class="setting-divider">
+
+            <!-- Sidebar width -->
+            <div class="setting-row">
+                <div>
+                    <p class="setting-label">Sidebar width</p>
+                    <p class="setting-desc">How wide the left navigation panel is.</p>
+                </div>
+                <div class="setting-control">
+                    <div class="seg-control">
+                        <button class="seg-btn" id="swBtnNarrow"  onclick="applySidebarWidth('narrow')">Narrow</button>
+                        <button class="seg-btn" id="swBtnNormal"  onclick="applySidebarWidth('normal')">Normal</button>
+                        <button class="seg-btn" id="swBtnWide"    onclick="applySidebarWidth('wide')">Wide</button>
+                    </div>
+                </div>
+            </div>
+            <hr class="setting-divider">
+
+            <!-- Animations -->
+            <div class="setting-row">
+                <div>
+                    <p class="setting-label">Animations</p>
+                    <p class="setting-desc">Transition speed for UI elements.</p>
+                </div>
+                <div class="setting-control">
+                    <div class="seg-control">
+                        <button class="seg-btn" id="animBtnNone"   onclick="applyAnim('none')">None</button>
+                        <button class="seg-btn" id="animBtnNormal" onclick="applyAnim('normal')">Normal</button>
+                        <button class="seg-btn" id="animBtnSnappy" onclick="applyAnim('snappy')">Snappy</button>
+                    </div>
+                </div>
+            </div>
+            <hr class="setting-divider">
+
+            <!-- Weather effects -->
+            <div class="setting-row" style="border-bottom:none">
+                <div>
+                    <p class="setting-label">Weather effects</p>
+                    <p class="setting-desc">Rain, snow, fog, and sunshine animations on the dashboard — based on your real local weather.</p>
+                </div>
+                <div class="setting-control" style="display:flex;align-items:center">
+                    <label class="tog" title="Toggle weather effects">
+                        <input type="checkbox" id="wxFxInput" onchange="applyWxFx(this.checked)">
+                        <span class="tog-track"></span>
+                        <span class="tog-thumb"></span>
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <!-- ── Profile ── -->
+        <div class="settings-section" id="sec-profile">
+            <p class="section-title">Profile</p>
+            <p class="section-sub">Your physical details help the AI personalise calorie targets, macro splits, and diet advice.</p>
+
+            <form method="POST" action="/perfect/settings">
+                <input type="hidden" name="action" value="profile">
+                <div class="field-row">
+                    <div class="field-group">
+                        <label>Full name</label>
+                        <input type="text" name="full_name" value="{{ user.full_name or '' }}" placeholder="e.g. Saksham" autocomplete="name">
+                    </div>
+                    <div class="field-group">
+                        <label>Country</label>
+                        <input type="text" name="country" list="country-list-settings" value="{{ user.country or '' }}" placeholder="e.g. India" autocomplete="country-name">
+                        <datalist id="country-list-settings">
+                            <option value="India"><option value="United States"><option value="United Kingdom">
+                            <option value="Canada"><option value="Australia"><option value="Afghanistan">
+                            <option value="Albania"><option value="Algeria"><option value="Argentina">
+                            <option value="Armenia"><option value="Austria"><option value="Azerbaijan">
+                            <option value="Bahrain"><option value="Bangladesh"><option value="Belarus">
+                            <option value="Belgium"><option value="Bolivia"><option value="Brazil">
+                            <option value="Bulgaria"><option value="Cambodia"><option value="Cameroon">
+                            <option value="Chile"><option value="China"><option value="Colombia">
+                            <option value="Croatia"><option value="Cuba"><option value="Czech Republic">
+                            <option value="Denmark"><option value="Ecuador"><option value="Egypt">
+                            <option value="Ethiopia"><option value="Finland"><option value="France">
+                            <option value="Georgia"><option value="Germany"><option value="Ghana">
+                            <option value="Greece"><option value="Guatemala"><option value="Hungary">
+                            <option value="Indonesia"><option value="Iran"><option value="Iraq">
+                            <option value="Ireland"><option value="Israel"><option value="Italy">
+                            <option value="Japan"><option value="Jordan"><option value="Kazakhstan">
+                            <option value="Kenya"><option value="Kuwait"><option value="Lebanon">
+                            <option value="Malaysia"><option value="Mexico"><option value="Morocco">
+                            <option value="Myanmar"><option value="Nepal"><option value="Netherlands">
+                            <option value="New Zealand"><option value="Nigeria"><option value="Norway">
+                            <option value="Oman"><option value="Pakistan"><option value="Peru">
+                            <option value="Philippines"><option value="Poland"><option value="Portugal">
+                            <option value="Qatar"><option value="Romania"><option value="Russia">
+                            <option value="Saudi Arabia"><option value="Singapore"><option value="South Africa">
+                            <option value="South Korea"><option value="Spain"><option value="Sri Lanka">
+                            <option value="Sweden"><option value="Switzerland"><option value="Thailand">
+                            <option value="Turkey"><option value="Ukraine"><option value="United Arab Emirates">
+                            <option value="Uzbekistan"><option value="Venezuela"><option value="Vietnam">
+                        </datalist>
+                    </div>
+                </div>
+                <div class="field-row">
+                    <div class="field-group">
+                        <label>Age</label>
+                        <input type="number" name="age" value="{{ user.age or '' }}" placeholder="25" min="13" max="120">
+                    </div>
+                    <div class="field-group">
+                        <label>Sex</label>
+                        <select name="gender">
+                            <option value="" {% if not user.gender %}selected{% endif %}>Select…</option>
+                            <option value="male"       {% if user.gender == 'male' %}selected{% endif %}>Male</option>
+                            <option value="female"     {% if user.gender == 'female' %}selected{% endif %}>Female</option>
+                            <option value="other"      {% if user.gender == 'other' %}selected{% endif %}>Other</option>
+                            <option value="prefer_not" {% if user.gender == 'prefer_not' %}selected{% endif %}>Prefer not to say</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="field-row">
+                    <div class="field-group">
+                        <label>Weight (kg)</label>
+                        <input type="number" name="weight_kg" value="{{ user.weight_kg or '' }}" placeholder="70" min="20" max="500" step="0.1">
+                    </div>
+                    <div class="field-group">
+                        <div class="height-lbl-row">
+                            <label>Height</label>
+                            <div class="height-unit-tog">
+                                <button type="button" class="height-unit-opt active" id="hTogCm" onclick="hSetUnit('cm')">cm</button>
+                                <button type="button" class="height-unit-opt" id="hTogFt" onclick="hSetUnit('ft')">ft</button>
+                            </div>
+                        </div>
+                        <input type="hidden" name="height_cm" id="h_hidden" value="{{ user.height_cm or '' }}">
+                        <div class="h-unit-row" id="hCmWrap">
+                            <input type="number" id="h_cm_disp" placeholder="170" min="50" max="250" step="0.5"
+                                   value="{{ user.height_cm or '' }}" oninput="hOnCm()">
+                            <span class="h-unit-lbl">cm</span>
+                        </div>
+                        <div class="h-unit-row" id="hFtWrap" style="display:none">
+                            <input type="number" id="h_ft" placeholder="5" min="1" max="8" style="width:52px;flex:none" oninput="hOnFt()">
+                            <span class="h-ft-sep">ft</span>
+                            <input type="number" id="h_in" placeholder="7" min="0" max="11" step="0.5" style="width:52px;flex:none" oninput="hOnFt()">
+                            <span class="h-unit-lbl">in</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="field-group" style="margin-top:8px">
+                    <label style="margin-bottom:6px;display:block">Target weight <span style="font-size:10px;color:var(--text-3)">(optional)</span></label>
+                    <div style="display:flex;align-items:center;border-bottom:1px solid var(--border-input,rgba(201,168,76,0.18));transition:border-color 0.2s;max-width:140px" class="h-unit-row">
+                        <input type="number" name="target_weight_kg" placeholder="65" min="20" max="500" step="0.1"
+                               value="{{ user.target_weight_kg or '' }}" style="flex:1;background:transparent;border:none;outline:none;color:var(--text);font-family:var(--mono);font-size:14px;padding:9px 0;letter-spacing:0.05em">
+                        <span class="h-unit-lbl">kg</span>
+                    </div>
+                </div>
+
+                <div class="field-group" style="margin-top:16px">
+                    <label style="margin-bottom:10px;display:block">Your goal</label>
+                    <input type="hidden" name="goal" id="goal_settings_hidden" value="{{ user.goal or '' }}">
+                    <div style="display:flex;flex-wrap:wrap;gap:8px">
+                        {% set _goals = [('fat_loss','Fat loss'),('weight_gain','Gain weight'),('muscle_gain','Muscle gain'),('maintain','Maintain weight'),('health','General health'),('endurance','Build endurance')] %}
+                        {% for val, label in _goals %}
+                        <label class="role-card-s {% if (user.goal or '') == val %}selected{% endif %}"
+                               onclick="pickGoalS(this,'{{ val }}')" style="padding:10px 14px">
+                            <span style="font-family:var(--mono);font-size:10px;letter-spacing:0.08em;text-transform:uppercase;color:var(--text-2)">{{ label }}</span>
+                        </label>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <div class="field-group" style="margin-top:16px">
+                    <label style="margin-bottom:10px;display:block">Activity level</label>
+                    <input type="hidden" name="activity_level" id="activity_settings_hidden" value="{{ user.activity_level or '' }}">
+                    <div style="display:flex;flex-direction:column;gap:8px">
+                        {% set _activity = [('sedentary','Sedentary'),('light','Lightly active'),('moderate','Moderately active'),('active','Very active'),('athlete','Athlete level')] %}
+                        {% for val, label in _activity %}
+                        <label class="role-card-s {% if (user.activity_level or '') == val %}selected{% endif %}"
+                               onclick="pickActivityS(this,'{{ val }}')"
+                               style="width:100%;justify-content:flex-start;padding:10px 14px">
+                            <span style="font-family:var(--mono);font-size:10px;letter-spacing:0.08em;text-transform:uppercase;color:var(--text-2)">{{ label }}</span>
+                        </label>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <div class="field-group" style="margin-top:8px">
+                    <label style="margin-bottom:10px;display:block">Activity style</label>
+                    <p style="font-size:11px;color:var(--text-3);margin-bottom:12px;letter-spacing:0.02em">So the AI only suggests exercise that works for your body.</p>
+                    <input type="hidden" name="mobility_note" id="mob_hidden" value="{{ user.mobility_note or 'none' }}">
+                    <div style="display:flex;flex-wrap:wrap;gap:8px">
+                        {% set _mob = [
+                            ('none',       'No limitations'),
+                            ('low_impact', 'Low-impact preferred'),
+                            ('joint',      'Joint / mobility issues'),
+                            ('wheelchair', 'Wheelchair or mobility aid'),
+                        ] %}
+                        {% for val, label in _mob %}
+                        <label class="role-card-s {% if (user.mobility_note or 'none') == val %}selected{% endif %}"
+                               onclick="pickMobS(this,'{{ val }}')" style="padding:10px 14px">
+                            <span style="font-family:var(--mono);font-size:10px;letter-spacing:0.08em;text-transform:uppercase;color:var(--text-2)">{{ label }}</span>
+                        </label>
+                        {% endfor %}
+                    </div>
+                </div>
+                <button type="submit" class="btn-save" style="margin-top:20px">Save changes</button>
+            </form>
+        </div>
+
+        <!-- ── Family Role ── -->
+        <div class="settings-section" id="sec-family">
+            <p class="section-title">Family Role</p>
+            <p class="section-sub">We'll greet you on your special family day — Father's Day, Mother's Day, and more.</p>
+            <form method="POST" action="/perfect/settings">
+                <input type="hidden" name="action" value="profile">
+                <input type="hidden" name="full_name"  value="{{ user.full_name or '' }}">
+                <input type="hidden" name="age"        value="{{ user.age or '' }}">
+                <input type="hidden" name="weight_kg"  value="{{ user.weight_kg or '' }}">
+                <input type="hidden" name="height_cm"  value="{{ user.height_cm or '' }}">
+                <input type="hidden" name="gender"     value="{{ user.gender or '' }}">
+                <input type="hidden" name="country"    value="{{ user.country or '' }}">
+                <input type="hidden" name="food_prefs" value="{{ user.food_prefs or '' }}">
+                <input type="hidden" name="family_role" id="family_role_settings_input" value="{{ user.family_role or '' }}">
+                <div style="display:flex;flex-wrap:wrap;gap:10px;margin-bottom:24px">
+                    {% set _roles = [('father','Father'),('mother','Mother'),('brother','Brother'),('sister','Sister'),('grandfather','Grandfather'),('grandmother','Grandmother'),('son','Son'),('daughter','Daughter')] %}
+                    {% for val,label in _roles %}
+                    <label class="role-card-s {% if (user.family_role or '') == val %}selected{% endif %}" onclick="pickRoleSettings(this,'{{ val }}')">
+                        <span style="font-family:var(--mono);font-size:10px;letter-spacing:0.08em;text-transform:uppercase;color:var(--text-2)">{{ label }}</span>
+                    </label>
+                    {% endfor %}
+                </div>
+                <button type="submit" class="btn-save">Save role</button>
+            </form>
+        </div>
+
+        <!-- ── Food Preferences ── -->
+        <div class="settings-section" id="sec-food">
+            <p class="section-title">Food Preferences</p>
+            <p class="section-sub">Tell the AI what you like to eat. It uses these to personalise every diet plan and recipe suggestion.</p>
+
+            <form method="POST" action="/perfect/settings">
+                <input type="hidden" name="action" value="profile">
+                <!-- carry over other profile fields unchanged -->
+                <input type="hidden" name="full_name"  value="{{ user.full_name or '' }}">
+                <input type="hidden" name="age"        value="{{ user.age or '' }}">
+                <input type="hidden" name="gender"     value="{{ user.gender or '' }}">
+                <input type="hidden" name="weight_kg"  value="{{ user.weight_kg or '' }}">
+                <input type="hidden" name="height_cm"  value="{{ user.height_cm or '' }}">
+                <input type="hidden" name="country"    value="{{ user.country or '' }}">
+                <input type="hidden" name="food_prefs" id="food_prefs_input" value="{{ user.food_prefs or '' }}">
+
+                {% set _tags = ['Vegetarian','Vegan','Chicken','Red Meat','Seafood','Eggs','Rice','Bread / Wheat','Lentils & Legumes','Dairy','Indian','Mediterranean','East Asian','Italian','Low Carb','High Protein','Spicy','Sweet'] %}
+                {% set _prev = (user.food_prefs or '').split(',') %}
+                <div class="food-tags">
+                    {% for tag in _tags %}
+                    <div class="food-tag {% if tag in _prev %}selected{% endif %}" onclick="toggleFoodTag(this)">{{ tag }}</div>
+                    {% endfor %}
+                </div>
+                <p class="field-hint" style="margin-top:12px">Click to select or deselect. Your choices are saved per account.</p>
+                <button type="submit" class="btn-save">Save preferences</button>
+            </form>
+        </div>
+
+        <!-- ── Exercise Schedule ── -->
+        <div class="settings-section" id="sec-exercise">
+            <p class="section-title">Exercise Schedule</p>
+            <p class="section-sub">Answer these once and the AI will build you a real weekly schedule — the right exercises, the right days, never touching your rest day.</p>
+
+            <form method="POST" action="/perfect/settings">
+                <input type="hidden" name="action" value="exercise">
+
+                <!-- Q1: Exercises you can do -->
+                <p class="ex-q-label">Which exercises can you do?</p>
+                <p style="font-size:10px;color:var(--text-3);margin-bottom:12px;letter-spacing:0.03em">Pick everything that applies — even things you haven't tried yet but are open to.</p>
+                <input type="hidden" name="exercise_types" id="ex_types_hidden" value="{{ user.exercise_types or '' }}">
+
+                {% set _ex_prev = (user.exercise_types or '').split(',') %}
+                {% set cats = [
+                    ('Cardio & Endurance', ['Running','Jogging','Walking','Cycling (road)','Cycling (indoor/spin)','Jump rope','Stair climbing','Elliptical','Treadmill','Rowing machine','Nordic walking']),
+                    ('Gym & Strength',     ['Weight training','Bodybuilding','Powerlifting','CrossFit','Kettlebells','Calisthenics','HIIT','Resistance bands','TRX','Functional training']),
+                    ('Swimming & Water',   ['Swimming','Open-water swimming','Water polo','Kayaking','Paddleboarding','Surfing','Scuba diving','Rowing (boat)']),
+                    ('Martial Arts',       ['Boxing','Kickboxing','Judo','Karate','Taekwondo','MMA','BJJ','Wrestling','Muay Thai','Kung Fu','Krav Maga','Capoeira','Aikido','Jiu-jitsu']),
+                    ('Racquet & Court',    ['Tennis','Badminton','Squash','Table tennis','Pickleball','Racquetball']),
+                    ('Team Sports',        ['Football / Soccer','Basketball','Volleyball','Cricket','Baseball','Field hockey','Ice hockey','Rugby','Handball','Kabaddi','Kho-Kho','Netball','Lacrosse']),
+                    ('Flexibility & Mind', ['Yoga','Pilates','Tai Chi','Stretching','Gymnastics','Barre','Aerial yoga']),
+                    ('Dance & Aerobics',   ['Zumba','Bollywood dance','Hip-hop dance','Salsa / Ballroom','Aerobics','Step aerobics','Dance (general)']),
+                    ('Outdoor & Adventure',['Hiking','Rock climbing','Bouldering','Skiing','Snowboarding','Skateboarding','Parkour','Horse riding','Mountain biking','Trail running']),
+                    ('Other Sports',       ['Golf','Archery','Fencing','Athletics / Track & field','Roller skating','Ice skating','Cycling (BMX)','Polo','Shooting sports','Triathlon']),
+                ] %}
+                {% for cat_name, exercises in cats %}
+                <p style="font-family:var(--mono);font-size:9px;letter-spacing:0.2em;text-transform:uppercase;color:var(--text-3);margin:14px 0 8px">{{ cat_name }}</p>
+                <div class="food-tags" style="margin-bottom:4px">
+                    {% for ex in exercises %}
+                    <div class="food-tag {% if ex in _ex_prev %}selected{% endif %}" onclick="toggleExType(this)">{{ ex }}</div>
+                    {% endfor %}
+                </div>
+                {% endfor %}
+
+                <hr class="setting-divider" style="margin-top:24px">
+
+                <!-- Q2: Days per week (1-6, mandatory ≥1 rest day) -->
+                <p class="ex-q-label">How many days per week do you want to exercise?</p>
+                <p style="font-size:10px;color:var(--text-3);margin-bottom:12px;letter-spacing:0.03em">Maximum 6 — at least one rest day is non-negotiable.</p>
+                <input type="hidden" name="exercise_days_per_week" id="ex_days_hidden" value="{{ user.exercise_days_per_week or '' }}">
+                <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:4px" id="exDaysWrap">
+                    {% for d in range(1, 7) %}
+                    <label class="role-card-s {% if (user.exercise_days_per_week or 0)|int == d %}selected{% endif %}"
+                           onclick="pickExDays(this, {{ d }})"
+                           style="min-width:52px;justify-content:center;padding:11px 8px;flex-direction:column;gap:2px">
+                        <span style="font-family:var(--mono);font-size:16px;font-weight:700;color:var(--text-2)">{{ d }}</span>
+                        <span style="font-family:var(--mono);font-size:8px;letter-spacing:0.1em;text-transform:uppercase;color:var(--text-3)">day{{ 's' if d > 1 else '' }}</span>
+                    </label>
+                    {% endfor %}
+                </div>
+
+                <hr class="setting-divider" style="margin-top:22px">
+
+                <!-- Q3: Rest days (multi-select, min 1) -->
+                <p class="ex-q-label">Which day(s) do you want to rest?</p>
+                <p style="font-size:10px;color:var(--text-3);margin-bottom:12px;letter-spacing:0.03em">Pick at least one. The AI will never schedule exercise on these days.</p>
+                <input type="hidden" name="rest_day" id="ex_rest_hidden" value="{{ user.rest_day or '' }}">
+                {% set _rest_prev = (user.rest_day or '').split(',') %}
+                <div style="display:flex;flex-wrap:wrap;gap:8px" id="exRestWrap">
+                    {% for day in ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'] %}
+                    <label class="role-card-s {% if day in _rest_prev %}selected{% endif %}"
+                           onclick="toggleRestDay(this, '{{ day }}')"
+                           style="padding:10px 16px">
+                        <span style="font-family:var(--mono);font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:var(--text-2)">{{ day[:3] }}</span>
+                    </label>
+                    {% endfor %}
+                </div>
+
+                <hr class="setting-divider" style="margin-top:22px">
+
+                <!-- Q4: Session duration -->
+                <p class="ex-q-label">How long is each workout session?</p>
+                <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:12px" id="exDurWrap">
+                    {% set _dur_prev = user.session_duration or '' %}
+                    {% for val, label in [('30min','30 min'),('45min','45 min'),('1hr','1 hour'),('90min','1.5 hrs'),('2hr','2 hrs+')] %}
+                    <label class="role-card-s {% if _dur_prev == val %}selected{% endif %}"
+                           onclick="pickExDur(this, '{{ val }}')" style="padding:10px 18px">
+                        <span style="font-family:var(--mono);font-size:10px;letter-spacing:0.08em;text-transform:uppercase;color:var(--text-2)">{{ label }}</span>
+                    </label>
+                    {% endfor %}
+                </div>
+                <input type="hidden" name="session_duration" id="ex_dur_hidden" value="{{ user.session_duration or '' }}">
+
+                <hr class="setting-divider" style="margin-top:22px">
+
+                <!-- Q5: Preferred workout time -->
+                <p class="ex-q-label">When do you prefer to work out?</p>
+                <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:12px" id="exTimeWrap">
+                    {% set _time_prev = user.workout_time_pref or '' %}
+                    {% for val, label, hint in [('early_morning','Early morning','5–7 am'),('morning','Morning','7–10 am'),('afternoon','Afternoon','12–4 pm'),('evening','Evening','5–9 pm'),('flexible','Any time','No preference')] %}
+                    <label class="role-card-s {% if _time_prev == val %}selected{% endif %}"
+                           onclick="pickExTime(this, '{{ val }}')"
+                           style="flex-direction:column;align-items:flex-start;gap:2px;padding:11px 16px">
+                        <span style="font-family:var(--mono);font-size:10px;letter-spacing:0.08em;text-transform:uppercase;color:var(--text-2)">{{ label }}</span>
+                        <span style="font-family:var(--mono);font-size:9px;color:var(--text-3)">{{ hint }}</span>
+                    </label>
+                    {% endfor %}
+                </div>
+                <input type="hidden" name="workout_time_pref" id="ex_time_hidden" value="{{ user.workout_time_pref or '' }}">
+
+                <hr class="setting-divider" style="margin-top:22px">
+
+                <!-- Q6: Fitness level -->
+                <p class="ex-q-label">What's your current fitness level?</p>
+                <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:12px" id="exFitWrap">
+                    {% set _fit_prev = user.fitness_level or '' %}
+                    {% for val, label, hint in [('beginner','Beginner','Just starting out'),('intermediate','Intermediate','Some experience'),('advanced','Advanced','Consistent for 2+ years'),('athlete','Athlete','Competitive / elite')] %}
+                    <label class="role-card-s {% if _fit_prev == val %}selected{% endif %}"
+                           onclick="pickFitLevel(this, '{{ val }}')"
+                           style="flex-direction:column;align-items:flex-start;gap:2px;padding:11px 16px">
+                        <span style="font-family:var(--mono);font-size:10px;letter-spacing:0.08em;text-transform:uppercase;color:var(--text-2)">{{ label }}</span>
+                        <span style="font-family:var(--mono);font-size:9px;color:var(--text-3)">{{ hint }}</span>
+                    </label>
+                    {% endfor %}
+                </div>
+                <input type="hidden" name="fitness_level" id="ex_fit_hidden" value="{{ user.fitness_level or '' }}">
+
+                <button type="submit" class="btn-save" style="margin-top:28px">Save exercise schedule</button>
+            </form>
+        </div>
+
+        <!-- ── Account & Security ── -->
+        <div class="settings-section" id="sec-account">
+            <p class="section-title">Account & Security</p>
+            <p class="section-sub">Your account details and password management.</p>
+
+            <!-- Account info (editable) -->
+            <div class="info-card" style="margin-bottom:20px">
+                <div class="info-row">
+                    <span class="info-key">Username</span>
+                    <span class="info-val">{{ user.username }}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-key">Member since</span>
+                    <span class="info-val">{{ (user.created_at or '')[:10] or '—' }}</span>
+                </div>
+            </div>
+            <div class="field-group">
+                <label>Email address</label>
+                <input type="email" id="accountEmailInput" value="{{ user.email or '' }}"
+                       placeholder="you@example.com" autocomplete="email">
+                <span class="field-error" id="accountEmailErr" style="display:none;margin-top:4px"></span>
+            </div>
+            <button class="btn-save" onclick="saveAccountInfo(this)">Save changes</button>
+
+            <hr class="setting-divider" style="margin-top:0">
+            <p class="section-sub" style="margin-bottom:20px">Change your password below.</p>
+            <form method="POST" action="/perfect/settings">
+                <input type="hidden" name="action" value="password">
+                <div class="field-group">
+                    <label>Current password</label>
+                    <input type="password" name="current_password" placeholder="••••••••" autocomplete="current-password">
+                </div>
+                <div class="field-group">
+                    <label>New password</label>
+                    <input type="password" name="new_password" placeholder="••••••••" autocomplete="new-password">
+                    <span class="field-hint">Minimum 8 characters</span>
+                </div>
+                <div class="field-group">
+                    <label>Confirm new password</label>
+                    <input type="password" name="confirm_password" placeholder="••••••••" autocomplete="new-password">
+                </div>
+                {% if pw_error %}
+                <span class="field-error">{{ pw_error }}</span>
+                {% endif %}
+                <button type="submit" class="btn-save">Update password</button>
+            </form>
+
+            <!-- ── Diary PIN ── -->
+            <hr class="setting-divider" style="margin-top:32px">
+            <p class="section-sub" style="margin-bottom:18px;margin-top:4px">Diary PIN — lock your diary entries behind a 4-digit PIN. The PIN is hashed securely and cannot be recovered if lost.</p>
+            <div style="display:flex;align-items:center;justify-content:space-between;gap:16px;padding:16px 0;border-bottom:1px solid var(--border)">
+                <div>
+                    <p class="setting-label">Diary PIN</p>
+                    <p class="setting-desc" id="diaryPinDesc" style="max-width:220px">Loading…</p>
+                </div>
+                <div style="display:flex;gap:8px;flex-shrink:0;flex-wrap:wrap;justify-content:flex-end" id="diaryPinBtns"></div>
+            </div>
+
+            <p class="danger-label">Blood Report</p>
+            <button class="btn-danger" onclick="clearBloodReport()" id="clearBloodBtn" style="margin-bottom:10px">Clear blood report data</button>
+            <p style="font-size:11px;color:var(--text-3);margin-top:-4px;margin-bottom:0;line-height:1.5">Removes your saved blood report so the AI gives fresh, unbiased diet advice.</p>
+
+            <p class="danger-label">Danger zone</p>
+            <button class="btn-danger" onclick="confirmLogout()" style="margin-bottom:10px">Log out of all devices</button>
+            <button class="btn-danger" onclick="openDeleteModal()">Delete account</button>
+        </div>
+
+        <!-- ── Hidden Chats ── -->
+        <div class="settings-section" id="sec-chats">
+            <p class="section-title">Hidden Chats</p>
+            <p class="section-sub">Chats you've hidden from the sidebar. You can restore them here.</p>
+            <div id="hiddenChatList" style="border: 1px solid var(--border); border-radius: 8px; overflow: hidden; min-height: 60px;">
+                <div id="hiddenChatEmpty" style="padding: 24px; text-align: center; color: var(--text-3); font-size: 12px; letter-spacing: 0.05em;">Nothing hidden. How refreshingly transparent.</div>
+            </div>
+        </div>
+
+        <!-- ── Coach Voice ── -->
+        <div class="settings-section" id="sec-voice">
+            <p class="section-title">Coach Voice</p>
+            <p class="section-sub">Choose how your Coach sounds. All changes apply on the Coach page immediately.</p>
+
+            <div class="setting-row">
+                <div>
+                    <p class="setting-label">Voice</p>
+                    <p class="setting-desc">Voices available on your device. English (India) voices pronounce Indian names best.</p>
+                </div>
+                <div class="setting-control" style="min-width:220px">
+                    <select id="voiceSelect" style="width:100%;background:var(--elevated);border:1px solid var(--border);border-radius:var(--radius);color:var(--text);font-family:var(--mono);font-size:12px;padding:9px 12px;outline:none;appearance:none;cursor:pointer;transition:border-color var(--anim)" onchange="saveVoiceSetting('voice')" onfocus="this.style.borderColor='var(--gold)'" onblur="this.style.borderColor='var(--border)'">
+                        <option value="">Loading voices…</option>
+                    </select>
+                </div>
+            </div>
+            <hr class="setting-divider">
+
+            <div class="setting-row">
+                <div>
+                    <p class="setting-label">Speed — <span id="rateValDisplay">0.92</span>×</p>
+                    <p class="setting-desc">Slower speeds sound more deliberate and authoritative.</p>
+                </div>
+                <div class="setting-control" style="display:flex;flex-direction:column;align-items:flex-end;gap:6px;min-width:160px">
+                    <input type="range" id="voiceRate" min="0.5" max="1.8" step="0.05" value="0.92"
+                           style="width:150px;accent-color:var(--gold);cursor:pointer"
+                           oninput="document.getElementById('rateValDisplay').textContent=parseFloat(this.value).toFixed(2);saveVoiceSetting('rate')">
+                    <div style="display:flex;justify-content:space-between;width:150px">
+                        <span style="font-size:9px;color:var(--text-3);letter-spacing:0.08em">SLOW</span>
+                        <span style="font-size:9px;color:var(--text-3);letter-spacing:0.08em">FAST</span>
+                    </div>
+                </div>
+            </div>
+            <hr class="setting-divider">
+
+            <div class="setting-row">
+                <div>
+                    <p class="setting-label">Pitch — <span id="pitchValDisplay">0.72</span></p>
+                    <p class="setting-desc">Lower pitch gives a deeper, more coach-like tone.</p>
+                </div>
+                <div class="setting-control" style="display:flex;flex-direction:column;align-items:flex-end;gap:6px;min-width:160px">
+                    <input type="range" id="voicePitch" min="0.3" max="2.0" step="0.05" value="0.72"
+                           style="width:150px;accent-color:var(--gold);cursor:pointer"
+                           oninput="document.getElementById('pitchValDisplay').textContent=parseFloat(this.value).toFixed(2);saveVoiceSetting('pitch')">
+                    <div style="display:flex;justify-content:space-between;width:150px">
+                        <span style="font-size:9px;color:var(--text-3);letter-spacing:0.08em">DEEP</span>
+                        <span style="font-size:9px;color:var(--text-3);letter-spacing:0.08em">HIGH</span>
+                    </div>
+                </div>
+            </div>
+            <hr class="setting-divider">
+
+            <div style="display:flex;align-items:center;gap:14px;padding:8px 0">
+                <button class="btn-save" onclick="testCoachVoice()" style="margin-top:0">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" style="margin-right:6px;vertical-align:middle"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/></svg>
+                    Test voice
+                </button>
+                <span style="font-size:11px;color:var(--text-3);letter-spacing:0.04em">Plays a short sample on this page</span>
+            </div>
+
+            <p style="font-size:11px;color:var(--text-3);margin-top:18px;letter-spacing:0.03em;line-height:1.6">
+                Tip: If your name isn't pronounced right, look for an <strong style="color:var(--text-2)">English (India)</strong> voice in the list above — it handles Indian names and sounds naturally.
+            </p>
+        </div>
+
+    </div>
+</div>
+
+<!-- Delete account modal -->
+<div class="del-modal-backdrop" id="delModalBackdrop" onclick="closeDeleteModal(event)">
+    <div class="del-modal">
+        <p class="del-modal-title">Delete account</p>
+        <p class="del-modal-body">
+            This cannot be undone. <strong>All your data, chats, and preferences will be permanently erased.</strong>
+            Enter your password to confirm.
+        </p>
+        <input type="password" id="delPwInput" placeholder="Your password" autocomplete="current-password" onkeydown="if(event.key==='Enter')submitDelete()">
+        <p class="del-modal-err" id="delErr"></p>
+        <div class="del-modal-actions">
+            <button class="del-btn-cancel" onclick="closeDeleteModal()">Cancel</button>
+            <button class="del-btn-confirm" id="delConfirmBtn" onclick="submitDelete()">Delete forever</button>
+        </div>
+    </div>
+</div>
+
+<!-- Diary PIN modal -->
+<div class="del-modal-backdrop" id="pinModalBackdrop" onclick="closePinModal(event)">
+    <div class="pin-modal-wrap">
+        <p class="del-modal-title" id="pinModalTitle" style="color:var(--gold)">Set Diary PIN</p>
+        <p class="del-modal-body" id="pinModalBody" style="margin-bottom:16px">Enter a 4-digit PIN to protect your diary.</p>
+
+        <!-- Step: verify current PIN -->
+        <div id="pinStepVerify" style="display:none;margin-bottom:8px">
+            <p class="pin-step-label">Current PIN</p>
+            <div class="pin-row" id="pinVerifyRow">
+                <input class="pin-box" id="pv0" type="password" maxlength="1" inputmode="numeric" pattern="[0-9]">
+                <input class="pin-box" id="pv1" type="password" maxlength="1" inputmode="numeric" pattern="[0-9]">
+                <input class="pin-box" id="pv2" type="password" maxlength="1" inputmode="numeric" pattern="[0-9]">
+                <input class="pin-box" id="pv3" type="password" maxlength="1" inputmode="numeric" pattern="[0-9]">
+            </div>
+        </div>
+
+        <!-- Step: new PIN -->
+        <div id="pinStepNew" style="margin-bottom:8px">
+            <p class="pin-step-label" id="pinNewLabel">New PIN</p>
+            <div class="pin-row" id="pinNewRow">
+                <input class="pin-box" id="pn0" type="password" maxlength="1" inputmode="numeric" pattern="[0-9]">
+                <input class="pin-box" id="pn1" type="password" maxlength="1" inputmode="numeric" pattern="[0-9]">
+                <input class="pin-box" id="pn2" type="password" maxlength="1" inputmode="numeric" pattern="[0-9]">
+                <input class="pin-box" id="pn3" type="password" maxlength="1" inputmode="numeric" pattern="[0-9]">
+            </div>
+        </div>
+
+        <!-- Step: confirm PIN -->
+        <div id="pinStepConfirm" style="display:none;margin-bottom:8px">
+            <p class="pin-step-label">Confirm PIN</p>
+            <div class="pin-row" id="pinConfirmRow">
+                <input class="pin-box" id="pc0" type="password" maxlength="1" inputmode="numeric" pattern="[0-9]">
+                <input class="pin-box" id="pc1" type="password" maxlength="1" inputmode="numeric" pattern="[0-9]">
+                <input class="pin-box" id="pc2" type="password" maxlength="1" inputmode="numeric" pattern="[0-9]">
+                <input class="pin-box" id="pc3" type="password" maxlength="1" inputmode="numeric" pattern="[0-9]">
+            </div>
+        </div>
+
+        <p class="del-modal-err" id="pinModalErr" style="min-height:16px;margin-bottom:14px"></p>
+        <div class="del-modal-actions">
+            <button class="del-btn-cancel" onclick="closePinModal()">Cancel</button>
+            <button class="del-btn-confirm" id="pinModalBtn" style="background:var(--gold);border-color:var(--gold);color:#060606" onclick="pinModalNext()">Next</button>
+        </div>
+    </div>
+</div>
+
+<div class="toast" id="toast">Changes saved</div>
+
+<script>
+const _U          = {{ user.username | tojson }};
+const STORAGE_KEY = `toogood_sessions_${_U}`;
+const HIDDEN_KEY  = `tg_hidden_${_U}`;
+const ACTIVE_KEY  = `tg_active_${_U}`;
+
+const THEMES = {
+    gold:   { '--gold': '#C9A84C', '--gold-h': '#DFC070', '--gold-dim': 'rgba(201,168,76,0.07)',  '--border': 'rgba(201,168,76,0.12)',  '--border-h': 'rgba(201,168,76,0.38)' },
+    red:    { '--gold': '#C94C4C', '--gold-h': '#E07070', '--gold-dim': 'rgba(201,76,76,0.07)',   '--border': 'rgba(201,76,76,0.12)',   '--border-h': 'rgba(201,76,76,0.38)' },
+    green:  { '--gold': '#4CAF7C', '--gold-h': '#70D4A0', '--gold-dim': 'rgba(76,175,124,0.07)', '--border': 'rgba(76,175,124,0.12)',  '--border-h': 'rgba(76,175,124,0.38)' },
+    blue:   { '--gold': '#4C8FC9', '--gold-h': '#70B0E0', '--gold-dim': 'rgba(76,143,201,0.07)', '--border': 'rgba(76,143,201,0.12)',  '--border-h': 'rgba(76,143,201,0.38)' },
+    purple: { '--gold': '#9B6FCC', '--gold-h': '#BA96E8', '--gold-dim': 'rgba(155,111,204,0.07)','--border': 'rgba(155,111,204,0.12)', '--border-h': 'rgba(155,111,204,0.38)' },
+    orange: { '--gold': '#C97B4C', '--gold-h': '#E09A6A', '--gold-dim': 'rgba(201,123,76,0.07)', '--border': 'rgba(201,123,76,0.12)',  '--border-h': 'rgba(201,123,76,0.38)' },
+    pink:   { '--gold': '#C94C8A', '--gold-h': '#E070AA', '--gold-dim': 'rgba(201,76,138,0.07)', '--border': 'rgba(201,76,138,0.12)',  '--border-h': 'rgba(201,76,138,0.38)' },
+    teal:   { '--gold': '#4CB8B8', '--gold-h': '#70D4D4', '--gold-dim': 'rgba(76,184,184,0.07)', '--border': 'rgba(76,184,184,0.12)',  '--border-h': 'rgba(76,184,184,0.38)' },
+};
+const THEME_NAMES = { gold:'Gold', red:'Red', green:'Green', blue:'Blue', purple:'Purple', orange:'Orange', pink:'Pink', teal:'Teal' };
+
+function applyTheme(name) {
+    const t = THEMES[name] || THEMES.gold;
+    const root = document.documentElement;
+    for (const [k, v] of Object.entries(t)) root.style.setProperty(k, v);
+    localStorage.setItem('tg_theme', name);
+    document.querySelectorAll('.theme-swatch').forEach(s =>
+        s.classList.toggle('active', s.dataset.theme === name)
+    );
+    const label = document.getElementById('themeNameLabel');
+    if (label) label.textContent = THEME_NAMES[name] || name;
+    showToast('Theme changed to ' + (THEME_NAMES[name] || name));
+}
+
+function applyMode(mode) {
+    if (mode === 'light') {
+        document.documentElement.classList.add('light-mode');
+    } else {
+        document.documentElement.classList.remove('light-mode');
+    }
+    localStorage.setItem('tg_mode', mode);
+    document.getElementById('modeBtnDark').classList.toggle('active', mode === 'dark');
+    document.getElementById('modeBtnLight').classList.toggle('active', mode === 'light');
+    showToast(mode === 'light' ? 'Light mode on' : 'Dark mode on');
+}
+
+// ── Font size ──
+const FONT_SIZES = { sm: '12px', md: '14px', lg: '16px' };
+function applyFontSize(size) {
+    document.documentElement.style.setProperty('--fs', FONT_SIZES[size] || '14px');
+    localStorage.setItem('tg_fontsize', size);
+    ['Sm','Md','Lg'].forEach(s => document.getElementById('fsBtn'+s).classList.toggle('active', s.toLowerCase() === size));
+    showToast({ sm:'Small font', md:'Medium font', lg:'Large font' }[size]);
+}
+
+// ── Corner style ──
+const CORNERS = { sharp: '0px', soft: '6px', rounded: '14px' };
+function applyCorner(style) {
+    document.documentElement.style.setProperty('--radius', CORNERS[style] || '6px');
+    localStorage.setItem('tg_corner', style);
+    ['Sharp','Soft','Rounded'].forEach(s => document.getElementById('cornerBtn'+s).classList.toggle('active', s.toLowerCase() === style));
+    showToast({ sharp:'Sharp corners', soft:'Soft corners', rounded:'Rounded corners' }[style]);
+}
+
+// ── Chat density ──
+const DENSITY = { compact: '10px', comfortable: '18px', spacious: '28px' };
+function applyDensity(d) {
+    document.documentElement.style.setProperty('--msg-gap', DENSITY[d] || '18px');
+    localStorage.setItem('tg_density', d);
+    ['Compact','Comfortable','Spacious'].forEach(s => document.getElementById('densityBtn'+s).classList.toggle('active', s.toLowerCase() === d));
+    showToast({ compact:'Compact density', comfortable:'Comfortable density', spacious:'Spacious density' }[d]);
+}
+
+// ── Sidebar width ──
+const SW = { narrow: '220px', normal: '260px', wide: '320px' };
+function applySidebarWidth(w) {
+    document.documentElement.style.setProperty('--sw', SW[w] || '260px');
+    localStorage.setItem('tg_sw', w);
+    ['Narrow','Normal','Wide'].forEach(s => document.getElementById('swBtn'+s).classList.toggle('active', s.toLowerCase() === w));
+    showToast({ narrow:'Narrow sidebar', normal:'Normal sidebar', wide:'Wide sidebar' }[w]);
+}
+
+// ── Animations ──
+const ANIM = { none: '0ms', normal: '200ms', snappy: '80ms' };
+function applyAnim(a) {
+    document.documentElement.style.setProperty('--anim', ANIM[a] || '200ms');
+    localStorage.setItem('tg_anim', a);
+    ['None','Normal','Snappy'].forEach(s => document.getElementById('animBtn'+s).classList.toggle('active', s.toLowerCase() === a));
+    showToast({ none:'Animations off', normal:'Normal speed', snappy:'Snappy animations' }[a]);
+}
+
+// ── Exercise section pickers ──
+function toggleExType(tag) {
+    tag.classList.toggle('selected');
+    const sel = [...document.querySelectorAll('#sec-exercise .food-tag.selected')].map(t => t.textContent.trim());
+    document.getElementById('ex_types_hidden').value = sel.join(',');
+}
+function pickExDays(card, val) {
+    document.querySelectorAll('#exDaysWrap .role-card-s').forEach(c => c.classList.remove('selected'));
+    card.classList.add('selected');
+    document.getElementById('ex_days_hidden').value = val;
+}
+function toggleRestDay(card, val) {
+    card.classList.toggle('selected');
+    const sel = [...document.querySelectorAll('#exRestWrap .role-card-s.selected')].map(c => c.querySelector('span').textContent.trim());
+    const fullDays = {Mon:'Monday',Tue:'Tuesday',Wed:'Wednesday',Thu:'Thursday',Fri:'Friday',Sat:'Saturday',Sun:'Sunday'};
+    document.getElementById('ex_rest_hidden').value = sel.map(s => fullDays[s] || s).join(',');
+}
+function pickExDur(card, val) {
+    document.querySelectorAll('#exDurWrap .role-card-s').forEach(c => c.classList.remove('selected'));
+    card.classList.add('selected');
+    document.getElementById('ex_dur_hidden').value = val;
+}
+function pickExTime(card, val) {
+    document.querySelectorAll('#exTimeWrap .role-card-s').forEach(c => c.classList.remove('selected'));
+    card.classList.add('selected');
+    document.getElementById('ex_time_hidden').value = val;
+}
+function pickFitLevel(card, val) {
+    document.querySelectorAll('#exFitWrap .role-card-s').forEach(c => c.classList.remove('selected'));
+    card.classList.add('selected');
+    document.getElementById('ex_fit_hidden').value = val;
+}
+
+// ── Goal picker (Profile) ──
+function pickGoalS(card, val) {
+    card.closest('div').querySelectorAll('.role-card-s').forEach(c => c.classList.remove('selected'));
+    card.classList.add('selected');
+    document.getElementById('goal_settings_hidden').value = val;
+}
+
+// ── Activity level picker (Profile) ──
+function pickActivityS(card, val) {
+    card.closest('div').querySelectorAll('.role-card-s').forEach(c => c.classList.remove('selected'));
+    card.classList.add('selected');
+    document.getElementById('activity_settings_hidden').value = val;
+}
+
+// ── Activity / mobility picker (Profile) ──
+function pickMobS(card, val) {
+    card.closest('div').querySelectorAll('.role-card-s').forEach(c => c.classList.remove('selected'));
+    card.classList.add('selected');
+    document.getElementById('mob_hidden').value = val;
+}
+
+// ── Height unit toggle (Profile) ──
+let hUnit = 'cm';
+function hSetUnit(u) {
+    hUnit = u;
+    document.getElementById('hTogCm').classList.toggle('active', u === 'cm');
+    document.getElementById('hTogFt').classList.toggle('active', u === 'ft');
+    document.getElementById('hCmWrap').style.display = u === 'cm' ? 'flex' : 'none';
+    document.getElementById('hFtWrap').style.display = u === 'ft' ? 'flex' : 'none';
+    if (u === 'ft') {
+        const cm = parseFloat(document.getElementById('h_hidden').value);
+        if (cm >= 50) {
+            const tot = cm / 2.54;
+            document.getElementById('h_ft').value = Math.floor(tot / 12);
+            document.getElementById('h_in').value = Math.round((tot % 12) * 2) / 2;
+        }
+    } else {
+        const ft = parseFloat(document.getElementById('h_ft').value) || 0;
+        const i  = parseFloat(document.getElementById('h_in').value) || 0;
+        if (ft || i) {
+            const cm = Math.round((ft * 12 + i) * 2.54 * 10) / 10;
+            document.getElementById('h_cm_disp').value = cm;
+            document.getElementById('h_hidden').value  = cm;
+        }
+    }
+}
+function hOnCm() { document.getElementById('h_hidden').value = document.getElementById('h_cm_disp').value; }
+function hOnFt() {
+    const ft = parseFloat(document.getElementById('h_ft').value) || 0;
+    const i  = parseFloat(document.getElementById('h_in').value) || 0;
+    const cm = Math.round((ft * 12 + i) * 2.54 * 10) / 10;
+    document.getElementById('h_hidden').value = cm > 0 ? cm : '';
+}
+
+// ── Weather effects toggle ──
+function applyWxFx(enabled) {
+    localStorage.setItem('toogood_weather_anim', enabled ? 'on' : 'off');
+    showToast(enabled ? 'Weather effects on' : 'Weather effects off');
+}
+
+// Load saved theme and mode
+(function() {
+    const saved = localStorage.getItem('tg_theme') || 'gold';
+    applyTheme(saved);
+    const mode = localStorage.getItem('tg_mode') || 'dark';
+    document.getElementById('modeBtnDark').classList.toggle('active', mode === 'dark');
+    document.getElementById('modeBtnLight').classList.toggle('active', mode === 'light');
+
+    const fs = localStorage.getItem('tg_fontsize') || 'md';
+    document.documentElement.style.setProperty('--fs', FONT_SIZES[fs] || '14px');
+    ['Sm','Md','Lg'].forEach(s => document.getElementById('fsBtn'+s).classList.toggle('active', s.toLowerCase() === fs));
+
+    const corner = localStorage.getItem('tg_corner') || 'soft';
+    document.documentElement.style.setProperty('--radius', CORNERS[corner] || '6px');
+    ['Sharp','Soft','Rounded'].forEach(s => document.getElementById('cornerBtn'+s).classList.toggle('active', s.toLowerCase() === corner));
+
+    const density = localStorage.getItem('tg_density') || 'comfortable';
+    document.documentElement.style.setProperty('--msg-gap', DENSITY[density] || '18px');
+    ['Compact','Comfortable','Spacious'].forEach(s => document.getElementById('densityBtn'+s).classList.toggle('active', s.toLowerCase() === density));
+
+    const sw = localStorage.getItem('tg_sw') || 'normal';
+    document.documentElement.style.setProperty('--sw', SW[sw] || '260px');
+    ['Narrow','Normal','Wide'].forEach(s => document.getElementById('swBtn'+s).classList.toggle('active', s.toLowerCase() === sw));
+
+    const anim = localStorage.getItem('tg_anim') || 'normal';
+    document.documentElement.style.setProperty('--anim', ANIM[anim] || '200ms');
+    ['None','Normal','Snappy'].forEach(s => document.getElementById('animBtn'+s).classList.toggle('active', s.toLowerCase() === anim));
+
+    const wxEl = document.getElementById('wxFxInput');
+    if (wxEl) wxEl.checked = localStorage.getItem('toogood_weather_anim') !== 'off';
+})();
+
+// Section navigation
+function showSection(id) {
+    document.querySelectorAll('.settings-section').forEach(s => s.classList.remove('active'));
+    document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
+    document.getElementById('sec-' + id).classList.add('active');
+    const btns = document.querySelectorAll('.nav-item');
+    btns.forEach(b => { if (b.getAttribute('onclick') === `showSection('${id}')`) b.classList.add('active'); });
+    history.replaceState(null, '', '/perfect/settings?section=' + id);
+}
+
+// Init from URL — support both ?section= and #hash
+const _hashSec = location.hash.replace('#', '');
+const initSection = _hashSec || new URLSearchParams(location.search).get('section') || 'appearance';
+showSection(initSection);
+
+// Toast
+function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg || 'Changes saved';
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+// Show toast if redirected after save
+{% if saved %}
+document.addEventListener('DOMContentLoaded', () => showToast('Changes saved'));
+{% endif %}
+
+// Family role picker (settings)
+function pickRoleSettings(card, val) {
+    document.querySelectorAll('.role-card-s').forEach(c => c.classList.remove('selected'));
+    card.classList.add('selected');
+    document.getElementById('family_role_settings_input').value = val;
+}
+
+// Food tag toggle
+function toggleFoodTag(el) {
+    el.classList.toggle('selected');
+    const selected = [...document.querySelectorAll('#sec-food .food-tag.selected')].map(t => t.textContent.trim());
+    document.getElementById('food_prefs_input').value = selected.join(',');
+}
+
+// Logout
+async function clearBloodReport() {
+    if (!confirm('Remove your saved blood report? The AI will no longer factor it into diet plans until you run a new analysis.')) return;
+    const btn = document.getElementById('clearBloodBtn');
+    btn.disabled = true;
+    btn.textContent = 'Clearing…';
+    try {
+        const res = await fetch('/perfect/api/monitor/clear', { method: 'POST' });
+        const data = await res.json();
+        if (data.ok) {
+            btn.textContent = 'Cleared ✓';
+            setTimeout(() => { btn.disabled = false; btn.textContent = 'Clear blood report data'; }, 2500);
+        } else {
+            alert(data.error || 'Could not clear');
+            btn.disabled = false; btn.textContent = 'Clear blood report data';
+        }
+    } catch { alert('Network error'); btn.disabled = false; btn.textContent = 'Clear blood report data'; }
+}
+
+function confirmLogout() {
+    if (confirm('Log out everywhere?')) window.location.href = '/logout';
+}
+
+// Delete account
+function openDeleteModal() {
+    document.getElementById('delPwInput').value = '';
+    document.getElementById('delErr').textContent = '';
+    document.getElementById('delConfirmBtn').disabled = false;
+    document.getElementById('delModalBackdrop').classList.add('open');
+    setTimeout(() => document.getElementById('delPwInput').focus(), 80);
+}
+
+function closeDeleteModal(e) {
+    if (e && e.target !== document.getElementById('delModalBackdrop')) return;
+    document.getElementById('delModalBackdrop').classList.remove('open');
+}
+
+async function submitDelete() {
+    const pw  = document.getElementById('delPwInput').value;
+    const btn = document.getElementById('delConfirmBtn');
+    const err = document.getElementById('delErr');
+    if (!pw) { err.textContent = 'Please enter your password.'; return; }
+    btn.disabled = true;
+    btn.textContent = 'Deleting…';
+    err.textContent = '';
+    try {
+        const res = await fetch('/perfect/settings/delete-account', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ password: pw }),
+        });
+        const data = await res.json();
+        if (data.ok) {
+            localStorage.clear();
+            window.location.href = '/login';
+        } else {
+            err.textContent = data.error || 'Something went wrong.';
+            btn.disabled = false;
+            btn.textContent = 'Delete forever';
+        }
+    } catch {
+        err.textContent = 'Network error. Try again.';
+        btn.disabled = false;
+        btn.textContent = 'Delete forever';
+    }
+}
+
+// Load hidden chats from localStorage
+document.addEventListener('DOMContentLoaded', function() {
+    try {
+        const hidden = JSON.parse(localStorage.getItem(HIDDEN_KEY) || '[]');
+        const sessions = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+        const list = document.getElementById('hiddenChatList');
+        const empty = document.getElementById('hiddenChatEmpty');
+        const hiddenSessions = sessions.filter(s => hidden.includes(s.id));
+        if (hiddenSessions.length === 0) return;
+        empty.style.display = 'none';
+        hiddenSessions.forEach(s => {
+            const item = document.createElement('div');
+            item.className = 'hidden-chat-item';
+            item.innerHTML = `<div>
+                <div class="hc-title">${s.title || 'Untitled chat'}</div>
+                <div class="hc-date">${s.updated ? new Date(s.updated).toLocaleDateString() : ''}</div>
+            </div>
+            <button class="btn-unhide" onclick="unhideChat('${s.id}', this)">Restore</button>`;
+            list.insertBefore(item, empty);
+        });
+    } catch(e) {}
+});
+
+function unhideChat(id, btn) {
+    let hidden = JSON.parse(localStorage.getItem(HIDDEN_KEY) || '[]');
+    hidden = hidden.filter(h => h !== id);
+    localStorage.setItem(HIDDEN_KEY, JSON.stringify(hidden));
+    btn.closest('.hidden-chat-item').remove();
+    const remaining = document.querySelectorAll('.hidden-chat-item').length;
+    if (remaining === 0) document.getElementById('hiddenChatEmpty').style.display = '';
+    showToast('Chat restored');
+}
+
+// ── Diary PIN management ──
+let _pinMode = 'set';  // 'set' | 'change' | 'remove'
+let _pinStep = 'new';  // 'verify' | 'new' | 'confirm'
+let _pinHasPin = false;
+
+async function initDiaryPin() {
+    try {
+        const res = await fetch('/perfect/api/diary/lock');
+        const d = await res.json();
+        _pinHasPin = d.enabled;
+        const desc = document.getElementById('diaryPinDesc');
+        const btns = document.getElementById('diaryPinBtns');
+        if (!desc || !btns) return;
+        if (_pinHasPin) {
+            desc.textContent = 'PIN is set. Your diary requires a PIN to open.';
+            btns.innerHTML = `
+                <button class="btn-save" style="padding:7px 14px;font-size:11px" onclick="openPinModal('change')">Change PIN</button>
+                <button class="btn-danger" style="padding:7px 14px;font-size:11px" onclick="openPinModal('remove')">Remove PIN</button>`;
+        } else {
+            desc.textContent = 'No PIN set. Your diary opens without a PIN.';
+            btns.innerHTML = `<button class="btn-save" style="padding:7px 14px;font-size:11px" onclick="openPinModal('set')">Set PIN</button>`;
+        }
+    } catch(e) {
+        const desc = document.getElementById('diaryPinDesc');
+        if (desc) desc.textContent = 'Could not load PIN status.';
+    }
+}
+
+function pinRowVal(prefix) {
+    return [0,1,2,3].map(i => (document.getElementById(prefix+i).value || '')).join('');
+}
+function pinRowClear(prefix) {
+    [0,1,2,3].forEach(i => { document.getElementById(prefix+i).value = ''; });
+}
+
+function openPinModal(mode) {
+    _pinMode = mode;
+    document.getElementById('pinModalErr').textContent = '';
+    pinRowClear('pv'); pinRowClear('pn'); pinRowClear('pc');
+
+    const title = document.getElementById('pinModalTitle');
+    const body  = document.getElementById('pinModalBody');
+    const btn   = document.getElementById('pinModalBtn');
+    const stepV = document.getElementById('pinStepVerify');
+    const stepN = document.getElementById('pinStepNew');
+    const stepC = document.getElementById('pinStepConfirm');
+
+    if (mode === 'set') {
+        title.textContent = 'Set Diary PIN';
+        body.textContent  = 'Choose a 4-digit PIN to lock your diary.';
+        btn.textContent   = 'Next';
+        _pinStep = 'new';
+        stepV.style.display = 'none';
+        stepN.style.display = '';
+        stepC.style.display = 'none';
+        document.getElementById('pinNewLabel').textContent = 'Enter PIN';
+    } else if (mode === 'change') {
+        title.textContent = 'Change Diary PIN';
+        body.textContent  = 'Verify your current PIN, then set a new one.';
+        btn.textContent   = 'Verify';
+        _pinStep = 'verify';
+        stepV.style.display = '';
+        stepN.style.display = 'none';
+        stepC.style.display = 'none';
+    } else {
+        title.textContent = 'Remove Diary PIN';
+        body.textContent  = 'Enter your current PIN to remove the lock.';
+        btn.textContent   = 'Remove PIN';
+        _pinStep = 'verify_remove';
+        stepV.style.display = '';
+        stepN.style.display = 'none';
+        stepC.style.display = 'none';
+    }
+
+    document.getElementById('pinModalBackdrop').classList.add('open');
+    setTimeout(() => {
+        const firstActive = _pinStep.startsWith('verify') ? 'pv0' : 'pn0';
+        const el = document.getElementById(firstActive);
+        if (el) el.focus();
+    }, 80);
+}
+
+function closePinModal(e) {
+    if (e && e.target !== document.getElementById('pinModalBackdrop')) return;
+    document.getElementById('pinModalBackdrop').classList.remove('open');
+}
+
+async function pinModalNext() {
+    const err = document.getElementById('pinModalErr');
+    const btn = document.getElementById('pinModalBtn');
+    err.textContent = '';
+
+    if (_pinStep === 'verify' || _pinStep === 'verify_remove') {
+        const pin = pinRowVal('pv');
+        if (pin.length !== 4) { err.textContent = 'Enter all 4 digits.'; return; }
+        btn.disabled = true; btn.textContent = 'Checking…';
+        try {
+            const res = await fetch('/perfect/api/diary/lock', {
+                method: 'POST', headers: {'Content-Type':'application/json'},
+                body: JSON.stringify({action:'verify', pin})
+            });
+            const d = await res.json();
+            if (!d.valid) {
+                err.textContent = 'Incorrect PIN. Try again.';
+                pinRowClear('pv');
+                document.getElementById('pv0').focus();
+                btn.disabled = false; btn.textContent = _pinStep === 'verify_remove' ? 'Remove PIN' : 'Verify';
+                return;
+            }
+        } catch { err.textContent = 'Network error. Try again.'; btn.disabled = false; return; }
+
+        if (_pinStep === 'verify_remove') {
+            // Remove PIN
+            try {
+                await fetch('/perfect/api/diary/lock', {
+                    method: 'POST', headers: {'Content-Type':'application/json'},
+                    body: JSON.stringify({action:'setup', enabled: false})
+                });
+                document.getElementById('pinModalBackdrop').classList.remove('open');
+                showToast('Diary PIN removed');
+                initDiaryPin();
+            } catch { err.textContent = 'Network error. Try again.'; }
+            btn.disabled = false; btn.textContent = 'Remove PIN';
+            return;
+        }
+
+        // Go to new PIN step
+        _pinStep = 'new';
+        document.getElementById('pinStepVerify').style.display = 'none';
+        document.getElementById('pinStepNew').style.display = '';
+        document.getElementById('pinNewLabel').textContent = 'New PIN';
+        btn.disabled = false; btn.textContent = 'Next';
+        document.getElementById('pn0').focus();
+        return;
+    }
+
+    if (_pinStep === 'new') {
+        const pin = pinRowVal('pn');
+        if (pin.length !== 4) { err.textContent = 'Enter all 4 digits.'; return; }
+        _pinStep = 'confirm';
+        document.getElementById('pinStepNew').style.display = 'none';
+        document.getElementById('pinStepConfirm').style.display = '';
+        btn.textContent = 'Save PIN';
+        document.getElementById('pc0').focus();
+        return;
+    }
+
+    if (_pinStep === 'confirm') {
+        const pin     = pinRowVal('pn');
+        const confirm = pinRowVal('pc');
+        if (confirm.length !== 4) { err.textContent = 'Enter all 4 digits.'; return; }
+        if (pin !== confirm) {
+            err.textContent = 'PINs do not match. Try again.';
+            pinRowClear('pc');
+            document.getElementById('pc0').focus();
+            return;
+        }
+        btn.disabled = true; btn.textContent = 'Saving…';
+        try {
+            const res = await fetch('/perfect/api/diary/lock', {
+                method: 'POST', headers: {'Content-Type':'application/json'},
+                body: JSON.stringify({action:'setup', enabled: true, pin})
+            });
+            const d = await res.json();
+            if (d.ok) {
+                document.getElementById('pinModalBackdrop').classList.remove('open');
+                showToast(_pinMode === 'set' ? 'Diary PIN set' : 'Diary PIN changed');
+                initDiaryPin();
+            } else {
+                err.textContent = d.error || 'Something went wrong.';
+            }
+        } catch { err.textContent = 'Network error. Try again.'; }
+        btn.disabled = false; btn.textContent = 'Save PIN';
+    }
+}
+
+// PIN box keyboard navigation (auto-advance, backspace)
+(function() {
+    function setupPinRow(prefix) {
+        [0,1,2,3].forEach(i => {
+            const el = document.getElementById(prefix + i);
+            if (!el) return;
+            el.addEventListener('keydown', function(e) {
+                if (e.key === 'Backspace' && !this.value && i > 0) {
+                    document.getElementById(prefix + (i-1)).focus();
+                } else if (e.key === 'Enter') {
+                    pinModalNext();
+                }
+            });
+            el.addEventListener('input', function() {
+                this.value = this.value.replace(/\D/g,'').slice(-1);
+                if (this.value && i < 3) document.getElementById(prefix + (i+1)).focus();
+            });
+        });
+    }
+    setupPinRow('pv');
+    setupPinRow('pn');
+    setupPinRow('pc');
+})();
+
+// ── Account info save (email) ──
+async function saveAccountInfo(btn) {
+    const input = document.getElementById('accountEmailInput');
+    const errEl = document.getElementById('accountEmailErr');
+    const email = input.value.trim();
+    errEl.style.display = 'none';
+
+    if (!email) { errEl.textContent = 'Email address is required.'; errEl.style.display = 'block'; return; }
+    if (!email.includes('@') || !email.includes('.')) {
+        errEl.textContent = 'Please enter a valid email address.'; errEl.style.display = 'block'; return;
+    }
+
+    const orig = btn.textContent;
+    btn.disabled = true; btn.textContent = 'Saving…';
+    try {
+        const res = await fetch('/perfect/api/account/email', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({email})
+        });
+        const d = await res.json();
+        if (d.ok) {
+            showToast('Changes saved');
+        } else {
+            errEl.textContent = d.error || 'Something went wrong.';
+            errEl.style.display = 'block';
+        }
+    } catch { errEl.textContent = 'Network error. Try again.'; errEl.style.display = 'block'; }
+    btn.disabled = false; btn.textContent = orig;
+}
+
+// Init diary PIN status when account section is shown
+const _origShowSection = showSection;
+window.showSection = function(id) {
+    _origShowSection(id);
+    if (id === 'account') initDiaryPin();
+    if (id === 'voice')   loadCoachVoices();
+};
+// Also init if section is loaded directly
+if (initSection === 'account') initDiaryPin();
+if (initSection === 'voice')   loadCoachVoices();
+
+// ── Coach Voice settings ──
+function loadCoachVoices() {
+    if (!window.speechSynthesis) {
+        document.getElementById('voiceSelect').innerHTML = '<option>Not supported in this browser</option>';
+        return;
+    }
+    function populate(voices) {
+        var sel     = document.getElementById('voiceSelect');
+        var saved   = localStorage.getItem('tg_coach_voice') || '';
+        var savedR  = localStorage.getItem('tg_coach_rate')  || '0.92';
+        var savedP  = localStorage.getItem('tg_coach_pitch') || '0.72';
+
+        // Restore slider values
+        var rateEl  = document.getElementById('voiceRate');
+        var pitchEl = document.getElementById('voicePitch');
+        if (rateEl)  { rateEl.value  = savedR; document.getElementById('rateValDisplay').textContent  = parseFloat(savedR).toFixed(2); }
+        if (pitchEl) { pitchEl.value = savedP; document.getElementById('pitchValDisplay').textContent = parseFloat(savedP).toFixed(2); }
+
+        // Filter to English voices; fall back to all voices
+        var en = voices.filter(function(v) { return v.lang.startsWith('en'); });
+        var list = en.length ? en : voices;
+
+        // Sort: India first (great for Indian names), then other male names
+        list.sort(function(a, b) {
+            var ai = /in/i.test(a.lang) ? 0 : /david|mark|daniel|alex|james|george|male/i.test(a.name) ? 1 : 2;
+            var bi = /in/i.test(b.lang) ? 0 : /david|mark|daniel|alex|james|george|male/i.test(b.name) ? 1 : 2;
+            return ai - bi;
+        });
+
+        sel.innerHTML = '';
+        list.forEach(function(v) {
+            var opt = document.createElement('option');
+            opt.value       = v.name;
+            opt.textContent = v.name + ' (' + v.lang + ')';
+            if (v.name === saved) opt.selected = true;
+            sel.appendChild(opt);
+        });
+
+        // Default selection if nothing saved
+        if (!saved && list.length) sel.value = list[0].name;
+    }
+
+    var voices = window.speechSynthesis.getVoices();
+    if (voices.length) { populate(voices); }
+    else { window.speechSynthesis.onvoiceschanged = function() { populate(window.speechSynthesis.getVoices()); }; }
+}
+
+function saveVoiceSetting(which) {
+    if (which === 'voice') localStorage.setItem('tg_coach_voice', document.getElementById('voiceSelect').value);
+    if (which === 'rate')  localStorage.setItem('tg_coach_rate',  document.getElementById('voiceRate').value);
+    if (which === 'pitch') localStorage.setItem('tg_coach_pitch', document.getElementById('voicePitch').value);
+}
+
+function testCoachVoice() {
+    if (!window.speechSynthesis) return;
+    window.speechSynthesis.cancel();
+    var name  = document.getElementById('voiceSelect').value;
+    var rate  = parseFloat(document.getElementById('voiceRate').value);
+    var pitch = parseFloat(document.getElementById('voicePitch').value);
+    var voices = window.speechSynthesis.getVoices();
+    var voice  = voices.find(function(v) { return v.name === name; }) || null;
+    var utt = new SpeechSynthesisUtterance("Alright, let's get to work. What are we training today?");
+    if (voice) utt.voice = voice;
+    utt.rate   = rate;
+    utt.pitch  = pitch;
+    utt.volume = 1.0;
+    window.speechSynthesis.speak(utt);
+    showToast('Playing test…');
+}
+</script>
+</body>
+</html>

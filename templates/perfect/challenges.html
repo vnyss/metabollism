@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Challenges — Too Good</title>
+    <link href="https://fonts.googleapis.com/css2?family=Courier+Prime:wght@400;700&family=Special+Elite&family=Playfair+Display:wght@400;700&display=swap" rel="stylesheet">
+    <script>(function(){var r=document.documentElement;if(localStorage.getItem('tg_mode')==='light')r.classList.add('light-mode');var sw=localStorage.getItem('tg_sw');if(sw)r.style.setProperty('--sw',{narrow:'220px',normal:'260px',wide:'320px'}[sw]||'260px');var cr=localStorage.getItem('tg_corner');if(cr)r.style.setProperty('--radius',{sharp:'0px',soft:'6px',rounded:'14px'}[cr]||'6px');})();</script>
+    <style>
+        :root{--bg:#080808;--sidebar:#060606;--surface:#0F0F0F;--elevated:#161616;--border:rgba(201,168,76,0.12);--border-h:rgba(201,168,76,0.38);--gold:#C9A84C;--gold-dim:rgba(201,168,76,0.07);--text:#EDE3CE;--text-2:#9A8B72;--text-3:#554430;--green:#4CAF82;--mono:'Courier Prime',monospace;--display:'Special Elite',monospace;--sw:260px;--radius:6px}
+        html.light-mode{--bg:#F5F0E8;--sidebar:#EDE8DF;--surface:#FFFFFF;--elevated:#F0EBE1;--border:rgba(100,80,40,0.14);--border-h:rgba(100,80,40,0.36);--gold-dim:rgba(201,168,76,0.10);--text:#2C2010;--text-2:#6B5B3E;--text-3:#A89070}
+        *{box-sizing:border-box;margin:0;padding:0}
+        body{background:var(--bg);color:var(--text);font-family:var(--mono);font-size:14px;display:flex;min-height:100vh}
+        .main{margin-left:var(--sw);flex:1;padding:44px 56px}
+        .page-label{font-size:10px;color:var(--text-3);letter-spacing:.24em;text-transform:uppercase;margin-bottom:6px}
+        .page-title{font-family:'Playfair Display',serif;font-size:32px;color:var(--text);margin-bottom:4px}
+        .page-sub{font-size:11px;color:var(--text-3);margin-bottom:36px;letter-spacing:.05em}
+        .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(380px,1fr));gap:16px}
+        /* Challenge card */
+        .ch-card{background:var(--surface);border:1px solid var(--border);padding:28px;position:relative;transition:border-color .15s}
+        .ch-card:hover{border-color:var(--border-h)}
+        .ch-card.completed{border-color:rgba(76,175,130,.4)}
+        .ch-done-badge{position:absolute;top:14px;right:14px;font-size:10px;color:var(--green);border:1px solid rgba(76,175,130,.4);padding:3px 8px;letter-spacing:.1em;text-transform:uppercase}
+        .ch-title{font-family:'Playfair Display',serif;font-size:20px;color:var(--text);margin-bottom:6px}
+        .ch-desc{font-size:11px;color:var(--text-3);margin-bottom:20px;line-height:1.7}
+        /* Progress bar */
+        .prog-row{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px}
+        .prog-val{font-family:'Playfair Display',serif;font-size:18px;color:var(--gold)}
+        .prog-target{font-size:11px;color:var(--text-3)}
+        .prog-bar{height:4px;background:var(--border);position:relative;margin-bottom:20px}
+        .prog-fill{position:absolute;inset:0 auto 0 0;background:var(--gold);transition:width .4s}
+        .prog-fill.done{background:var(--green)}
+        /* Mini leaderboard */
+        .lb-head{font-size:10px;color:var(--text-3);letter-spacing:.16em;text-transform:uppercase;margin-bottom:8px}
+        .lb-row{display:flex;align-items:center;gap:10px;padding:6px 0;border-bottom:1px solid var(--border)}
+        .lb-row:last-child{border:none}
+        .lb-rank{font-size:11px;color:var(--text-3);width:18px;text-align:center;flex-shrink:0}
+        .lb-name{flex:1;font-size:12px;color:var(--text)}
+        .lb-name.me{color:var(--gold)}
+        .lb-prog{font-size:12px;color:var(--text-2)}
+        .lb-more{font-size:11px;color:var(--text-3);cursor:pointer;text-align:right;margin-top:8px;letter-spacing:.06em}
+        .lb-more:hover{color:var(--gold)}
+        /* Full leaderboard modal */
+        .modal-bd{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:9000;align-items:center;justify-content:center}
+        .modal-bd.open{display:flex}
+        .modal{background:var(--elevated);border:1px solid var(--border-h);padding:32px;min-width:380px;max-width:520px;max-height:80vh;overflow-y:auto;position:relative}
+        .modal-close{position:absolute;top:14px;right:18px;cursor:pointer;font-size:18px;color:var(--text-3);background:none;border:none}
+        .modal-title{font-family:'Playfair Display',serif;font-size:20px;color:var(--text);margin-bottom:4px}
+        .modal-sub{font-size:11px;color:var(--text-3);margin-bottom:20px}
+        .full-lb-row{display:flex;align-items:center;gap:12px;padding:8px 0;border-bottom:1px solid var(--border)}
+        .full-lb-row:last-child{border:none}
+        .full-lb-rank{font-family:'Playfair Display',serif;font-size:16px;color:var(--text-3);width:24px;flex-shrink:0}
+        .full-lb-name{flex:1;font-size:13px;color:var(--text)}
+        .full-lb-name.me{color:var(--gold);font-weight:700}
+        .full-lb-bar{width:80px;height:3px;background:var(--border);position:relative;flex-shrink:0}
+        .full-lb-bar-fill{position:absolute;inset:0 auto 0 0;background:var(--gold)}
+        .full-lb-val{font-size:12px;color:var(--text-2);white-space:nowrap;width:48px;text-align:right;flex-shrink:0}
+    </style>
+</head>
+<body>
+{% include 'perfect/_sidebar.html' %}
+<div class="main">
+    <div class="page-label">This Month</div>
+    <div class="page-title">Challenges</div>
+    <div class="page-sub">Compete with everyone — top performers earn glory. Rankings reset each month.</div>
+
+    <div class="grid" id="challengeGrid">
+        <div style="color:var(--text-3);font-size:12px">Loading…</div>
+    </div>
+</div>
+
+<!-- Full leaderboard modal -->
+<div class="modal-bd" id="lbModal" onclick="if(event.target===this)closeLb()">
+    <div class="modal">
+        <button class="modal-close" onclick="closeLb()">✕</button>
+        <div class="modal-title" id="lbModalTitle">Leaderboard</div>
+        <div class="modal-sub" id="lbModalSub"></div>
+        <div id="lbModalBody"></div>
+    </div>
+</div>
+
+<script>
+const METRIC_UNIT = {workouts:'workouts',xp:'XP',checkins:'check-ins',food_logs:'food logs'};
+const RANK_MEDAL  = ['🥇','🥈','🥉'];
+
+async function load() {
+    const res  = await fetch('/perfect/api/challenges');
+    const data = await res.json();
+    const grid = document.getElementById('challengeGrid');
+    if (!data.ok || !data.challenges.length) {
+        grid.innerHTML = '<div style="color:var(--text-3);font-size:12px">No active challenges.</div>';
+        return;
+    }
+    grid.innerHTML = data.challenges.map(ch => {
+        const unit    = METRIC_UNIT[ch.metric] || ch.metric;
+        const done    = ch.completed;
+        const topRows = ch.top5.map(b => `
+            <div class="lb-row">
+                <div class="lb-rank">${RANK_MEDAL[b.rank-1]||b.rank}</div>
+                <div class="lb-name${b.is_me?' me':''}">@${b.username}</div>
+                <div class="lb-prog">${b.progress.toLocaleString()} ${unit}</div>
+            </div>`).join('');
+        return `<div class="ch-card${done?' completed':''}">
+            ${done ? '<div class="ch-done-badge">✓ Completed</div>' : ''}
+            <div class="ch-title">${ch.title}</div>
+            <div class="ch-desc">${ch.description}</div>
+            <div class="prog-row">
+                <span class="prog-val">${ch.my_progress.toLocaleString()}</span>
+                <span class="prog-target">/ ${ch.target.toLocaleString()} ${unit}</span>
+            </div>
+            <div class="prog-bar"><div class="prog-fill${done?' done':''}" style="width:${ch.pct}%"></div></div>
+            <div class="lb-head">Leaderboard</div>
+            ${topRows || '<div style="font-size:11px;color:var(--text-3)">No entries yet — be first!</div>'}
+            <div class="lb-more" onclick="openLb(${ch.id},'${ch.title}','${unit}')">View full leaderboard ›</div>
+        </div>`;
+    }).join('');
+}
+
+async function openLb(cid, title, unit) {
+    document.getElementById('lbModal').classList.add('open');
+    document.getElementById('lbModalTitle').textContent = title;
+    document.getElementById('lbModalSub').textContent   = 'All participants';
+    document.getElementById('lbModalBody').innerHTML    = '<div style="font-size:12px;color:var(--text-3)">Loading…</div>';
+
+    const res  = await fetch('/perfect/api/challenges/' + cid + '/leaderboard');
+    const data = await res.json();
+    if (!data.ok) return;
+    const rows = data.board.filter(b => b.progress > 0);
+    document.getElementById('lbModalBody').innerHTML = rows.length
+        ? rows.map(b => `
+            <div class="full-lb-row">
+                <div class="full-lb-rank">${RANK_MEDAL[b.rank-1]||b.rank}</div>
+                <div class="full-lb-name${b.is_me?' me':''}">
+                    ${b.name || '@'+b.username}${b.is_me?' (you)':''}
+                </div>
+                <div class="full-lb-bar"><div class="full-lb-bar-fill" style="width:${b.pct}%"></div></div>
+                <div class="full-lb-val">${b.progress.toLocaleString()}</div>
+            </div>`).join('')
+        : '<div style="font-size:12px;color:var(--text-3)">No entries yet.</div>';
+}
+
+function closeLb() { document.getElementById('lbModal').classList.remove('open'); }
+load();
+</script>
+</body>
+</html>

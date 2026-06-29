@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Profile — Too Good</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Courier+Prime:wght@400;700&family=Special+Elite&family=Playfair+Display:wght@400;700&display=swap" rel="stylesheet">
+    <script>(function(){
+        var r=document.documentElement;
+        if(localStorage.getItem('tg_mode')==='light')r.classList.add('light-mode');
+        var fs=localStorage.getItem('tg_fontsize');if(fs)r.style.setProperty('--fs',{sm:'12px',md:'14px',lg:'16px'}[fs]||'14px');
+        var sw=localStorage.getItem('tg_sw');if(sw)r.style.setProperty('--sw',{narrow:'220px',normal:'260px',wide:'320px'}[sw]||'260px');
+        var cr=localStorage.getItem('tg_corner');if(cr)r.style.setProperty('--radius',{sharp:'0px',soft:'6px',rounded:'14px'}[cr]||'6px');
+    })();</script>
+    <style>
+        :root{--bg:#080808;--sidebar:#060606;--surface:#0F0F0F;--elevated:#161616;--border:rgba(201,168,76,0.12);--border-h:rgba(201,168,76,0.38);--gold:#C9A84C;--gold-dim:rgba(201,168,76,0.07);--text:#EDE3CE;--text-2:#9A8B72;--text-3:#554430;--green:#4CAF82;--mono:'Courier Prime',monospace;--display:'Special Elite',monospace;--sw:260px;--radius:6px}
+        html.light-mode{--bg:#F5F0E8;--sidebar:#EDE8DF;--surface:#FFFFFF;--elevated:#F0EBE1;--border:rgba(100,80,40,0.14);--border-h:rgba(100,80,40,0.36);--gold-dim:rgba(201,168,76,0.10);--text:#2C2010;--text-2:#6B5B3E;--text-3:#A89070}
+        *{box-sizing:border-box;margin:0;padding:0}
+        body{background:var(--bg);color:var(--text);font-family:var(--mono);font-size:14px;display:flex;min-height:100vh}
+        .main{margin-left:var(--sw);flex:1;padding:44px 56px;max-width:900px}
+        .page-label{font-size:10px;color:var(--text-3);letter-spacing:.24em;text-transform:uppercase;margin-bottom:28px}
+        /* Hero */
+        .hero{display:flex;align-items:center;gap:28px;padding:32px 36px;background:var(--surface);border:1px solid var(--border);margin-bottom:24px}
+        .hero-av{width:72px;height:72px;background:var(--gold-dim);border:1px solid var(--border-h);display:flex;align-items:center;justify-content:center;font-family:var(--display);font-size:38px;color:var(--gold);flex-shrink:0}
+        .hero-name{font-family:'Playfair Display',serif;font-size:28px;color:var(--text);margin-bottom:6px}
+        .hero-meta{font-size:11px;color:var(--text-3);letter-spacing:.05em;line-height:1.9}
+        .hero-action{margin-left:auto;flex-shrink:0}
+        .action-btn{padding:9px 20px;font-family:var(--mono);font-size:12px;letter-spacing:.1em;border:1px solid;cursor:pointer;transition:background .15s,color .15s;text-decoration:none;display:inline-block;text-transform:uppercase}
+        .action-btn.add{color:var(--gold);border-color:rgba(201,168,76,.5);background:none}
+        .action-btn.add:hover{background:var(--gold-dim)}
+        .action-btn.buddies{color:var(--green);border-color:rgba(76,175,130,.4);background:none;cursor:default}
+        .action-btn.pending{color:var(--text-3);border-color:var(--border);background:none;cursor:default}
+        /* Stats */
+        .stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:2px;margin-bottom:24px}
+        .stat-box{padding:20px;background:var(--surface);border:1px solid var(--border);text-align:center}
+        .stat-val{font-family:'Playfair Display',serif;font-size:28px;color:var(--gold);margin-bottom:4px}
+        .stat-lbl{font-size:10px;color:var(--text-3);letter-spacing:.14em;text-transform:uppercase}
+        /* Achievements */
+        .ach-grid{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:28px}
+        .ach-badge{display:flex;align-items:center;gap:8px;padding:8px 14px;background:var(--surface);border:1px solid var(--border)}
+        .ach-emoji{font-size:20px}
+        .ach-info{display:flex;flex-direction:column}
+        .ach-title{font-size:11px;color:var(--text);letter-spacing:.04em}
+        .ach-date{font-size:9px;color:var(--text-3)}
+        /* Activity */
+        .section-head{font-size:11px;color:var(--text-3);letter-spacing:.18em;text-transform:uppercase;margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid var(--border)}
+        .feed-list{display:flex;flex-direction:column;gap:2px}
+        .feed-item{display:flex;align-items:center;gap:14px;padding:12px 16px;background:var(--surface);border:1px solid var(--border)}
+        .fi-icon{font-size:18px;width:28px;text-align:center;flex-shrink:0}
+        .fi-label{flex:1;font-size:13px;color:var(--text)}
+        .fi-note{font-size:10px;color:var(--text-3);margin-top:2px}
+        .fi-xp{font-family:'Playfair Display',serif;font-size:14px;color:var(--gold);white-space:nowrap;margin-right:6px}
+        .fi-time{font-size:10px;color:var(--text-3);white-space:nowrap}
+    </style>
+</head>
+<body>
+{% include 'perfect/_sidebar.html' %}
+<div class="main">
+    <div class="page-label">{{ 'Your Profile' if is_me else 'Profile' }}</div>
+
+    <div class="hero">
+        <div class="hero-av">{{ target_name[0]|upper }}</div>
+        <div>
+            <div class="hero-name">{{ target_name }}</div>
+            <div class="hero-meta">
+                @{{ target_username }}<br>
+                Goal: {{ target_goal }}<br>
+                Member since {{ target_joined }}
+            </div>
+        </div>
+        {% if not is_me %}
+        <div class="hero-action">
+            {% if buddy_status == 'accepted' %}
+                <span class="action-btn buddies">✓ Buddies</span>
+            {% elif buddy_status == 'pending_sent' %}
+                <span class="action-btn pending">Request Sent</span>
+            {% elif buddy_status == 'pending_recv' %}
+                <button class="action-btn add" onclick="acceptBuddy()">Accept Buddy Request</button>
+            {% else %}
+                <button class="action-btn add" onclick="addBuddy()">+ Add Buddy</button>
+            {% endif %}
+        </div>
+        {% endif %}
+    </div>
+
+    <div class="stats-row">
+        <div class="stat-box">
+            <div class="stat-val">{{ target_level }}</div>
+            <div class="stat-lbl">Level</div>
+        </div>
+        <div class="stat-box">
+            <div class="stat-val">{{ "{:,}".format(target_xp) }}</div>
+            <div class="stat-lbl">Total XP</div>
+        </div>
+        <div class="stat-box">
+            <div class="stat-val">{{ target_streak }}</div>
+            <div class="stat-lbl">Day Streak</div>
+        </div>
+        <div class="stat-box">
+            <div class="stat-val">{{ buddy_count }}</div>
+            <div class="stat-lbl">Buddies</div>
+        </div>
+    </div>
+
+    <div class="section-head">Achievements</div>
+    <div class="ach-grid" id="achGrid"><div style="font-size:11px;color:var(--text-3)">Loading…</div></div>
+
+    {% if is_me or buddy_status == 'accepted' %}
+    <div class="section-head">Recent Activity</div>
+    <div class="feed-list" id="feedList"><div style="padding:16px;font-size:12px;color:var(--text-3)">Loading…</div></div>
+    {% else %}
+    <div style="padding:28px;background:var(--surface);border:1px solid var(--border);font-size:12px;color:var(--text-3);text-align:center;letter-spacing:.06em">
+        Add {{ target_name }} as a buddy to see their activity feed.
+    </div>
+    {% endif %}
+</div>
+
+<script>
+const TARGET = {{ target_username | tojson }};
+const IS_ME  = {{ 'true' if is_me else 'false' }};
+
+{% if is_me or buddy_status == 'accepted' %}
+async function loadFeed() {
+    const url = IS_ME ? '/perfect/api/score' : '/perfect/api/activity/' + TARGET;
+    const res = await fetch(url);
+    const d   = await res.json();
+    const fl  = document.getElementById('feedList');
+    if (!fl) return;
+    const icons  = {login:'☀️',food_log:'🍎',calorie_goal:'🎯',exercise:'🏃',blood_report:'💉'};
+    const labels = {login:'Checked in',food_log:'Logged meals',calorie_goal:'Hit calorie goal',exercise:'Completed workout',blood_report:'Analyzed blood report'};
+    const events = IS_ME ? (d.events||[]) : (d.feed||[]);
+    if (!events.length) { fl.innerHTML='<div style="padding:16px;font-size:12px;color:var(--text-3)">No activity yet.</div>'; return; }
+    fl.innerHTML = events.map(e => {
+        const tp = e.event_type||e.type||'';
+        const at = (e.awarded_at||e.at||'').slice(0,16);
+        return `<div class="feed-item">
+            <div class="fi-icon">${icons[tp]||'⭐'}</div>
+            <div style="flex:1"><div class="fi-label">${labels[tp]||tp}</div></div>
+            <div class="fi-xp">+${Math.round(e.xp_awarded||e.xp||0)} XP</div>
+            <div class="fi-time">${at.replace('T',' ')}</div>
+        </div>`;
+    }).join('');
+}
+loadFeed();
+{% endif %}
+
+async function loadAchievements() {
+    const url = IS_ME ? '/perfect/api/achievements' : '/perfect/api/achievements?u=' + TARGET;
+    const res  = await fetch('/perfect/api/achievements');
+    const d    = await res.json();
+    const el   = document.getElementById('achGrid');
+    if (!el) return;
+    if (!d.ok || !d.achievements.length) {
+        el.innerHTML = '<div style="font-size:11px;color:var(--text-3)">No achievements yet.</div>';
+        return;
+    }
+    el.innerHTML = d.achievements.map(a => `
+        <div class="ach-badge" title="${a.desc}">
+            <div class="ach-emoji">${a.emoji}</div>
+            <div class="ach-info">
+                <div class="ach-title">${a.title}</div>
+                <div class="ach-date">${a.earned_at}</div>
+            </div>
+        </div>`).join('');
+}
+loadAchievements();
+
+async function addBuddy() {
+    const res = await fetch('/perfect/api/buddy/request',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username:TARGET})});
+    const d   = await res.json();
+    if (d.ok) { document.querySelector('.action-btn').textContent='Request Sent'; document.querySelector('.action-btn').className='action-btn pending'; }
+}
+async function acceptBuddy() {
+    await fetch('/perfect/api/buddy/respond',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username:TARGET,action:'accept'})});
+    location.reload();
+}
+</script>
+</body>
+</html>

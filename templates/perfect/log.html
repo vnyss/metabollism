@@ -1,0 +1,594 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Log Today — Too Good</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Courier+Prime:ital,wght@0,400;0,700;1,400&family=Special+Elite&display=swap" rel="stylesheet">
+    <script>(function(){
+        var r = document.documentElement;
+        if (localStorage.getItem('tg_mode') === 'light') r.classList.add('light-mode');
+        var sw = localStorage.getItem('tg_sw'); if (sw) r.style.setProperty('--sw', {narrow:'220px',normal:'260px',wide:'320px'}[sw]||'260px');
+        var an = localStorage.getItem('tg_anim'); if (an) r.style.setProperty('--anim', {none:'0ms',normal:'200ms',snappy:'80ms'}[an]||'200ms');
+    })();</script>
+    <style>
+        :root {
+            --bg:#0A0A0A; --sidebar:#080808; --surface:#111111; --elevated:#181818;
+            --border:rgba(201,168,76,0.12); --border-h:rgba(201,168,76,0.38);
+            --gold:#C9A84C; --gold-h:#DFC070; --gold-dim:rgba(201,168,76,0.07);
+            --green:#4CAF7C; --red:#CF6679;
+            --text:#E8DCC8; --text-2:#8A7A62; --text-3:#4A3C2A;
+            --mono:'Courier Prime',monospace; --display:'Special Elite',monospace;
+            --sw:260px; --anim:200ms;
+        }
+        html.light-mode {
+            --bg:#F5F0E8; --sidebar:#EDE8DF; --surface:#FFFFFF; --elevated:#F0EBE1;
+            --border:rgba(100,80,40,0.14); --border-h:rgba(100,80,40,0.36);
+            --gold-dim:rgba(201,168,76,0.10); --text:#1A1208; --text-2:#6B5A3E; --text-3:#9A8A72;
+        }
+        *,*::before,*::after { box-sizing:border-box; margin:0; padding:0; }
+        body { background:var(--bg); font-family:var(--mono); color:var(--text); height:100vh; overflow:hidden; -webkit-font-smoothing:antialiased; }
+        .app { display:flex; height:100vh; }
+
+        /* ── SIDEBAR ── */
+        .sidebar { width:var(--sw); min-width:var(--sw); background:var(--sidebar); border-right:1px solid var(--border); display:flex; flex-direction:column; height:100vh; position:fixed; left:0; top:0; z-index:100; }
+        .sb-top { padding:14px 12px 12px; border-bottom:1px solid var(--border); flex-shrink:0; }
+        .sb-brand { display:flex; align-items:center; gap:10px; text-decoration:none; margin-bottom:12px; }
+        .sb-logo { width:26px; height:26px; flex-shrink:0; display:block; color:var(--gold); }
+        .sb-brand-name { font-family:var(--display); font-size:15px; color:var(--text); letter-spacing:0.06em; }
+        .new-chat-btn { width:100%; display:flex; align-items:center; gap:8px; padding:8px 10px; background:transparent; border:1px solid var(--border); color:var(--text-2); font-family:var(--mono); font-size:13px; letter-spacing:0.06em; cursor:pointer; transition:all 0.18s; }
+        .new-chat-btn:hover { border-color:var(--border-h); color:var(--gold); background:var(--gold-dim); }
+        .sb-nav { flex:1; overflow-y:auto; padding:8px 0 6px; }
+        .sb-nav::-webkit-scrollbar { width:2px; }
+        .sb-section-label { font-size:10px; color:var(--text-3); letter-spacing:0.24em; text-transform:uppercase; padding:12px 14px 4px; display:block; }
+        .sb-item { display:flex; align-items:center; gap:9px; width:100%; padding:8px 14px; background:none; border:none; color:var(--text-2); font-family:var(--mono); font-size:13px; letter-spacing:0.025em; cursor:pointer; text-align:left; text-decoration:none; transition:background 0.15s,color 0.15s; }
+        .sb-item:hover { background:var(--gold-dim); color:var(--text); }
+        .sb-item.active { background:rgba(201,168,76,0.09); color:var(--gold); }
+        .sb-item svg { flex-shrink:0; opacity:0.55; transition:opacity 0.15s; }
+        .sb-item:hover svg,.sb-item.active svg { opacity:1; }
+        .sb-bottom { border-top:1px solid var(--border); padding:8px; flex-shrink:0; position:relative; }
+        .profile-btn { display:flex; align-items:center; gap:10px; width:100%; padding:8px 10px; background:none; border:none; cursor:pointer; transition:background 0.15s; }
+        .profile-btn:hover { background:var(--gold-dim); }
+        .profile-avatar { width:28px; height:28px; background:rgba(201,168,76,0.12); border:1px solid var(--border-h); display:flex; align-items:center; justify-content:center; font-family:var(--display); font-size:13px; color:var(--gold); flex-shrink:0; }
+        .profile-name { font-family:var(--mono); font-size:14px; color:var(--text); flex:1; text-align:left; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+        .profile-popup { display:none; position:absolute; bottom:calc(100% + 4px); left:8px; right:8px; background:var(--elevated); border:1px solid var(--border-h); z-index:200; }
+        .profile-popup.open { display:block; }
+        .pp-head { display:flex; align-items:center; gap:10px; padding:14px; border-bottom:1px solid var(--border); }
+        .pp-avatar { width:36px; height:36px; background:rgba(201,168,76,0.12); border:1px solid var(--border-h); display:flex; align-items:center; justify-content:center; font-family:var(--display); font-size:17px; color:var(--gold); flex-shrink:0; }
+        .pp-info { display:flex; flex-direction:column; gap:2px; }
+        .pp-name { font-size:13px; color:var(--text); }
+        .pp-since { font-size:10px; color:var(--text-3); letter-spacing:0.04em; }
+        .pp-actions { display:flex; gap:8px; padding:10px 14px; }
+        .pp-btn { flex:1; padding:7px; font-family:var(--mono); font-size:11px; letter-spacing:0.08em; text-align:center; text-decoration:none; border:1px solid var(--border); color:var(--text-2); cursor:pointer; background:none; transition:all 0.15s; }
+        .pp-btn:hover { border-color:var(--border-h); color:var(--text); }
+        .pp-btn.red { color:var(--red); border-color:rgba(207,102,121,0.3); }
+
+        /* ── MAIN ── */
+        .main { margin-left:var(--sw); flex:1; overflow-y:auto; padding:40px 48px; }
+        .page-header { margin-bottom:32px; }
+        .page-title { font-family:var(--display); font-size:26px; color:var(--text); letter-spacing:0.04em; margin-bottom:6px; }
+        .page-sub { font-size:13px; color:var(--text-3); letter-spacing:0.04em; }
+
+        /* ── LOG ── */
+        .log-card { background:var(--surface); border:1px solid var(--border); padding:28px 32px; }
+        .log-date { font-size:11px; color:var(--text-3); letter-spacing:0.2em; text-transform:uppercase; margin-bottom:20px; }
+        .log-row { display:grid; grid-template-columns:1fr 1fr; gap:20px; margin-bottom:20px; }
+        .log-field { display:flex; flex-direction:column; gap:6px; }
+        .log-label { font-size:10px; color:var(--text-3); letter-spacing:0.2em; text-transform:uppercase; }
+        .log-input { background:var(--elevated); border:none; border-bottom:1px solid var(--border); color:var(--text); font-family:var(--mono); font-size:14px; padding:7px 0; outline:none; transition:border-color 0.18s; letter-spacing:0.03em; width:100%; }
+        .log-input:focus { border-bottom-color:var(--gold); }
+        .log-input::placeholder { color:var(--text-3); }
+        input[type=number]::-webkit-outer-spin-button,
+        input[type=number]::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+        input[type=number] { -moz-appearance: textfield; }
+        .log-workout { grid-column:1 / -1; }
+        .slider-row { display:grid; grid-template-columns:1fr 1fr; gap:20px; margin-bottom:24px; }
+        .slider-field { display:flex; flex-direction:column; gap:8px; }
+        .slider-top { display:flex; justify-content:space-between; align-items:center; }
+        .slider-val { font-family:var(--display); font-size:16px; color:var(--gold); }
+        input[type=range] { -webkit-appearance:none; width:100%; height:2px; background:var(--border); outline:none; cursor:pointer; }
+        input[type=range]::-webkit-slider-thumb { -webkit-appearance:none; width:14px; height:14px; background:var(--gold); cursor:pointer; border-radius:0; }
+        input[type=range]::-moz-range-thumb { width:14px; height:14px; background:var(--gold); cursor:pointer; border:none; border-radius:0; }
+        .food-log-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; border-top:1px solid var(--border); padding-top:20px; }
+        .food-log-title { font-size:11px; color:var(--text-3); letter-spacing:0.2em; text-transform:uppercase; }
+        .food-cal-total { font-family:var(--display); font-size:16px; color:var(--gold); }
+        .food-items { min-height:32px; margin-bottom:14px; }
+        .food-item { display:flex; align-items:center; gap:10px; padding:7px 0; border-bottom:1px solid rgba(201,168,76,0.06); font-size:13px; color:var(--text-2); }
+        .food-item-name { flex:1; color:var(--text); }
+        .food-item-cal { color:var(--gold); font-family:var(--display); font-size:13px; min-width:60px; text-align:right; }
+        .food-item-macro { color:var(--text-3); font-size:11px; min-width:100px; text-align:right; }
+        .food-item-del { background:none; border:none; color:var(--text-3); cursor:pointer; font-size:13px; padding:2px 4px; transition:color 0.15s; }
+        .food-item-del:hover { color:var(--red); }
+        .no-food { font-size:12px; color:var(--text-3); font-style:italic; padding:4px 0; }
+        .food-actions { display:flex; gap:10px; flex-wrap:wrap; }
+        .food-btn { padding:7px 14px; font-family:var(--mono); font-size:12px; letter-spacing:0.08em; cursor:pointer; border:1px solid var(--border); background:none; color:var(--text-2); display:flex; align-items:center; gap:7px; transition:border-color 0.18s,color 0.18s; }
+        .food-btn:hover { border-color:var(--border-h); color:var(--text); }
+        .log-footer { display:flex; justify-content:space-between; align-items:center; margin-top:20px; }
+        .log-save-btn { padding:10px 28px; background:var(--gold); border:none; color:#060606; font-family:var(--mono); font-size:12px; letter-spacing:0.12em; text-transform:uppercase; cursor:pointer; transition:background 0.18s; }
+        .log-save-btn:hover { background:var(--gold-h); }
+        .log-clear-btn { padding:8px 16px; background:none; border:1px solid rgba(207,102,121,0.3); color:var(--red); font-family:var(--mono); font-size:11px; letter-spacing:0.1em; cursor:pointer; transition:background 0.15s; }
+        .log-clear-btn:hover { background:rgba(207,102,121,0.08); }
+        .log-done-state { display:none; }
+        .log-done-banner { display:flex; align-items:center; gap:14px; padding:18px 0 14px; border-bottom:1px solid var(--border); margin-bottom:18px; }
+        .log-done-check { width:32px; height:32px; border-radius:50%; background:rgba(76,175,124,0.15); border:1px solid rgba(76,175,124,0.4); display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+        .log-done-check svg { stroke:#4CAF7C; }
+        .log-done-label { font-size:13px; color:var(--text); letter-spacing:0.04em; }
+        .log-done-sub { font-size:11px; color:var(--text-3); margin-top:2px; letter-spacing:0.06em; }
+        .log-done-stats { display:flex; gap:24px; flex-wrap:wrap; padding:12px 0; }
+        .log-done-stat { display:flex; flex-direction:column; gap:3px; }
+        .log-done-stat-val { font-size:16px; color:var(--gold); letter-spacing:0.04em; }
+        .log-done-stat-lbl { font-size:10px; color:var(--text-3); letter-spacing:0.18em; text-transform:uppercase; }
+        .log-done-actions { display:flex; gap:10px; margin-top:16px; }
+        .log-edit-btn { padding:8px 20px; background:none; border:1px solid var(--border); color:var(--text-2); font-family:var(--mono); font-size:11px; letter-spacing:0.1em; text-transform:uppercase; cursor:pointer; transition:border-color 0.15s,color 0.15s; }
+        .log-edit-btn:hover { border-color:var(--border-h); color:var(--text); }
+
+        /* ── AI Assistant panel ── */
+        .asst-panel { background:var(--surface); border:1px solid var(--border); margin-bottom:20px; }
+        .asst-header { padding:12px 18px; border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; }
+        .asst-title { font-family:var(--mono); font-size:11px; letter-spacing:0.14em; text-transform:uppercase; color:var(--gold); }
+        .asst-toggle { background:none; border:none; color:var(--text-3); font-size:11px; cursor:pointer; font-family:var(--mono); letter-spacing:0.06em; padding:0; }
+        .asst-msgs { padding:14px 18px; min-height:44px; max-height:200px; overflow-y:auto; display:flex; flex-direction:column; gap:10px; }
+        .asst-msgs::-webkit-scrollbar { width:2px; }
+        .asst-msgs::-webkit-scrollbar-thumb { background:var(--border); }
+        .asst-msg { max-width:88%; }
+        .asst-msg.user { align-self:flex-end; }
+        .asst-msg.ai   { align-self:flex-start; }
+        .asst-bubble { padding:8px 12px; font-family:var(--mono); font-size:12px; line-height:1.65; }
+        .asst-msg.user .asst-bubble { background:var(--gold-dim); border:1px solid rgba(201,168,76,0.18); color:var(--text); }
+        .asst-msg.ai   .asst-bubble { background:var(--elevated); border:1px solid var(--border); color:var(--text-2); }
+        .asst-hint { font-family:var(--mono); font-size:10px; color:var(--text-3); padding:0 18px 8px; letter-spacing:0.04em; }
+        .asst-input-row { display:flex; gap:8px; padding:10px 14px 12px; border-top:1px solid var(--border); }
+        .asst-inp { flex:1; background:var(--elevated); border:1px solid var(--border); color:var(--text); font-family:var(--mono); font-size:12px; padding:8px 12px; outline:none; transition:border-color 0.15s; }
+        .asst-inp:focus { border-color:var(--border-h); }
+        .asst-inp::placeholder { color:var(--text-3); }
+        .asst-mic { background:none; border:1px solid var(--border); color:var(--text-3); padding:8px 12px; cursor:pointer; display:flex; align-items:center; gap:6px; font-family:var(--mono); font-size:11px; letter-spacing:0.06em; transition:all 0.15s; flex-shrink:0; }
+        .asst-mic:hover { border-color:var(--border-h); color:var(--text); }
+        .asst-mic.recording { border-color:var(--gold); color:var(--gold); animation:asstPulse 1.2s ease-in-out infinite; }
+        @keyframes asstPulse { 0%,100%{box-shadow:0 0 0 0 rgba(201,168,76,0.4)} 50%{box-shadow:0 0 0 8px rgba(201,168,76,0)} }
+        .asst-send { background:var(--gold); border:none; color:#060606; padding:8px 18px; font-family:var(--mono); font-size:11px; font-weight:700; letter-spacing:0.08em; cursor:pointer; transition:opacity 0.15s; flex-shrink:0; }
+        .asst-send:hover { opacity:0.85; }
+        .asst-send:disabled { opacity:0.45; cursor:not-allowed; }
+
+        /* Add food modal */
+        .modal-backdrop { position:fixed; inset:0; background:rgba(0,0,0,0.72); z-index:400; display:flex; align-items:center; justify-content:center; }
+        .modal-box { background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:22px; width:min(400px,92vw); display:flex; flex-direction:column; gap:14px; }
+        .modal-title { font-family:var(--display); font-size:15px; color:var(--text); letter-spacing:0.04em; }
+        .modal-field { display:flex; flex-direction:column; gap:5px; }
+        .modal-label { font-size:10px; color:var(--text-3); letter-spacing:0.18em; text-transform:uppercase; }
+        .modal-input { background:var(--bg); border:1px solid var(--border); color:var(--text); font-family:var(--mono); font-size:13px; padding:9px 10px; outline:none; transition:border-color 0.15s; width:100%; }
+        .modal-input:focus { border-color:var(--border-h); }
+        .modal-input::placeholder { color:var(--text-3); }
+        .modal-row { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+        .modal-actions { display:flex; gap:10px; justify-content:flex-end; padding-top:4px; }
+        .modal-cancel { background:none; border:1px solid var(--border); color:var(--text-2); padding:8px 16px; font-family:var(--mono); font-size:11px; cursor:pointer; letter-spacing:0.06em; transition:all 0.15s; }
+        .modal-cancel:hover { border-color:var(--border-h); color:var(--text); }
+        .modal-ok { background:var(--gold); border:none; color:#060606; padding:8px 20px; font-family:var(--mono); font-size:11px; font-weight:700; letter-spacing:0.08em; cursor:pointer; transition:opacity 0.15s; }
+        .modal-ok:hover { opacity:0.85; }
+    </style>
+</head>
+<body>
+<div class="app">
+
+    {% include 'perfect/_sidebar.html' %}
+
+    <!-- MAIN -->
+    <div class="main">
+        <div class="page-header">
+            <h1 class="page-title">Log Today</h1>
+            <p class="page-sub" id="logSubtitle">Track your intake, activity and how you feel.</p>
+        </div>
+
+        <!-- AI assistant panel -->
+        <div class="asst-panel" id="asstPanel">
+            <div class="asst-header">
+                <span class="asst-title">AI Assistant — Log by voice or text</span>
+                <button class="asst-toggle" id="asstToggleBtn" onclick="asstToggle()">hide ▴</button>
+            </div>
+            <div id="asstBody">
+                <div class="asst-msgs" id="asstMsgs">
+                    <div class="asst-msg ai">
+                        <div class="asst-bubble">Hi! Tell me what you ate today, your weight, steps, or how you feel — I'll fill in your log. You can type or tap the mic to speak.</div>
+                    </div>
+                </div>
+                <p class="asst-hint">Tap mic and speak naturally, or type below. I'll update the form automatically.</p>
+                <div class="asst-input-row">
+                    <button class="asst-mic" id="asstMicBtn" onclick="asstToggleMic()">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
+                        Mic
+                    </button>
+                    <input class="asst-inp" id="asstInp" type="text"
+                        placeholder="e.g. I had dal rice for lunch, walked 6000 steps, weigh 74 kg…"
+                        onkeydown="if(event.key==='Enter')asstSend()">
+                    <button class="asst-send" id="asstSendBtn" onclick="asstSend()">Send</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="log-card">
+            <p class="log-date" id="logDate"></p>
+
+            <!-- Done state -->
+            <div class="log-done-state" id="logDoneState">
+                <div class="log-done-banner">
+                    <div class="log-done-check">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+                    </div>
+                    <div>
+                        <div class="log-done-label">Already logged for today</div>
+                        <div class="log-done-sub" id="logDoneSub"></div>
+                    </div>
+                </div>
+                <div class="log-done-stats" id="logDoneStats"></div>
+                <div class="log-done-actions">
+                    <button class="log-edit-btn" onclick="clearTodayLog()" style="color:#C05050;border-color:rgba(192,80,80,0.3)">Clear &amp; re-log</button>
+                </div>
+            </div>
+
+            <!-- Form -->
+            <div id="logFormState">
+                <div class="log-row">
+                    <div class="log-field">
+                        <span class="log-label">Weight (kg)</span>
+                        <input type="number" step="0.1" class="log-input" id="logWeight" placeholder="e.g. 74.5">
+                    </div>
+                    <div class="log-field">
+                        <span class="log-label">Steps</span>
+                        <input type="number" class="log-input" id="logSteps" placeholder="e.g. 8500">
+                    </div>
+                    <div class="log-field log-workout">
+                        <span class="log-label">Workout / Activity</span>
+                        <input type="text" class="log-input" id="logWorkout" placeholder="e.g. 30 min walk, yoga, rest day">
+                    </div>
+                </div>
+                <div class="slider-row">
+                    <div class="slider-field">
+                        <div class="slider-top">
+                            <span class="log-label">Hunger level</span>
+                            <span class="slider-val" id="hungerVal">5</span>
+                        </div>
+                        <input type="range" min="1" max="10" value="5" id="logHunger" oninput="document.getElementById('hungerVal').textContent=this.value">
+                    </div>
+                    <div class="slider-field">
+                        <div class="slider-top">
+                            <span class="log-label">Energy level</span>
+                            <span class="slider-val" id="energyVal">5</span>
+                        </div>
+                        <input type="range" min="1" max="10" value="5" id="logEnergy" oninput="document.getElementById('energyVal').textContent=this.value">
+                    </div>
+                </div>
+                <div class="food-log-header">
+                    <span class="food-log-title">Food Log</span>
+                    <span class="food-cal-total" id="foodCalTotal">0 kcal</span>
+                </div>
+                <div class="food-items" id="foodItems"><p class="no-food">Nothing logged yet. Add your first meal below.</p></div>
+                <div class="food-actions">
+                    <button class="food-btn" onclick="openAddFood()">
+                        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+                        Add food
+                    </button>
+                </div>
+                <div class="log-footer">
+                    <button class="log-clear-btn" onclick="clearTodayLog()">Clear</button>
+                    <button class="log-save-btn" onclick="saveTodayLog()">Save</button>
+                </div>
+            </div>
+        </div>
+    </div><!-- /main -->
+</div><!-- /app -->
+
+<!-- Add food modal -->
+<div class="modal-backdrop" id="addFoodModal" style="display:none" onclick="if(event.target===this)closeAddFood()">
+    <div class="modal-box">
+        <div class="modal-title">Add food item</div>
+        <div class="modal-field">
+            <span class="modal-label">Food name</span>
+            <input type="text" class="modal-input" id="afName" placeholder="e.g. Dal rice, banana, 2 chapati">
+        </div>
+        <div class="modal-row">
+            <div class="modal-field">
+                <span class="modal-label">Calories (kcal)</span>
+                <input type="number" class="modal-input" id="afCal" placeholder="350" min="0">
+            </div>
+            <div class="modal-field">
+                <span class="modal-label">Serving size</span>
+                <input type="text" class="modal-input" id="afServing" placeholder="1 plate, 100g…">
+            </div>
+        </div>
+        <div class="modal-row">
+            <div class="modal-field">
+                <span class="modal-label">Protein (g)</span>
+                <input type="number" class="modal-input" id="afProtein" placeholder="0" min="0">
+            </div>
+            <div class="modal-field">
+                <span class="modal-label">Carbs (g)</span>
+                <input type="number" class="modal-input" id="afCarbs" placeholder="0" min="0">
+            </div>
+        </div>
+        <div class="modal-actions">
+            <button class="modal-cancel" onclick="closeAddFood()">Cancel</button>
+            <button class="modal-ok" onclick="submitAddFood()">Add</button>
+        </div>
+    </div>
+</div>
+
+<script>
+(function () {
+    const LOGS_KEY = 'toogood_daily_logs_' + {{ username | tojson }};
+
+    function today() { return new Date().toISOString().slice(0, 10); }
+    function getLogs() { try { return JSON.parse(localStorage.getItem(LOGS_KEY)) || []; } catch { return []; } }
+    function saveLogs(l) { localStorage.setItem(LOGS_KEY, JSON.stringify(l)); }
+    function getLog(date) {
+        return getLogs().find(l => l.date === date) || {
+            date, weight:null, calories:0, protein:0, carbs:0, fat:0, steps:null, workout:'', hunger:5, energy:5, foods:[]
+        };
+    }
+    function saveLog(entry) {
+        const all = getLogs();
+        const i = all.findIndex(l => l.date === entry.date);
+        if (i >= 0) all[i] = entry; else all.unshift(entry);
+        saveLogs(all);
+    }
+
+    function loadTodayLog() {
+        const iso = today();
+        const d = new Date(iso + 'T00:00');
+        document.getElementById('logDate').textContent = d.toLocaleDateString('en', { weekday:'long', year:'numeric', month:'long', day:'numeric' });
+
+        const entry = getLog(iso);
+        if (entry.calories > 0 || entry.weight || entry.workout) {
+            showDoneState(entry);
+        } else {
+            showFormState(entry);
+        }
+    }
+
+    function showFormState(entry) {
+        document.getElementById('logFormState').style.display = '';
+        document.getElementById('logDoneState').style.display = 'none';
+        if (entry.weight) document.getElementById('logWeight').value = entry.weight;
+        if (entry.steps)  document.getElementById('logSteps').value  = entry.steps;
+        document.getElementById('logWorkout').value = entry.workout || '';
+        document.getElementById('logHunger').value  = entry.hunger || 5;
+        document.getElementById('logEnergy').value  = entry.energy || 5;
+        document.getElementById('hungerVal').textContent = entry.hunger || 5;
+        document.getElementById('energyVal').textContent = entry.energy || 5;
+        renderFoodItems(entry.foods || []);
+    }
+
+    function showDoneState(entry) {
+        document.getElementById('logFormState').style.display = 'none';
+        document.getElementById('logDoneState').style.display = '';
+
+        const parts = [];
+        if (entry.calories) parts.push(`${entry.calories} kcal`);
+        if (entry.weight)   parts.push(`${entry.weight} kg`);
+        if (entry.workout)  parts.push(entry.workout);
+        document.getElementById('logDoneSub').textContent = parts.join(' · ');
+
+        const stats = document.getElementById('logDoneStats');
+        const items = [];
+        if (entry.calories) items.push({v:`${entry.calories}`,l:'kcal'});
+        if (entry.protein)  items.push({v:`${entry.protein}g`,l:'protein'});
+        if (entry.weight)   items.push({v:`${entry.weight}`,l:'kg'});
+        if (entry.steps)    items.push({v:Number(entry.steps).toLocaleString(),l:'steps'});
+        stats.innerHTML = items.map(x => `<div class="log-done-stat"><div class="log-done-stat-val">${x.v}</div><div class="log-done-stat-lbl">${x.l}</div></div>`).join('');
+    }
+
+    function renderFoodItems(foods) {
+        const wrap = document.getElementById('foodItems');
+        const total = foods.reduce((s, f) => s + (f.calories || 0), 0);
+        document.getElementById('foodCalTotal').textContent = `${total} kcal`;
+        if (!foods.length) { wrap.innerHTML = '<p class="no-food">Nothing logged yet. Add your first meal below.</p>'; return; }
+        wrap.innerHTML = foods.map((f, i) => `
+            <div class="food-item">
+                <span class="food-item-name">${f.name}${f.serving ? ' ('+f.serving+')' : ''}</span>
+                <span class="food-item-cal">${f.calories||0} kcal</span>
+                <span class="food-item-macro">${f.protein||0}g P</span>
+                <button class="food-item-del" onclick="deleteFood(${i})" title="Remove">✕</button>
+            </div>
+        `).join('');
+    }
+
+    window.deleteFood = function(idx) {
+        const entry = getLog(today());
+        (entry.foods || []).splice(idx, 1);
+        entry.calories = (entry.foods || []).reduce((s, f) => s + (f.calories||0), 0);
+        entry.protein  = (entry.foods || []).reduce((s, f) => s + (f.protein||0),  0);
+        saveLog(entry);
+        renderFoodItems(entry.foods || []);
+    };
+
+    function awardScore(action) {
+        fetch('/perfect/api/score/award', {
+            method:'POST', headers:{'Content-Type':'application/json'},
+            body: JSON.stringify({action})
+        }).then(r => r.json()).then(d => {
+            if (d.awarded && window.sbRefreshXP) window.sbRefreshXP(d.xp_gained || 0, d.new_achievements || []);
+        }).catch(()=>{});
+    }
+
+    window.saveTodayLog = function() {
+        const iso = today();
+        const entry = getLog(iso);
+        const wt = parseFloat(document.getElementById('logWeight').value) || null;
+        const steps = parseInt(document.getElementById('logSteps').value)  || null;
+        entry.weight  = wt;
+        entry.steps   = steps;
+        entry.workout = document.getElementById('logWorkout').value.trim();
+        entry.hunger  = parseInt(document.getElementById('logHunger').value);
+        entry.energy  = parseInt(document.getElementById('logEnergy').value);
+        saveLog(entry);
+        // Award XP for exercise if workout field filled in
+        if (entry.workout.trim()) awardScore('exercise');
+        showDoneState(entry);
+    };
+
+    window.clearTodayLog = function() {
+        const iso = today();
+        const all = getLogs().filter(l => l.date !== iso);
+        saveLogs(all);
+        showFormState(getLog(iso));
+    };
+
+    /* Add food modal */
+    window.openAddFood = function() {
+        document.getElementById('addFoodModal').style.display = 'flex';
+        document.getElementById('afName').value = '';
+        document.getElementById('afCal').value  = '';
+        document.getElementById('afServing').value = '';
+        document.getElementById('afProtein').value = '';
+        document.getElementById('afCarbs').value   = '';
+        setTimeout(() => document.getElementById('afName').focus(), 80);
+    };
+    window.closeAddFood = function() { document.getElementById('addFoodModal').style.display = 'none'; };
+
+    window.submitAddFood = function() {
+        const name = document.getElementById('afName').value.trim();
+        if (!name) return;
+        const food = {
+            name,
+            serving:  document.getElementById('afServing').value.trim(),
+            calories: parseInt(document.getElementById('afCal').value)     || 0,
+            protein:  parseFloat(document.getElementById('afProtein').value) || 0,
+            carbs:    parseFloat(document.getElementById('afCarbs').value)   || 0,
+        };
+        const entry = getLog(today());
+        if (!entry.foods) entry.foods = [];
+        entry.foods.push(food);
+        entry.calories = entry.foods.reduce((s, f) => s + (f.calories||0), 0);
+        entry.protein  = entry.foods.reduce((s, f) => s + (f.protein||0),  0);
+        entry.carbs    = entry.foods.reduce((s, f) => s + (f.carbs||0),    0);
+        saveLog(entry);
+        renderFoodItems(entry.foods);
+        awardScore('food_log');
+        closeAddFood();
+    };
+
+    /* ── AI Assistant (log by dictation) ── */
+    let _asstHistory = [];
+    let _asstMicRecog = null, _asstMicFinal = '', _asstMicInterim = '', _asstMicActive = false;
+
+    window.asstToggle = function() {
+        const body = document.getElementById('asstBody');
+        const btn  = document.getElementById('asstToggleBtn');
+        const open = body.style.display !== 'none';
+        body.style.display = open ? 'none' : '';
+        btn.textContent = open ? 'show ▾' : 'hide ▴';
+    };
+
+    window.asstToggleMic = function() {
+        if (_asstMicActive) { asstStopMic(); return; }
+        const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+        if (!SR) { alert('Microphone not supported in this browser.'); return; }
+        _asstMicRecog = new SR();
+        _asstMicFinal = ''; _asstMicInterim = '';
+        _asstMicRecog.continuous = true; _asstMicRecog.interimResults = true; _asstMicRecog.lang = 'en-US';
+        _asstMicRecog.onresult = e => {
+            let interim = '';
+            for (let i = e.resultIndex; i < e.results.length; i++) {
+                if (e.results[i].isFinal) _asstMicFinal += e.results[i][0].transcript + ' ';
+                else interim = e.results[i][0].transcript;
+            }
+            _asstMicInterim = interim;
+            document.getElementById('asstInp').value = (_asstMicFinal + interim).trim();
+        };
+        _asstMicRecog.onerror = () => asstStopMic();
+        _asstMicRecog.onend   = () => { if (_asstMicActive) _asstMicRecog.start(); };
+        _asstMicRecog.start();
+        _asstMicActive = true;
+        document.getElementById('asstMicBtn').classList.add('recording');
+    };
+
+    function asstStopMic() {
+        if (_asstMicRecog) { _asstMicRecog.onend = null; try { _asstMicRecog.stop(); } catch {} }
+        _asstMicActive = false;
+        document.getElementById('asstMicBtn').classList.remove('recording');
+    }
+
+    window.asstSend = async function() {
+        if (_asstMicActive) asstStopMic();
+        const inp = document.getElementById('asstInp');
+        // inp.value already contains the full mic transcript, so just use it directly
+        const message = inp.value.trim();
+        if (!message) return;
+        inp.value = ''; _asstMicFinal = ''; _asstMicInterim = '';
+        _asstHistory.push({ role:'user', content:message });
+        asstBubble('user', message);
+
+        const btn = document.getElementById('asstSendBtn');
+        btn.disabled = true; btn.textContent = '…';
+
+        try {
+            const r = await fetch('/perfect/api/assistant', {
+                method:'POST', headers:{'Content-Type':'application/json'},
+                body: JSON.stringify({ message, history: _asstHistory.slice(0,-1) })
+            });
+            const d = await r.json();
+            if (d.ok) {
+                const reply = d.reply || 'Got it!';
+                _asstHistory.push({ role:'assistant', content:reply });
+                asstBubble('ai', reply);
+                if (d.logged) asstApplyLogged(d.logged);
+            } else {
+                asstBubble('ai', 'Something went wrong — try again.');
+            }
+        } catch {
+            asstBubble('ai', 'Network error — check your connection and try again.');
+        }
+        btn.disabled = false; btn.textContent = 'Send';
+    };
+
+    function asstBubble(role, text) {
+        const msgs = document.getElementById('asstMsgs');
+        const div = document.createElement('div');
+        div.className = 'asst-msg ' + role;
+        div.innerHTML = `<div class="asst-bubble">${text.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/\n/g,'<br>')}</div>`;
+        msgs.appendChild(div);
+        msgs.scrollTop = msgs.scrollHeight;
+    }
+
+    function asstApplyLogged(logged) {
+        const iso = today();
+        const entry = getLog(iso);
+        if (logged.weight  != null) { entry.weight  = logged.weight;  document.getElementById('logWeight').value = logged.weight; }
+        if (logged.steps   != null) { entry.steps   = logged.steps;   document.getElementById('logSteps').value  = logged.steps; }
+        if (logged.workout)          { entry.workout = logged.workout; document.getElementById('logWorkout').value = logged.workout; }
+        if (logged.hunger  != null) {
+            entry.hunger = logged.hunger;
+            document.getElementById('logHunger').value = logged.hunger;
+            document.getElementById('hungerVal').textContent = logged.hunger;
+        }
+        if (logged.energy  != null) {
+            entry.energy = logged.energy;
+            document.getElementById('logEnergy').value = logged.energy;
+            document.getElementById('energyVal').textContent = logged.energy;
+        }
+        if (logged.foods && logged.foods.length) {
+            if (!entry.foods) entry.foods = [];
+            // Deduplicate: only add foods not already present (same name)
+            const existing = new Set(entry.foods.map(f => f.name.toLowerCase().trim()));
+            logged.foods.forEach(f => {
+                if (!existing.has(f.name.toLowerCase().trim())) {
+                    entry.foods.push(f);
+                    existing.add(f.name.toLowerCase().trim());
+                }
+            });
+            entry.calories = entry.foods.reduce((s,f) => s+(f.calories||0), 0);
+            entry.protein  = entry.foods.reduce((s,f) => s+(f.protein||0),  0);
+            entry.carbs    = entry.foods.reduce((s,f) => s+(f.carbs||0),    0);
+            renderFoodItems(entry.foods);
+        }
+        saveLog(entry);
+        // Switch to form state so user sees the filled fields
+        document.getElementById('logDoneState').style.display = 'none';
+        document.getElementById('logFormState').style.display = '';
+    }
+
+    loadTodayLog();
+})();
+</script>
+</body>
+</html>

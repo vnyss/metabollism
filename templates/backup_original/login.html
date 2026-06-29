@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Too Good</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css"
+          rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='styleslogin.css') }}">      
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Jim+Nightshade&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Special+Elite&display=swap"
+rel="stylesheet">      
+          </head>
+
+<body>
+
+<!-- Navbar starts -->
+<nav class="navbar navbar-expand-md fixed-top custom-navbar">
+    <div class="container-fluid">
+
+    <a class="navbar-brand" href="{{ url_for('home') }}">
+    <img src="{{ url_for('static', filename='images/logo.svg') }}"
+         alt="Too Good Logo"
+         width="40"
+         height="40">
+</a>
+
+        <button class="navbar-toggler"
+                type="button"
+                data-bs-toggle="collapse"
+                data-bs-target="#navbarCollapse">
+
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="navbarCollapse">
+
+            <!-- Left side -->
+            <ul class="navbar-nav me-auto mb-2 mb-md-0">
+                <li class="nav-item">
+                    <a class="nav-link active" href="{{ url_for('home') }}">
+                        Home
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link active" href="{{ url_for('features') }}">
+                        Features
+                    </a>
+                </li>
+
+                <li class="nav-item">
+                    <a class="nav-link active" href="{{ url_for('about') }}">
+                        About
+                    </a>
+                </li>
+
+            </ul>
+
+            <!-- Right side -->
+            <ul class="navbar-nav">
+
+                <li class="nav-item">
+                    <a class="nav-link active active-page" href="{{ url_for('login') }}">
+                        Login
+                    </a>
+                </li>
+
+                <li class="nav-item">
+                    <a class="nav-link active" href="{{ url_for('signup') }}">
+                        Sign Up
+                    </a>
+                </li>
+
+            </ul>
+
+        </div>
+    </div>
+</nav>
+<!-- Navbar ends -->
+
+<!-- Auth section starts -->
+<main class="auth-page">
+    <div class="auth-card">
+
+        <p class="auth-tag">ENTRY LOG // ACCESS</p>
+        <h1 class="auth-title">Welcome back</h1>
+        <p class="auth-subtitle">The body remembers. Sign back in to continue being better.</p>
+
+        {% with messages = get_flashed_messages() %}
+            {% if messages %}
+                <div class="alert alert-info" role="alert">
+                    {% for message in messages %}
+                        <div>{{ message }}</div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
+
+        <form class="auth-form" action="{{ url_for('login') }}" method="post" novalidate>
+
+            <div class="field-group">
+                <label for="username">Subject ID</label>
+                <input type="text" id="username" name="username" placeholder="USERNAME" required autofocus>
+            </div>
+
+            <div class="field-group">
+                <label for="password">Passphrase</label>
+                <input type="password" id="password" name="password" placeholder="••••••••" required>
+            </div>
+
+            <button type="submit" class="auth-submit">Log in</button>
+
+        </form>
+
+        <div class="auth-divider"><span>or</span></div>
+
+        <a href="{{ url_for('google_login') }}" class="google-btn">
+            <svg class="google-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+                <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+                <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" fill="#FBBC05"/>
+                <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+            </svg>
+            Continue with Google
+        </a>
+
+        <p class="auth-switch">No record on file? <a href="{{ url_for('signup') }}">Create one</a></p>
+
+    </div>
+</main>
+<!-- Auth section ends -->
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
+
+</body>
+</html>

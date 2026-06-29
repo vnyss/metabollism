@@ -1,0 +1,454 @@
+
+<!DOCTYPE html>
+<html>
+
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<title>Too Good</title>
+
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css"
+rel="stylesheet">
+<link rel="stylesheet" href="{{ url_for('static', filename='stylesindex.css') }}">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Courier+Prime:ital,wght@0,400;0,700;1,400&family=Special+Elite&display=swap" rel="stylesheet">
+
+
+</head>
+
+<body>
+
+<nav class="navbar navbar-expand-md fixed-top custom-navbar">
+
+<div class="container-fluid">
+
+<a class="navbar-brand" href="{{ url_for('home') }}">
+
+<img src="{{ url_for('static', filename='images/logo.svg') }}"
+width="40"
+height="40">
+
+</a>
+
+<button class="navbar-toggler"
+type="button"
+data-bs-toggle="collapse"
+data-bs-target="#navbarCollapse">
+
+<span class="navbar-toggler-icon"></span>
+
+</button>
+
+<div class="collapse navbar-collapse"
+id="navbarCollapse">
+
+<ul class="navbar-nav me-auto">
+
+<li class="nav-item">
+<a class="nav-link" href="{{ url_for('home') }}">
+Home
+</a>
+</li>
+
+<li class="nav-item">
+<a class="nav-link" href="{{ url_for('features') }}">
+Features
+</a>
+</li>
+
+<li class="nav-item">
+<a class="nav-link" href="{{ url_for('about') }}">
+About
+</a>
+</li>
+
+</ul>
+
+<ul class="navbar-nav">
+
+<li class="nav-item">
+<a class="nav-link" href="{{ url_for('login') }}">
+Login
+</a>
+</li>
+
+<li class="nav-item">
+<a class="nav-link" href="{{ url_for('signup') }}">
+Sign Up
+</a>
+</li>
+
+</ul>
+
+</div>
+
+</div>
+
+</nav>
+
+
+<div class="container">
+
+<div class="hero p-5 text-center">
+
+<h1>
+Reach Your Weight Goals Quicker
+</h1>
+
+<p class="fs-5">
+
+Our custom techniques allows you to
+reach your weight goals as fast as
+possible
+
+</p>
+
+<div class="d-inline-flex gap-2">
+
+
+<a href="{{ url_for('features') }}" class="btn btn-primary btn-lg px-4 rounded-pill">
+    Features
+</a>
+
+
+
+
+<a href="{{ url_for('about') }}" class="btn btn-outline-secondary btn-lg px-4 rounded-pill">
+    Learn More
+</a>
+
+</div>
+
+</div>
+
+</div>
+
+<!-- ANIMATED DEMO SECTION -->
+<div class="demo-section">
+    <p class="demo-eyebrow">&#x2014;&nbsp; see it in action &nbsp;&#x2014;</p>
+    <div class="demo-window">
+
+        <!-- Title bar -->
+        <div class="demo-titlebar">
+            <div class="demo-dots">
+                <span class="demo-dot"></span>
+                <span class="demo-dot"></span>
+                <span class="demo-dot gold"></span>
+            </div>
+            <span class="demo-window-title">too good &mdash; ask ai</span>
+            <div class="demo-titlebar-right">
+                <span class="demo-status" id="demoStatus">live</span>
+            </div>
+        </div>
+
+        <!-- Chat messages -->
+        <div class="demo-messages" id="demoMessages"></div>
+
+        <!-- Composer bar -->
+        <div class="demo-footer">
+            <div class="demo-input-row">
+                <svg width="13" height="17" viewBox="0 0 14 22" fill="none" class="demo-mic-icon"><rect x="3.5" y="1" width="7" height="13" rx="3.5" fill="currentColor" opacity=".35"/><path d="M1 11a6 6 0 0 0 12 0" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" opacity=".35"/></svg>
+                <span class="demo-typed" id="demoTyped"></span><span class="demo-caret" id="demoCaret">_</span>
+                <div class="demo-send-btn">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M12 19V5M12 5L5 12M12 5L19 12" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<!-- Hero (jumbotron 1) -->
+<div class="p-5 mb-4 bg-body-tertiary rounded-3">
+    <div class="container-fluid py-5">
+        <h1 class="display-5 fw-bold">Eat Better. Plan Smarter. Live Healthier.</h1>
+        <p class="col-md-8 fs-4">Advanced AI trained on global nutrition insights to create reliable and personalized diet strategies.</p>
+        <a href="{{ url_for('signup') }}" class="btn btn-outline-secondary btn-lg px-4 rounded-pill">
+            Get Started
+        </a>
+    </div>
+</div>
+
+<!-- Track Your Health (jumbotron 2) -->
+<div class="p-5 mb-4 feature-jumbotron rounded-3">
+    <div class="container-fluid py-5">
+        <h1 class="display-5 fw-bold">Smarter Diet Planning Powered by AI</h1>
+        <p class="col-md-8 fs-4">Create personalized meal plans, nutrition guidance, and healthy habits designed around your goals and lifestyle.</p>
+       <a href="{{ url_for('ai') }}" class="btn btn-outline-secondary btn-lg px-4 rounded-pill">
+            Try Now
+        </a>
+    </div>
+</div>
+
+<!-- Two column row -->
+<div class="row align-items-md-stretch">
+    <div class="col-md-6">
+        <div class="h-100 p-5 ai-card rounded-3">
+            <h2>Your Personal AI Nutrition Assistant</h2>
+            <p>Receive intelligent diet recommendations, balanced meal suggestions, and answers to all your nutrition questions.</p>
+            <a href="{{ url_for('signup') }}" class="btn btn-outline-secondary btn-lg px-4 rounded-pill">
+            Start Planning
+        </a>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="h-100 p-5 error-card border rounded-3">
+            <h2>AI That Understands Your Nutrition Goals</h2>
+            <p>From weight management to balanced nutrition—generate smarter diet plans lightning quick speeds ready to use.</p>
+            <a href="{{ url_for('signup') }}" class="btn btn-outline-secondary btn-lg px-4 rounded-pill">
+            Start Planning
+        </a>
+        </div>
+    </div>
+</div>
+
+<!-- Stats bar -->
+<div class="stats-bar">
+    <div class="stat-item">
+        <span class="stat-num">94%</span>
+        <span class="stat-label">of users hit their goal faster</span>
+    </div>
+    <div class="stat-sep"></div>
+    <div class="stat-item">
+        <span class="stat-num">2.1M+</span>
+        <span class="stat-label">meals planned and counting</span>
+    </div>
+    <div class="stat-sep"></div>
+    <div class="stat-item">
+        <span class="stat-num">180+</span>
+        <span class="stat-label">countries using Too Good</span>
+    </div>
+    <div class="stat-sep"></div>
+    <div class="stat-item">
+        <span class="stat-num">&lt;&nbsp;3s</span>
+        <span class="stat-label">average AI response time</span>
+    </div>
+</div>
+
+<!-- How it works -->
+<div class="p-5 feature-jumbotron rounded-3">
+    <div class="container-fluid py-5">
+        <p class="section-eyebrow">The Process</p>
+        <h1 class="display-5 fw-bold">Three steps to a better diet</h1>
+        <div class="how-steps">
+            <div class="how-step">
+                <span class="how-num">01</span>
+                <h3 class="how-title">Tell us your goal</h3>
+                <p class="how-desc">Fat loss, muscle gain, clean eating, or simply more energy. We do not assume — we ask. Everything starts with you.</p>
+            </div>
+            <div class="how-step">
+                <span class="how-num">02</span>
+                <h3 class="how-title">Receive a personalised plan</h3>
+                <p class="how-desc">Our AI cross-references thousands of nutrition studies to build a meal plan around your body, schedule, and real food preferences — not a template from 2009.</p>
+            </div>
+            <div class="how-step">
+                <span class="how-num">03</span>
+                <h3 class="how-title">Ask anything, anytime</h3>
+                <p class="how-desc">Have a question at 2 am about protein absorption? The AI never sleeps. Swap a meal, revise the plan, or go deep on the science whenever you need.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Testimonials -->
+<div class="p-5 feature-jumbotron rounded-3">
+    <div class="container-fluid py-5">
+        <p class="section-eyebrow">What Users Say</p>
+        <h1 class="display-5 fw-bold">Honest words from real people</h1>
+        <div class="testimonials-grid">
+            <div class="testimonial-card">
+                <p class="testi-quote">"I tried four diet apps before this. None of them felt like they understood what I actually needed. Too Good was different from day one."</p>
+                <span class="testi-name">— Aryan K., 26</span>
+            </div>
+            <div class="testimonial-card">
+                <p class="testi-quote">"Lost 8 kg in three months without starving. The meal plans were genuinely enjoyable — not just something I had to tolerate."</p>
+                <span class="testi-name">— Priya M., 31</span>
+            </div>
+            <div class="testimonial-card">
+                <p class="testi-quote">"The AI answered every weird nutrition question I had at midnight. No judgment. Just straight answers backed by actual evidence."</p>
+                <span class="testi-name">— James T., 24</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Three pillars -->
+<div class="row align-items-md-stretch">
+    <div class="col-md-4">
+        <div class="h-100 p-5 ai-card rounded-3">
+            <h2>Evidence-Based</h2>
+            <p>Every recommendation is grounded in published nutrition research — not trends, not influencer advice, and definitely not whatever went viral last Tuesday.</p>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="h-100 p-5 error-card rounded-3">
+            <h2>Genuinely Personal</h2>
+            <p>No two bodies are the same. Too Good accounts for your goals, dietary restrictions, schedule, and your honest relationship with food.</p>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="h-100 p-5 ai-card rounded-3">
+            <h2>Always Available</h2>
+            <p>The AI is there when your nutritionist isn't — at dinner, at the grocery store, or at 3 am on a Sunday when you are meal prepping.</p>
+        </div>
+    </div>
+</div>
+
+<!-- Bottom CTA -->
+<div class="p-5 mb-4 feature-jumbotron rounded-3 section-center">
+    <div class="container-fluid py-5">
+        <p class="section-eyebrow">Start Today</p>
+        <h1 class="display-5 fw-bold">Your body knows what it needs.<br>Let the AI listen.</h1>
+        <p class="cta-sub">Free to use. No credit card. No generic advice copied from a 2009 blog post.</p>
+        <a href="{{ url_for('signup') }}" class="btn btn-primary btn-lg px-4 rounded-pill">Create Free Account</a>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+(function () {
+    const DEMOS = [
+        {
+            user: "What should I eat to lose weight sustainably?",
+            ai: "Aim for a 300–500 calorie deficit below your TDEE. Prioritise protein at 1.6–2.2g per kg of bodyweight, fill your plate with fibre-rich vegetables and whole grains, and limit ultra-processed foods. A sustainable pace is 0.5–1 kg lost per week — anything faster tends to backfire."
+        },
+        {
+            user: "Build me a high-protein meal plan.",
+            ai: "Breakfast: 3-egg omelette with spinach + oats with berries.\nLunch: grilled chicken breast, brown rice, steamed broccoli.\nDinner: baked salmon, sweet potato, rocket salad.\nSnacks: Greek yoghurt, a handful of almonds.\n\nTotal: ~3,000 kcal · 185g protein."
+        },
+        {
+            user: "Does intermittent fasting actually work?",
+            ai: "It works — but not for metabolic magic. Intermittent fasting is effective primarily because it helps people reduce overall calorie intake without counting every meal. The 16:8 window suits most lifestyles. If it helps you stay consistent, it is a valid tool. If it causes stress or overeating in the window, it is not worth it."
+        },
+        {
+            user: "How much protein do I actually need per day?",
+            ai: "For most active adults, 1.6–2.2g of protein per kg of bodyweight per day is the evidence-backed range. If you weigh 75 kg and train regularly, that is 120–165g daily. Spread it across 3–4 meals. Sources: eggs, chicken, fish, Greek yoghurt, legumes, tofu."
+        }
+    ];
+
+    const messagesEl  = document.getElementById('demoMessages');
+    const typedEl     = document.getElementById('demoTyped');
+    const statusEl    = document.getElementById('demoStatus');
+
+    if (!messagesEl || !typedEl) return;
+
+    let idx = 0;
+
+    const sleep = ms => new Promise(r => setTimeout(r, ms));
+
+    async function typeIn(text, msPerChar) {
+        for (let i = 0; i <= text.length; i++) {
+            typedEl.textContent = text.slice(0, i);
+            await sleep(msPerChar);
+        }
+    }
+
+    async function eraseInput(msPerChar) {
+        const txt = typedEl.textContent;
+        for (let i = txt.length; i >= 0; i--) {
+            typedEl.textContent = txt.slice(0, i);
+            await sleep(msPerChar);
+        }
+    }
+
+    function appendUserMsg(text) {
+        const el = document.createElement('div');
+        el.className = 'demo-msg-user';
+        el.textContent = text;
+        messagesEl.appendChild(el);
+        messagesEl.scrollTop = messagesEl.scrollHeight;
+    }
+
+    function appendThinking() {
+        const row = document.createElement('div');
+        row.className = 'demo-msg-ai';
+        row.id = 'demoThinking';
+        row.innerHTML = `
+          <div class="demo-ai-avatar">M</div>
+          <div class="demo-ai-text demo-thinking">
+            <span></span><span></span><span></span>
+          </div>`;
+        messagesEl.appendChild(row);
+        messagesEl.scrollTop = messagesEl.scrollHeight;
+    }
+
+    function removeThinking() {
+        const el = document.getElementById('demoThinking');
+        if (el) el.remove();
+    }
+
+    async function appendAIResponse(text) {
+        const row = document.createElement('div');
+        row.className = 'demo-msg-ai';
+        const av = document.createElement('div');
+        av.className = 'demo-ai-avatar';
+        av.textContent = 'M';
+        const body = document.createElement('div');
+        body.className = 'demo-ai-text';
+        row.appendChild(av);
+        row.appendChild(body);
+        messagesEl.appendChild(row);
+
+        /* word-by-word, respect newlines */
+        const tokens = text.split(/(\n)/);
+        let displayed = '';
+        for (const token of tokens) {
+            if (token === '\n') {
+                displayed += '\n';
+                body.innerText = displayed;
+            } else {
+                const words = token.split(' ');
+                for (let w = 0; w < words.length; w++) {
+                    displayed += (w === 0 && displayed.endsWith('\n') ? '' : (displayed === '' ? '' : ' ')) + words[w];
+                    body.innerText = displayed;
+                    messagesEl.scrollTop = messagesEl.scrollHeight;
+                    await sleep(52);
+                }
+            }
+        }
+    }
+
+    async function runLoop() {
+        while (true) {
+            const demo = DEMOS[idx % DEMOS.length];
+            idx++;
+
+            messagesEl.innerHTML = '';
+            typedEl.textContent = '';
+            await sleep(700);
+
+            /* type user question */
+            await typeIn(demo.user, 42);
+            await sleep(420);
+
+            /* send */
+            appendUserMsg(demo.user);
+            typedEl.textContent = '';
+            statusEl.textContent = 'thinking…';
+            await sleep(300);
+
+            /* thinking */
+            appendThinking();
+            await sleep(1500);
+            removeThinking();
+            statusEl.textContent = 'live';
+
+            /* AI response */
+            await appendAIResponse(demo.ai);
+
+            /* pause before next */
+            await sleep(3800);
+        }
+    }
+
+    runLoop();
+})();
+</script>
+
+</body>
+
+</html>
+

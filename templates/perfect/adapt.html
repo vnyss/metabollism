@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>TG·Adapt — Too Good</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Courier+Prime:ital,wght@0,400;0,700;1,400&family=Special+Elite&display=swap" rel="stylesheet">
+    <script>(function(){
+        var r = document.documentElement;
+        if (localStorage.getItem('tg_mode') === 'light') r.classList.add('light-mode');
+        var sw = localStorage.getItem('tg_sw'); if (sw) r.style.setProperty('--sw', {narrow:'220px',normal:'260px',wide:'320px'}[sw]||'260px');
+        var an = localStorage.getItem('tg_anim'); if (an) r.style.setProperty('--anim', {none:'0ms',normal:'200ms',snappy:'80ms'}[an]||'200ms');
+    })();</script>
+    <style>
+        :root {
+            --bg:#0A0A0A; --sidebar:#080808; --surface:#111111; --elevated:#181818;
+            --border:rgba(201,168,76,0.12); --border-h:rgba(201,168,76,0.38);
+            --gold:#C9A84C; --gold-h:#DFC070; --gold-dim:rgba(201,168,76,0.07);
+            --green:#4CAF7C; --red:#CF6679;
+            --text:#E8DCC8; --text-2:#8A7A62; --text-3:#4A3C2A;
+            --mono:'Courier Prime',monospace; --display:'Special Elite',monospace;
+            --sw:260px; --anim:200ms;
+        }
+        html.light-mode {
+            --bg:#F5F0E8; --sidebar:#EDE8DF; --surface:#FFFFFF; --elevated:#F0EBE1;
+            --border:rgba(100,80,40,0.14); --border-h:rgba(100,80,40,0.36);
+            --gold-dim:rgba(201,168,76,0.10); --text:#1A1208; --text-2:#6B5A3E; --text-3:#9A8A72;
+        }
+        *,*::before,*::after { box-sizing:border-box; margin:0; padding:0; }
+        body { background:var(--bg); font-family:var(--mono); color:var(--text); height:100vh; overflow:hidden; -webkit-font-smoothing:antialiased; }
+        .app { display:flex; height:100vh; }
+
+        /* ── SIDEBAR ── */
+        .sidebar { width:var(--sw); min-width:var(--sw); background:var(--sidebar); border-right:1px solid var(--border); display:flex; flex-direction:column; height:100vh; position:fixed; left:0; top:0; z-index:100; }
+        .sb-top { padding:14px 12px 12px; border-bottom:1px solid var(--border); flex-shrink:0; }
+        .sb-brand { display:flex; align-items:center; gap:10px; text-decoration:none; margin-bottom:12px; }
+        .sb-logo { width:26px; height:26px; flex-shrink:0; display:block; color:var(--gold); }
+        .sb-brand-name { font-family:var(--display); font-size:15px; color:var(--text); letter-spacing:0.06em; }
+        .new-chat-btn { width:100%; display:flex; align-items:center; gap:8px; padding:8px 10px; background:transparent; border:1px solid var(--border); color:var(--text-2); font-family:var(--mono); font-size:13px; letter-spacing:0.06em; cursor:pointer; transition:all 0.18s; }
+        .new-chat-btn:hover { border-color:var(--border-h); color:var(--gold); background:var(--gold-dim); }
+        .sb-nav { flex:1; overflow-y:auto; padding:8px 0 6px; }
+        .sb-nav::-webkit-scrollbar { width:2px; }
+        .sb-section-label { font-size:10px; color:var(--text-3); letter-spacing:0.24em; text-transform:uppercase; padding:12px 14px 4px; display:block; }
+        .sb-item { display:flex; align-items:center; gap:9px; width:100%; padding:8px 14px; background:none; border:none; color:var(--text-2); font-family:var(--mono); font-size:13px; letter-spacing:0.025em; cursor:pointer; text-align:left; text-decoration:none; transition:background 0.15s,color 0.15s; }
+        .sb-item:hover { background:var(--gold-dim); color:var(--text); }
+        .sb-item.active { background:rgba(201,168,76,0.09); color:var(--gold); }
+        .sb-item svg { flex-shrink:0; opacity:0.55; transition:opacity 0.15s; }
+        .sb-item:hover svg,.sb-item.active svg { opacity:1; }
+        .sb-bottom { border-top:1px solid var(--border); padding:8px; flex-shrink:0; position:relative; }
+        .profile-btn { display:flex; align-items:center; gap:10px; width:100%; padding:8px 10px; background:none; border:none; cursor:pointer; transition:background 0.15s; }
+        .profile-btn:hover { background:var(--gold-dim); }
+        .profile-avatar { width:28px; height:28px; background:rgba(201,168,76,0.12); border:1px solid var(--border-h); display:flex; align-items:center; justify-content:center; font-family:var(--display); font-size:13px; color:var(--gold); flex-shrink:0; }
+        .profile-name { font-family:var(--mono); font-size:14px; color:var(--text); flex:1; text-align:left; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+        .profile-popup { display:none; position:absolute; bottom:calc(100% + 4px); left:8px; right:8px; background:var(--elevated); border:1px solid var(--border-h); z-index:200; }
+        .profile-popup.open { display:block; }
+        .pp-head { display:flex; align-items:center; gap:10px; padding:14px; border-bottom:1px solid var(--border); }
+        .pp-avatar { width:36px; height:36px; background:rgba(201,168,76,0.12); border:1px solid var(--border-h); display:flex; align-items:center; justify-content:center; font-family:var(--display); font-size:17px; color:var(--gold); flex-shrink:0; }
+        .pp-info { display:flex; flex-direction:column; gap:2px; min-width:0; }
+        .pp-name { font-size:13px; color:var(--text); }
+        .pp-since { font-size:10px; color:var(--text-3); letter-spacing:0.04em; }
+        .pp-actions { display:flex; gap:8px; padding:10px 14px; }
+        .pp-btn { flex:1; padding:7px; font-family:var(--mono); font-size:11px; letter-spacing:0.08em; text-align:center; text-decoration:none; border:1px solid var(--border); color:var(--text-2); cursor:pointer; background:none; transition:all 0.15s; }
+        .pp-btn:hover { border-color:var(--border-h); color:var(--text); }
+        .pp-btn.red { color:var(--red); border-color:rgba(207,102,121,0.3); }
+        .pp-btn.red:hover { background:rgba(207,102,121,0.08); }
+
+        /* ── MAIN ── */
+        .main { margin-left:var(--sw); flex:1; overflow-y:auto; padding:40px 48px; }
+        .page-header { margin-bottom:32px; }
+        .page-title { font-family:var(--display); font-size:26px; color:var(--text); letter-spacing:0.04em; margin-bottom:6px; }
+        .page-sub { font-size:13px; color:var(--text-3); letter-spacing:0.04em; }
+
+        /* ── ADAPT ── */
+        input[type=number]::-webkit-outer-spin-button,
+        input[type=number]::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+        input[type=number] { -moz-appearance: textfield; }
+        .adapt-card { background:var(--surface); border:1px solid var(--border); padding:28px 32px; position:relative; overflow:hidden; }
+        .adapt-card::before { content:''; position:absolute; top:0; left:0; width:3px; height:100%; background:var(--gold); }
+        .adapt-label { font-size:9px; color:var(--gold); letter-spacing:0.32em; text-transform:uppercase; margin-bottom:6px; }
+        .adapt-title { font-family:var(--display); font-size:22px; color:var(--text); letter-spacing:0.04em; margin-bottom:16px; }
+        .adapt-insight { font-size:15px; color:var(--text); line-height:1.75; margin-bottom:20px; letter-spacing:0.02em; }
+        .adapt-insight em { color:var(--gold); font-style:normal; font-weight:700; }
+        .adapt-stats { display:flex; gap:32px; flex-wrap:wrap; border-top:1px solid var(--border); padding-top:16px; }
+        .adapt-stat { display:flex; flex-direction:column; gap:3px; }
+        .adapt-stat-label { font-size:10px; color:var(--text-3); letter-spacing:0.16em; text-transform:uppercase; }
+        .adapt-stat-val { font-family:var(--display); font-size:18px; color:var(--text); }
+        .adapt-badge { display:inline-flex; align-items:center; gap:5px; padding:3px 10px; font-size:10px; letter-spacing:0.14em; text-transform:uppercase; }
+        .adapt-badge.ok   { background:rgba(76,175,130,0.1);  border:1px solid rgba(76,175,130,0.3);   color:var(--green); }
+        .adapt-badge.warn { background:rgba(201,168,76,0.08); border:1px solid rgba(201,168,76,0.3);   color:var(--gold);  }
+        .adapt-badge.adj  { background:rgba(207,102,121,0.08);border:1px solid rgba(207,102,121,0.3);  color:var(--red);   }
+
+        /* ── MEAL PLAN ── */
+        .meal-plan-wrap { margin-top:24px; border-top:1px solid var(--border); padding-top:20px; }
+        .meal-plan-label { font-size:9px; color:var(--gold); letter-spacing:0.32em; text-transform:uppercase; margin-bottom:14px; }
+        .meal-table { width:100%; border-collapse:collapse; }
+        .meal-table th { font-size:9px; color:var(--text-3); letter-spacing:0.2em; text-transform:uppercase; text-align:left; padding:0 12px 10px 0; font-weight:400; border-bottom:1px solid var(--border); }
+        .meal-table th:last-child,.meal-table td:last-child { text-align:right; padding-right:0; }
+        .meal-table td { padding:14px 12px 14px 0; vertical-align:top; border-bottom:1px solid rgba(255,255,255,0.04); }
+        .meal-table tr:last-child td { border-bottom:none; }
+        .meal-name { font-family:var(--display); font-size:15px; color:var(--text); letter-spacing:0.04em; white-space:nowrap; }
+        .meal-time { font-size:10px; color:var(--text-3); margin-top:2px; letter-spacing:0.08em; }
+        .meal-foods { font-size:13px; color:var(--text-2); line-height:1.6; }
+        .meal-foods span { display:block; }
+        .meal-kcal { font-family:var(--display); font-size:17px; color:var(--text); white-space:nowrap; }
+        .meal-macros { font-size:10px; color:var(--text-3); margin-top:3px; white-space:nowrap; }
+        .meal-total-row td { border-top:1px solid var(--border) !important; border-bottom:none !important; padding-top:12px; }
+
+        /* Calorie input strip */
+        .adapt-cal-strip { display:flex; align-items:center; gap:14px; margin-top:20px; padding-top:16px; border-top:1px solid var(--border); }
+        .adapt-cal-strip label { font-size:10px; color:var(--text-3); letter-spacing:0.18em; text-transform:uppercase; white-space:nowrap; }
+        .adapt-cal-input { background:none; border:none; border-bottom:1px solid var(--border); color:var(--text); font-family:var(--display); font-size:18px; width:90px; outline:none; padding:4px 0; transition:border-color 0.15s; }
+        .adapt-cal-input:focus { border-color:var(--gold); }
+        .adapt-cal-unit { font-size:11px; color:var(--text-3); }
+        .adapt-cal-btn { margin-left:auto; padding:7px 18px; background:var(--gold); border:none; color:#060606; font-family:var(--mono); font-size:11px; letter-spacing:0.1em; cursor:pointer; transition:opacity 0.15s; }
+        .adapt-cal-btn:hover { opacity:0.85; }
+    </style>
+</head>
+<body>
+<div class="app">
+
+    {% include 'perfect/_sidebar.html' %}
+
+    <!-- MAIN -->
+    <div class="main">
+        <div class="page-header">
+            <h1 class="page-title">TG·Adapt</h1>
+            <p class="page-sub">Your plan adjusts week to week based on your real results.</p>
+        </div>
+
+        <div class="adapt-card" id="adaptCard">
+            <p class="adapt-label">TG·Adapt — Intelligent Plan Adaptation</p>
+            <p class="adapt-title" id="adaptTitle">Analysing your week…</p>
+            <p class="adapt-insight" id="adaptInsight">Log your weight and food for at least 3 days to unlock your first weekly insight.</p>
+            <div class="adapt-stats" id="adaptStats">
+                <div class="adapt-stat">
+                    <span class="adapt-stat-label">Avg Daily Calories</span>
+                    <span class="adapt-stat-val" id="adaptAvgCal">—</span>
+                </div>
+                <div class="adapt-stat">
+                    <span class="adapt-stat-label">Weight Change</span>
+                    <span class="adapt-stat-val" id="adaptWtChange">—</span>
+                </div>
+                <div class="adapt-stat">
+                    <span class="adapt-stat-label">Daily Target</span>
+                    <span class="adapt-stat-val" id="adaptTarget">—</span>
+                </div>
+                <div class="adapt-stat">
+                    <span class="adapt-stat-label">Status</span>
+                    <span class="adapt-badge warn" id="adaptStatus">Set up plan</span>
+                </div>
+            </div>
+
+            <!-- Calorie target input -->
+            <div class="adapt-cal-strip">
+                <label>Daily calorie target</label>
+                <input type="number" class="adapt-cal-input" id="adaptCalInput" placeholder="2000" min="800" max="6000" step="50">
+                <span class="adapt-cal-unit">kcal / day</span>
+                <button class="adapt-cal-btn" onclick="saveCalTarget()">Save target</button>
+            </div>
+
+            <!-- Meal plan table -->
+            <div class="meal-plan-wrap" id="mealPlanWrap">
+                <p class="meal-plan-label">Today's Meal Plan</p>
+                <table class="meal-table">
+                    <thead>
+                        <tr>
+                            <th style="width:110px">Meal</th>
+                            <th>What to eat</th>
+                            <th style="text-align:right">Kcal&nbsp;/&nbsp;Macros</th>
+                        </tr>
+                    </thead>
+                    <tbody id="mealPlanBody">
+                        <tr><td colspan="3" style="color:var(--text-3);font-size:13px;padding:18px 0">Set your calorie target above to see your meal breakdown.</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div><!-- /main -->
+</div><!-- /app -->
+
+<script>
+(function () {
+    const _U       = {{ username | tojson }};
+    const LOGS_KEY = 'toogood_daily_logs_' + _U;
+    const PLAN_KEY = 'toogood_user_plan_' + _U;
+
+    function today() { return new Date().toISOString().slice(0, 10); }
+    function getLogs() { try { return JSON.parse(localStorage.getItem(LOGS_KEY)) || []; } catch { return []; } }
+    function getPlan() { try { return JSON.parse(localStorage.getItem(PLAN_KEY)) || {}; } catch { return {}; } }
+    function savePlan(p) { localStorage.setItem(PLAN_KEY, JSON.stringify(p)); }
+
+    window.saveCalTarget = function() {
+        const val = parseInt(document.getElementById('adaptCalInput').value);
+        if (!val || val < 800 || val > 6000) return;
+        const plan = getPlan();
+        plan.target_calories = val;
+        savePlan(plan);
+        renderMealPlan(val, plan.goal || '');
+        renderAdapt();
+    };
+
+    function renderAdapt() {
+        const logs = getLogs();
+        const plan = getPlan();
+
+        const cutoff = new Date(); cutoff.setDate(cutoff.getDate() - 7);
+        const week = logs.filter(l => new Date(l.date + 'T00:00') >= cutoff);
+
+        const calLogs  = week.filter(l => l.calories > 0);
+        const wtLogs   = week.filter(l => l.weight && l.weight > 0).sort((a, b) => a.date.localeCompare(b.date));
+        const target   = plan.target_calories || 0;
+        const goal     = (plan.goal || '').toLowerCase();
+
+        const avgCal   = calLogs.length ? Math.round(calLogs.reduce((s, l) => s + l.calories, 0) / calLogs.length) : 0;
+        const wtChange = wtLogs.length >= 2 ? (wtLogs[wtLogs.length - 1].weight - wtLogs[0].weight).toFixed(1) : null;
+
+        document.getElementById('adaptAvgCal').textContent   = avgCal   ? `${avgCal} kcal` : '—';
+        document.getElementById('adaptWtChange').textContent = wtChange !== null ? `${wtChange > 0 ? '+' : ''}${wtChange} kg` : '—';
+        document.getElementById('adaptTarget').textContent   = target    ? `${target} kcal` : '—';
+
+        if (plan.target_calories) {
+            document.getElementById('adaptCalInput').value = plan.target_calories;
+        }
+
+        if (calLogs.length < 3) {
+            document.getElementById('adaptTitle').textContent   = 'Not enough data yet';
+            document.getElementById('adaptInsight').textContent = 'Log your weight and food for at least 3 days to unlock your first weekly insight.';
+            setStatus('warn', 'Need more data');
+            return;
+        }
+
+        const surplus = avgCal - (target || avgCal);
+
+        if (!target) {
+            document.getElementById('adaptTitle').textContent = 'Set your calorie target';
+            document.getElementById('adaptInsight').innerHTML = 'Enter your daily calorie target above and I\'ll adapt your plan based on your real results each week.';
+            setStatus('warn', 'Set up plan');
+            return;
+        }
+
+        const isLoss = goal.includes('loss') || goal === 'fat_loss';
+        const isGain = goal.includes('gain') || goal.includes('muscle') || goal === 'weight_gain';
+
+        let title, insight, statusClass, statusText;
+
+        if (Math.abs(surplus) <= 150) {
+            title = 'Right on track';
+            insight = `You're averaging <em>${avgCal} kcal</em> per day — exactly what your target asks for. ${wtChange !== null ? `Your weight changed by <em>${wtChange > 0 ? '+' : ''}${wtChange} kg</em> this week.` : ''} Keep it up.`;
+            statusClass = 'ok'; statusText = 'On track';
+        } else if (surplus > 150 && isLoss) {
+            title = 'Slightly over — easy fix';
+            insight = `You're averaging <em>${avgCal} kcal</em>, about <em>${surplus} kcal above</em> your target. Try reducing portion sizes at dinner or swapping one snack for a lighter option.`;
+            statusClass = 'adj'; statusText = 'Adjust down';
+        } else if (surplus < -150 && isGain) {
+            title = 'Under-eating for your goal';
+            insight = `You're averaging <em>${avgCal} kcal</em>, about <em>${Math.abs(surplus)} kcal below</em> your target. Add a protein-rich snack or increase your lunch portion to hit your muscle-building target.`;
+            statusClass = 'adj'; statusText = 'Eat more';
+        } else if (surplus > 150) {
+            title = 'You\'re eating above target';
+            insight = `You're averaging <em>${avgCal} kcal</em> against a target of <em>${target} kcal</em>. Consider tracking your snacks more carefully — they often add up unnoticed.`;
+            statusClass = 'warn'; statusText = 'Above target';
+        } else {
+            title = 'Below target this week';
+            insight = `You're averaging <em>${avgCal} kcal</em>, which is <em>${Math.abs(surplus)} kcal below</em> your target. Make sure you\'re eating enough to fuel your body properly.`;
+            statusClass = 'warn'; statusText = 'Below target';
+        }
+
+        document.getElementById('adaptTitle').textContent   = title;
+        document.getElementById('adaptInsight').innerHTML   = insight;
+        setStatus(statusClass, statusText);
+        renderMealPlan(target, goal);
+    }
+
+    function setStatus(cls, text) {
+        const el = document.getElementById('adaptStatus');
+        el.className = 'adapt-badge ' + cls;
+        el.textContent = text;
+    }
+
+    function renderMealPlan(targetCal, goal) {
+        const body = document.getElementById('mealPlanBody');
+        if (!body) return;
+        if (!targetCal || targetCal < 100) {
+            body.innerHTML = '<tr><td colspan="3" style="color:var(--text-3);font-size:13px;padding:18px 0">Set your calorie target above to see your meal breakdown.</td></tr>';
+            return;
+        }
+
+        const splits = { breakfast:0.25, lunch:0.35, dinner:0.30, snacks:0.10 };
+        const kcal   = { breakfast:Math.round(targetCal*0.25), lunch:Math.round(targetCal*0.35), dinner:Math.round(targetCal*0.30), snacks:Math.round(targetCal*0.10) };
+
+        const isLoss = (goal||'').includes('loss') || (goal||'') === 'fat_loss';
+        const isGain = (goal||'').includes('gain') || (goal||'').includes('muscle') || (goal||'') === 'weight_gain';
+        const goalKey = isLoss ? 'loss' : isGain ? 'gain' : 'maintain';
+        const dow = new Date().getDay();
+
+        const opt = {
+            breakfast:{
+                loss:[['2 boiled eggs','Oats with skim milk (40 g)','Black coffee or green tea'],['Vegetable omelette (2 eggs)','Brown bread (1 slice)','Unsweetened yogurt (100 g)'],['Moong dal chilla (2)','Mint chutney','Green tea'],['Poha with vegetables (1 cup)','1 boiled egg','Black coffee']],
+                gain:[['3 scrambled eggs + 2 whole wheat toast','Banana + peanut butter (1 tbsp)','Full-fat milk (200 ml)'],['Besan chilla (3)','Paneer (50 g)','Banana shake (300 ml)'],['4-egg omelette with cheese','3 multigrain toast','Orange juice (200 ml)'],['Upma (1.5 cup)','2 boiled eggs','Whole milk (250 ml)']],
+                maintain:[['2 eggs (any style)','Whole wheat toast (2 slices)','Seasonal fruit'],['Idli (3) with sambar','Coconut chutney','Tea or coffee'],['Vegetable poha (1 cup)','1 egg','Any fruit'],['Dalia with milk (1 bowl)','1 banana','Green tea']],
+            },
+            lunch:{
+                loss:[['Grilled chicken breast (120 g)','Brown rice (80 g cooked)','Mixed salad with lemon dressing'],['Dal (1 cup)','1 roti','Stir-fried vegetables','Buttermilk (200 ml)'],['Baked fish (150 g)','Quinoa (80 g cooked)','Steamed broccoli'],['Paneer bhurji (low oil, 100 g)','1 roti','Cucumber + tomato salad']],
+                gain:[['Chicken or paneer (150 g)','White rice (150 g cooked)','Dal + 2 rotis','Curd (100 g)'],['Rajma (1 cup)','Rice (200 g cooked)','2 rotis','Salad'],['Egg curry (3 eggs)','Rice (200 g)','2 rotis','Curd'],['Chicken biryani (1 plate)','Raita (150 g)','Salad']],
+                maintain:[['Dal + rice or 2 rotis','Sabzi (any vegetable)','Curd or buttermilk'],['2 chapati','Paneer sabzi','Dal','Salad'],['Khichdi (1 bowl)','Papad','Mixed pickle','Curd'],['Chole (1 cup)','2 rotis','Onion salad','Lassi (small)']],
+            },
+            dinner:{
+                loss:[['Baked fish or tofu (100 g)','Stir-fried vegetables','1 small roti'],['Grilled paneer (80 g)','Dal soup (1 bowl)','Salad'],['Egg white omelette (3 whites)','Sautéed mushrooms','Whole wheat toast (1)'],['Chicken clear soup','Steamed vegetables','Small salad']],
+                gain:[['Chicken / paneer (150 g)','2–3 rotis','Cooked vegetables + dal'],['Pasta with chicken (1 bowl)','Garlic bread (2)','Mixed salad'],['Dal makhani (1 cup)','3 rotis','Paneer (80 g)','Rice (100 g cooked)'],['Egg fried rice (1 plate)','Chicken (100 g)','Soup']],
+                maintain:[['2 rotis + dal','Vegetable sabzi','Small bowl curd'],['Rice (100 g cooked)','Dal','Sabzi','Salad'],['Mixed veg khichdi (1 bowl)','Papad','Pickle'],['Paneer sabzi','2 rotis','Dal soup']],
+            },
+            snacks:{
+                loss:[['Almonds (15 g)','Green tea','Apple or pear'],['Roasted chana (30 g)','Black coffee','Cucumber sticks'],['Low-fat yogurt (100 g)','Berries or banana'],['1 boiled egg','Apple','Herbal tea']],
+                gain:[['Banana milkshake (300 ml)','Mixed nuts (30 g)','Protein bar'],['Peanut butter toast (2 slices)','Whole milk (200 ml)','Banana'],['Dates (5) + almonds (20 g)','Full-fat curd (150 g)'],['Chikki (1 piece)','2 bananas','Whole milk (250 ml)']],
+                maintain:[['Seasonal fruit','Handful of nuts or murmura'],['Roasted makhana (30 g)','Green tea','Apple'],['Curd (100 g)','Banana','Tea'],['Rice cake (2)','Peanut butter (1 tsp)','Herbal tea']],
+            },
+        };
+
+        const pick = meal => opt[meal][goalKey][dow % opt[meal][goalKey].length];
+
+        function macroFor(cal) {
+            return { p:Math.round(cal*0.25/4), c:Math.round(cal*0.50/4), f:Math.round(cal*0.25/9) };
+        }
+
+        const rows = [
+            {key:'breakfast',label:'Breakfast',time:'7 – 9 am'},
+            {key:'lunch',    label:'Lunch',    time:'12 – 2 pm'},
+            {key:'dinner',   label:'Dinner',   time:'7 – 9 pm'},
+            {key:'snacks',   label:'Snacks',   time:'Between meals'},
+        ];
+
+        body.innerHTML = rows.map(r => {
+            const foods = pick(r.key).map(f => `<span>${f}</span>`).join('');
+            const m = macroFor(kcal[r.key]);
+            return `<tr>
+                <td><div class="meal-name">${r.label}</div><div class="meal-time">${r.time}</div></td>
+                <td><div class="meal-foods">${foods}</div></td>
+                <td><div class="meal-kcal">${kcal[r.key]} kcal</div><div class="meal-macros">${m.p}g P · ${m.c}g C · ${m.f}g F</div></td>
+            </tr>`;
+        }).join('');
+
+        const tot = macroFor(targetCal);
+        body.innerHTML += `<tr class="meal-total-row">
+            <td><div class="meal-name" style="color:var(--gold)">Total</div></td>
+            <td></td>
+            <td><div class="meal-kcal" style="color:var(--gold)">${targetCal} kcal</div><div class="meal-macros">${tot.p}g P · ${tot.c}g C · ${tot.f}g F</div></td>
+        </tr>`;
+    }
+
+    renderAdapt();
+})();
+</script>
+</body>
+</html>

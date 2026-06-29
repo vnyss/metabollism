@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<title>Ask AI — Too Good</title>
+
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css"
+rel="stylesheet">
+<link rel="stylesheet"  href="../static/ai.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Jim+Nightshade&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Special+Elite&display=swap"
+rel="stylesheet">
+
+</head>
+
+<body>
+
+<nav class="navbar navbar-expand-md fixed-top custom-navbar">
+
+<div class="container-fluid">
+
+<a class="navbar-brand" href="./home.html">
+
+<img src="./images/logo.svg"
+width="40"
+height="40">
+
+</a>
+
+<button class="navbar-toggler"
+type="button"
+data-bs-toggle="collapse"
+data-bs-target="#navbarCollapse">
+
+<span class="navbar-toggler-icon"></span>
+
+</button>
+
+<div class="collapse navbar-collapse"
+id="navbarCollapse">
+
+<ul class="navbar-nav me-auto">
+
+<li class="nav-item">
+<a class="nav-link" href="./home.html">
+Home
+</a>
+</li>
+
+<li class="nav-item">
+<a class="nav-link" href="./features.html">
+Features
+</a>
+</li>
+
+<li class="nav-item">
+<a class="nav-link" href="./about.html">
+About
+</a>
+</li>
+
+<li class="nav-item">
+<a class="nav-link active" href="./ai.html">
+Ask AI
+</a>
+</li>
+
+</ul>
+
+<ul class="navbar-nav">
+
+<li class="nav-item">
+<a class="nav-link" href="./login.html">
+Login
+</a>
+</li>
+
+<li class="nav-item">
+<a class="nav-link" href="./signup.html">
+Sign Up
+</a>
+</li>
+
+</ul>
+
+</div>
+
+</div>
+
+</nav>
+
+<div class="chat-page">
+
+  <div class="chat-scroll" id="chatScroll">
+    <div class="chat-column">
+
+      <div class="chat-empty-state" id="emptyState">
+        <h1>WHAT DO YOU WANT TO KNOW?</h1>
+        <p>ASK ABOUT FOOD SCIENCE, MACRONUTRIENTS, EATING PATTERNS, OR HOW DIFFERENT DIETS ACTUALLY WORK.</p>
+        <div class="prompt-chip-row">
+          <div class="prompt-chip" data-q="What does the evidence actually say about intermittent fasting?">INTERMITTENT FASTING EVIDENCE?</div>
+          <div class="prompt-chip" data-q="How much protein does an average active adult need per day?">PROTEIN NEEDS FOR UNACTIVE ADULTS?</div>
+          <div class="prompt-chip" data-q="PREPARE A DIET OF 1400 GRAMS OF PROTEIN?">MAKE ME A DIET COMPRISING OF 1400 GRAMS OF PROTEIN ?</div>
+          <div class="prompt-chip" data-q="Are seed oils actually unhealthy or is that overblown?">ARE OIL SEEDS UNHEALTHY?</div>
+        </div>
+      </div>
+
+      <div id="messages"></div>
+
+    </div>
+  </div>
+
+  <div class="composer-wrap">
+    <div class="composer-inner">
+      <div class="composer-box">
+        <textarea id="chatInput" rows="1" placeholder="Ask about diets, nutrients, or food science…"></textarea>
+        <button class="composer-send" id="sendBtn" aria-label="Send">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M12 19V5M12 5L5 12M12 5L19 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
+      </div>
+      <p class="composer-footnote">Not medical advice. General nutrition information only — talk to a doctor or registered dietitian for anything specific to your health.</p>
+    </div>
+  </div>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+(function () {
+  // ====================================================================
+  // CONFIG — point this at your real backend (see server.js)
+  // ====================================================================
+  const CHAT_ENDPOINT = '/api/nutriai/chat';
+
+  const messagesEl = document.getElementById('messages');
+  const emptyState = document.getElementById('emptyState');
+  const chatScroll = document.getElementById('chatScroll');
+  const inputEl = document.getElementById('chatInput');
+  const sendBtn = document.getElementById('sendBtn');
+  const chips = document.querySelectorAll('.prompt-chip');
+
+  let history = []; // [{role, content}]
+
+  function escapeHtml(str) {
+    const div = document.createElement('div');
+    div.textContent = str;
+    return div.innerHTML;
+  }
+
+  // Minimal safe renderer: supports **bold** and "- " bullet lines, nothing else.
+  function renderRichText(text) {
+    const escaped = escapeHtml(text);
+    const withBold = escaped.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+    const lines = withBold.split(/\n/);
+    let html = '';
+    let inList = false;
+    lines.forEach(line => {
+      const trimmed = line.trim();
+      if (/^[-*]\s+/.test(trimmed)) {
+        if (!inList) { html += '<ul>'; inList = true; }
+        html += `<li>${trimmed.replace(/^[-*]\s+/, '')}</li>`;
+      } else {
+        if (inList) { html += '</ul>'; inList = false; }
+        if (trimmed.length) html += `<p>${trimmed}</p>`;
+      }
+    });
+    if (inList) html += '</ul>';
+    return html;
+  }
+
+  function scrollToBottom() {
+    chatScroll.scrollTop = chatScroll.scrollHeight;
+  }
+
+  function addMessage(role, text) {
+    emptyState.style.display = 'none';
+    const row = document.createElement('div');
+    row.className = `msg-row ${role}`;
+
+    if (role === 'assistant') {
+      const avatar = document.createElement('div');
+      avatar.className = 'msg-avatar';
+      avatar.textContent = 'AI';
+      row.appendChild(avatar);
+    }
+
+    const bubble = document.createElement('div');
+    bubble.className = 'msg-bubble';
+    bubble.innerHTML = renderRichText(text);
+    row.appendChild(bubble);
+
+    messagesEl.appendChild(row);
+    scrollToBottom();
+    return bubble;
+  }
+
+  function addTypingIndicator() {
+    const row = document.createElement('div');
+    row.className = 'msg-row assistant';
+    row.id = 'typingRow';
+    row.innerHTML = `<div class="msg-avatar">AI</div><div class="msg-bubble"><div class="typing-dots"><span></span><span></span><span></span></div></div>`;
+    messagesEl.appendChild(row);
+    scrollToBottom();
+  }
+  function removeTypingIndicator() {
+    const el = document.getElementById('typingRow');
+    if (el) el.remove();
+  }
+
+  async function sendMessage(text) {
+    const trimmed = text.trim();
+    if (!trimmed) return;
+
+    addMessage('user', trimmed);
+    history.push({ role: 'user', content: trimmed });
+    inputEl.value = '';
+    inputEl.style.height = 'auto';
+    sendBtn.disabled = true;
+    addTypingIndicator();
+
+    try {
+      const res = await fetch(CHAT_ENDPOINT, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ messages: history }),
+      });
+      if (!res.ok) throw new Error('Request failed: ' + res.status);
+      const data = await res.json();
+      removeTypingIndicator();
+      const reply = data.reply || "Sorry, I couldn't generate a response just now. Please try again.";
+      addMessage('assistant', reply);
+      history.push({ role: 'assistant', content: reply });
+    } catch (err) {
+      removeTypingIndicator();
+      addMessage('assistant', "I'm having trouble connecting right now. Please check that the backend server is running, then try again.");
+      console.error('Chat error:', err);
+    } finally {
+      sendBtn.disabled = false;
+    }
+  }
+
+  sendBtn.addEventListener('click', () => sendMessage(inputEl.value));
+  inputEl.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      sendMessage(inputEl.value);
+    }
+  });
+  inputEl.addEventListener('input', () => {
+    inputEl.style.height = 'auto';
+    inputEl.style.height = Math.min(inputEl.scrollHeight, 160) + 'px';
+  });
+  chips.forEach(chip => {
+    chip.addEventListener('click', () => sendMessage(chip.dataset.q));
+  });
+})();
+</script>
+
+</body>
+
+</html>

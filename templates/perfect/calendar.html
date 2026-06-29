@@ -1,0 +1,788 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Exercise Calendar — Too Good</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Courier+Prime:ital,wght@0,400;0,700;1,400&family=Special+Elite&display=swap" rel="stylesheet">
+    <script>(function(){
+        var r = document.documentElement;
+        if (localStorage.getItem('tg_mode') === 'light') r.classList.add('light-mode');
+        var sw = localStorage.getItem('tg_sw'); if (sw) r.style.setProperty('--sw', {narrow:'220px',normal:'260px',wide:'320px'}[sw]||'260px');
+        var an = localStorage.getItem('tg_anim'); if (an) r.style.setProperty('--anim', {none:'0ms',normal:'200ms',snappy:'80ms'}[an]||'200ms');
+    })();</script>
+    <style>
+        :root {
+            --bg:#0A0A0A; --sidebar:#080808; --surface:#111111; --elevated:#181818;
+            --border:rgba(201,168,76,0.12); --border-h:rgba(201,168,76,0.38);
+            --gold:#C9A84C; --gold-h:#DFC070; --gold-dim:rgba(201,168,76,0.07);
+            --accent:#C9A84C; --green:#4CAF7C; --red:#CF6679;
+            --text:#E8DCC8; --text-2:#8A7A62; --text-3:#4A3C2A;
+            --mono:'Courier Prime',monospace; --display:'Special Elite',monospace;
+            --sw:260px; --anim:200ms;
+        }
+        html.light-mode {
+            --bg:#F5F0E8; --sidebar:#EDE8DF; --surface:#FFFFFF; --elevated:#F0EBE1;
+            --border:rgba(100,80,40,0.14); --border-h:rgba(100,80,40,0.36);
+            --gold-dim:rgba(201,168,76,0.10); --text:#1A1208; --text-2:#6B5A3E; --text-3:#9A8A72;
+        }
+        *,*::before,*::after { box-sizing:border-box; margin:0; padding:0; }
+        body { background:var(--bg); font-family:var(--mono); color:var(--text); height:100vh; overflow:hidden; -webkit-font-smoothing:antialiased; }
+        .app { display:flex; height:100vh; }
+
+        /* ── SIDEBAR ── */
+        .sidebar { width:var(--sw); min-width:var(--sw); background:var(--sidebar); border-right:1px solid var(--border); display:flex; flex-direction:column; height:100vh; position:fixed; left:0; top:0; z-index:100; }
+        .sb-top { padding:14px 12px 12px; border-bottom:1px solid var(--border); flex-shrink:0; }
+        .sb-brand { display:flex; align-items:center; gap:10px; text-decoration:none; margin-bottom:12px; }
+        .sb-logo { width:26px; height:26px; flex-shrink:0; display:block; color:var(--gold); }
+        .sb-brand-name { font-family:var(--display); font-size:15px; color:var(--text); letter-spacing:0.06em; }
+        .new-chat-btn { width:100%; display:flex; align-items:center; gap:8px; padding:8px 10px; background:transparent; border:1px solid var(--border); color:var(--text-2); font-family:var(--mono); font-size:13px; letter-spacing:0.06em; cursor:pointer; transition:all 0.18s; }
+        .new-chat-btn:hover { border-color:var(--border-h); color:var(--gold); background:var(--gold-dim); }
+        .sb-nav { flex:1; overflow-y:auto; padding:8px 0 6px; }
+        .sb-nav::-webkit-scrollbar { width:2px; }
+        .sb-section-label { font-size:10px; color:var(--text-3); letter-spacing:0.24em; text-transform:uppercase; padding:12px 14px 4px; display:block; }
+        .sb-item { display:flex; align-items:center; gap:9px; width:100%; padding:8px 14px; background:none; border:none; color:var(--text-2); font-family:var(--mono); font-size:13px; letter-spacing:0.025em; cursor:pointer; text-align:left; text-decoration:none; transition:background 0.15s,color 0.15s; }
+        .sb-item:hover { background:var(--gold-dim); color:var(--text); }
+        .sb-item.active { background:rgba(201,168,76,0.09); color:var(--gold); }
+        .sb-item svg { flex-shrink:0; opacity:0.55; transition:opacity 0.15s; }
+        .sb-item:hover svg,.sb-item.active svg { opacity:1; }
+        .sb-sub { max-height:0; overflow:hidden; transition:max-height 0.28s ease; }
+        .sb-sub.open { max-height:9999px; }
+        .sb-sub-item { display:flex; align-items:center; gap:7px; padding:6px 14px 6px 38px; font-family:var(--mono); font-size:12px; color:var(--text-2); text-decoration:none; cursor:pointer; transition:background 0.15s,color 0.15s; border:none; background:none; width:100%; text-align:left; }
+        .sb-sub-item:hover { background:var(--gold-dim); color:var(--text); }
+        .sb-sub-item.highlight { color:var(--gold); }
+        .sb-chevron { font-size:11px; margin-left:auto; }
+        .sb-empty { padding:6px 14px 6px 38px; font-size:11px; color:var(--text-3); }
+        .sb-bottom { border-top:1px solid var(--border); padding:8px; flex-shrink:0; position:relative; }
+        .profile-btn { display:flex; align-items:center; gap:10px; width:100%; padding:8px 10px; background:none; border:none; cursor:pointer; transition:background 0.15s; }
+        .profile-btn:hover { background:var(--gold-dim); }
+        .profile-avatar { width:28px; height:28px; background:rgba(201,168,76,0.12); border:1px solid var(--border-h); display:flex; align-items:center; justify-content:center; font-family:var(--display); font-size:13px; color:var(--gold); flex-shrink:0; }
+        .profile-name { font-family:var(--mono); font-size:14px; color:var(--text); flex:1; text-align:left; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+        .profile-popup { display:none; position:absolute; bottom:calc(100% + 4px); left:8px; right:8px; background:var(--elevated); border:1px solid var(--border-h); z-index:200; }
+        .profile-popup.open { display:block; }
+        .pp-head { display:flex; align-items:center; gap:10px; padding:14px; border-bottom:1px solid var(--border); }
+        .pp-avatar { width:36px; height:36px; background:rgba(201,168,76,0.12); border:1px solid var(--border-h); display:flex; align-items:center; justify-content:center; font-family:var(--display); font-size:17px; color:var(--gold); flex-shrink:0; }
+        .pp-info { display:flex; flex-direction:column; gap:2px; min-width:0; }
+        .pp-name { font-size:13px; color:var(--text); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+        .pp-email,.pp-since { font-size:10px; color:var(--text-3); letter-spacing:0.04em; }
+        .pp-actions { display:flex; gap:8px; padding:10px 14px; }
+        .pp-btn { flex:1; padding:7px; font-family:var(--mono); font-size:11px; letter-spacing:0.08em; text-align:center; text-decoration:none; border:1px solid var(--border); color:var(--text-2); cursor:pointer; background:none; transition:all 0.15s; }
+        .pp-btn:hover { border-color:var(--border-h); color:var(--text); }
+        .pp-btn.red { color:var(--red); border-color:rgba(207,102,121,0.3); }
+        .pp-btn.red:hover { background:rgba(207,102,121,0.08); }
+
+        /* ── MAIN ── */
+        .main { margin-left:var(--sw); flex:1; overflow-y:auto; padding:40px 48px; }
+        .page-header { margin-bottom:32px; }
+        .page-title { font-family:var(--display); font-size:26px; color:var(--text); letter-spacing:0.04em; margin-bottom:6px; }
+        .page-sub { font-size:13px; color:var(--text-3); letter-spacing:0.04em; }
+        .page-actions { display:flex; align-items:center; gap:12px; margin-top:16px; }
+        .page-action-link { font-family:var(--mono); font-size:12px; color:var(--gold); text-decoration:none; letter-spacing:0.06em; border:1px solid rgba(201,168,76,0.3); padding:6px 14px; transition:background 0.15s; }
+        .page-action-link:hover { background:var(--gold-dim); }
+
+        /* ── CALENDAR ── */
+        .cal-nav { display:flex; align-items:center; justify-content:space-between; margin-bottom:20px; }
+        .cal-week-label { font-family:var(--mono); font-size:11px; letter-spacing:0.1em; color:var(--text-2); text-transform:uppercase; }
+        .cal-arrow { background:none; border:1px solid var(--border); color:var(--text-2); border-radius:6px; padding:5px 12px; font-family:var(--mono); font-size:11px; cursor:pointer; letter-spacing:0.06em; transition:background 0.15s,color 0.15s; }
+        .cal-arrow:hover { background:var(--surface); color:var(--text); }
+        .cal-grid { display:grid; grid-template-columns:repeat(7,1fr); gap:6px; }
+        .cal-day { background:var(--surface); border:1px solid var(--border); border-radius:8px; padding:10px 8px 9px; min-height:100px; display:flex; flex-direction:column; gap:4px; cursor:pointer; transition:border-color 0.15s; }
+        .cal-day:hover { border-color:var(--border-h); }
+        .cal-day.faded { opacity:0.35; }
+
+        /* ── Day view modal ── */
+        .dv-backdrop { position:fixed; inset:0; background:rgba(0,0,0,0.65); z-index:500; display:none; align-items:center; justify-content:center; padding:20px; }
+        .dv-backdrop.open { display:flex; }
+        .dv-modal { background:var(--elevated); border:1px solid var(--border-h); border-radius:12px; width:min(520px,96vw); max-height:88vh; display:flex; flex-direction:column; overflow:hidden; }
+        .dv-head { padding:16px 18px 12px; border-bottom:1px solid var(--border); flex-shrink:0; display:flex; justify-content:space-between; align-items:flex-start; gap:12px; }
+        .dv-head-left { min-width:0; }
+        .dv-title { font-family:var(--display); font-size:16px; color:var(--text); letter-spacing:0.04em; }
+        .dv-hint { font-size:10px; color:var(--text-3); letter-spacing:0.06em; margin-top:4px; }
+        .dv-badge { display:inline-block; margin-top:6px; font-size:10px; letter-spacing:0.1em; text-transform:uppercase; padding:3px 9px; border-radius:20px; }
+        .dv-badge.exercise { background:rgba(201,168,76,0.14); color:var(--gold); }
+        .dv-badge.rest     { background:rgba(255,255,255,0.05); color:var(--text-3); }
+        .dv-badge.optional { background:rgba(255,255,255,0.04); color:var(--text-3); }
+        .dv-badge.free     { background:rgba(255,255,255,0.04); color:var(--text-3); }
+        .dv-close { background:none; border:none; color:var(--text-3); font-size:18px; cursor:pointer; padding:0; line-height:1; flex-shrink:0; }
+        .dv-close:hover { color:var(--text); }
+        .dv-scroll { flex:1; overflow-y:auto; }
+        .dv-scroll::-webkit-scrollbar { width:3px; }
+        .dv-scroll::-webkit-scrollbar-thumb { background:var(--border); }
+        /* Interactive timeline */
+        .dv-timeline { position:relative; user-select:none; }
+        .dv-hr { position:absolute; left:0; right:0; height:1px; background:var(--border); pointer-events:none; }
+        .dv-hr-lbl { position:absolute; left:0; width:52px; font-family:var(--mono); font-size:10px; color:var(--text-3); letter-spacing:0.05em; text-align:right; padding-right:8px; pointer-events:none; }
+        .dv-interact { position:absolute; top:0; left:52px; right:0; cursor:crosshair; z-index:2; }
+        /* Draggable blocks */
+        .dv-block { position:absolute; left:56px; right:4px; background:rgba(201,168,76,0.13); border-left:3px solid var(--gold); border-radius:4px; z-index:5; box-sizing:border-box; overflow:visible; }
+        .dv-block-name { display:block; width:100%; background:none; border:none; outline:none; padding:5px 22px 2px 8px; font-family:var(--mono); font-size:11px; color:var(--gold); font-weight:700; letter-spacing:0.04em; cursor:text; box-sizing:border-box; }
+        .dv-block-name::placeholder { color:rgba(201,168,76,0.28); font-weight:400; }
+        .dv-block-time { display:block; padding:0 8px 5px; font-family:var(--mono); font-size:9px; color:var(--text-2); letter-spacing:0.04em; }
+        .dv-block-del { position:absolute; top:2px; right:4px; background:rgba(10,10,10,0.7); border:none; color:var(--text-3); font-size:14px; cursor:pointer; padding:0 4px; line-height:1.4; z-index:20; pointer-events:all; border-radius:2px; }
+        .dv-block-del:hover { color:var(--red); background:rgba(207,102,121,0.18); }
+        .dv-block-resize { position:absolute; bottom:0; left:0; right:0; height:10px; cursor:ns-resize; background:linear-gradient(transparent,rgba(201,168,76,0.22)); z-index:6; border-radius:0 0 4px 4px; }
+        /* Draft block shown while drag-creating */
+        .dv-draft { position:absolute; left:56px; right:4px; background:rgba(201,168,76,0.06); border:1.5px dashed rgba(201,168,76,0.4); border-radius:4px; pointer-events:none; z-index:8; box-sizing:border-box; }
+        /* Meal pill */
+        .dv-meal-pill { position:absolute; right:8px; font-family:var(--mono); font-size:9px; letter-spacing:0.1em; text-transform:uppercase; color:var(--text-3); padding:2px 7px; border:1px solid var(--border); border-radius:10px; pointer-events:none; z-index:3; transform:translateY(-50%); }
+        /* Rest day message */
+        .dv-rest-msg { margin:16px; padding:16px; background:var(--surface); border:1px solid var(--border); border-radius:8px; font-family:var(--mono); font-size:12px; color:var(--text-3); letter-spacing:0.06em; text-align:center; line-height:1.7; }
+        /* Current time red line */
+        .dv-now { position:absolute; left:0; right:0; height:2px; background:var(--red,#CF6679); z-index:10; pointer-events:none; }
+        .dv-now::before { content:''; position:absolute; left:48px; top:-4px; width:10px; height:10px; border-radius:50%; background:var(--red,#CF6679); }
+        .cal-day.today { border-color:var(--accent); box-shadow:0 0 0 1px var(--accent); }
+        .cal-day.rest { background:var(--sidebar); border-color:var(--border); }
+        .cal-day.optional { opacity:0.55; }
+        .cal-day-name { font-family:var(--mono); font-size:8px; letter-spacing:0.18em; text-transform:uppercase; color:var(--text-3); }
+        .cal-date-num { font-family:var(--display); font-size:22px; color:var(--text); line-height:1.1; }
+        .cal-today-dot { width:5px; height:5px; border-radius:50%; background:var(--accent); }
+        .cal-rest-lbl { font-family:var(--mono); font-size:9px; letter-spacing:0.12em; text-transform:uppercase; color:var(--text-3); margin-top:auto; }
+        .cal-ex-chip { border:1px solid var(--border-h); border-radius:5px; padding:5px 7px; font-family:var(--mono); font-size:9px; letter-spacing:0.06em; color:var(--accent); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+        .cal-ex-meta { font-family:var(--mono); font-size:9px; color:var(--text-3); letter-spacing:0.04em; }
+        .cal-opt-lbl { font-family:var(--mono); font-size:9px; letter-spacing:0.1em; text-transform:uppercase; color:var(--text-3); margin-top:auto; }
+        .cal-setup-msg { text-align:center; padding:48px 24px; color:var(--text-3); font-family:var(--mono); font-size:12px; letter-spacing:0.06em; line-height:1.8; }
+        .cal-setup-msg a { color:var(--accent); text-decoration:none; }
+        .cal-toast { position:fixed; bottom:28px; left:50%; transform:translateX(-50%); background:var(--surface); border:1px solid var(--gold); color:var(--gold); font-family:var(--mono); font-size:12px; letter-spacing:0.06em; padding:10px 22px; opacity:0; transition:opacity 0.3s; pointer-events:none; z-index:600; white-space:nowrap; max-width:90vw; text-overflow:ellipsis; overflow:hidden; }
+        .cal-toast.show { opacity:1; }
+        .cal-toast.err { border-color:var(--red,#CF6679); color:var(--red,#CF6679); }
+        @media (max-width:900px) { .cal-grid { grid-template-columns:repeat(4,1fr); } }
+
+        /* AI schedule editor panel */
+        .cal-edit-panel { background:var(--surface); border:1px solid var(--border); margin-bottom:20px; }
+        .cal-edit-header { padding:12px 18px; border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; }
+        .cal-edit-title { font-family:var(--mono); font-size:11px; letter-spacing:0.14em; text-transform:uppercase; color:var(--gold); }
+        .cal-edit-toggle { background:none; border:none; color:var(--text-3); font-size:11px; cursor:pointer; font-family:var(--mono); letter-spacing:0.06em; padding:0; }
+        .cal-edit-msgs { padding:12px 18px; max-height:160px; overflow-y:auto; display:flex; flex-direction:column; gap:8px; }
+        .cal-edit-msgs::-webkit-scrollbar { width:2px; }
+        .cal-edit-msgs::-webkit-scrollbar-thumb { background:var(--border); }
+        .cal-edit-msg { max-width:90%; }
+        .cal-edit-msg.user { align-self:flex-end; }
+        .cal-edit-msg.ai   { align-self:flex-start; }
+        .cal-edit-bubble { padding:7px 12px; font-family:var(--mono); font-size:12px; line-height:1.65; }
+        .cal-edit-msg.user .cal-edit-bubble { background:var(--gold-dim); border:1px solid rgba(201,168,76,0.18); color:var(--text); }
+        .cal-edit-msg.ai   .cal-edit-bubble { background:var(--elevated); border:1px solid var(--border); color:var(--text-2); }
+        .cal-edit-hint { font-family:var(--mono); font-size:10px; color:var(--text-3); padding:0 18px 8px; letter-spacing:0.04em; }
+        .cal-edit-row { display:flex; gap:8px; padding:10px 14px 12px; border-top:1px solid var(--border); }
+        .cal-edit-inp { flex:1; background:var(--elevated); border:1px solid var(--border); color:var(--text); font-family:var(--mono); font-size:12px; padding:8px 12px; outline:none; transition:border-color 0.15s; }
+        .cal-edit-inp:focus { border-color:var(--border-h); }
+        .cal-edit-inp::placeholder { color:var(--text-3); }
+        .cal-edit-mic { background:none; border:1px solid var(--border); color:var(--text-3); padding:8px 12px; cursor:pointer; display:flex; align-items:center; gap:6px; font-family:var(--mono); font-size:11px; letter-spacing:0.06em; transition:all 0.15s; flex-shrink:0; }
+        .cal-edit-mic:hover { border-color:var(--border-h); color:var(--text); }
+        .cal-edit-mic.recording { border-color:var(--gold); color:var(--gold); animation:cePulse 1.2s ease-in-out infinite; }
+        @keyframes cePulse { 0%,100%{box-shadow:0 0 0 0 rgba(201,168,76,0.4)} 50%{box-shadow:0 0 0 8px rgba(201,168,76,0)} }
+        .cal-edit-send { background:var(--gold); border:none; color:#060606; padding:8px 18px; font-family:var(--mono); font-size:11px; font-weight:700; letter-spacing:0.08em; cursor:pointer; transition:opacity 0.15s; flex-shrink:0; }
+        .cal-edit-send:hover { opacity:0.85; }
+        .cal-edit-send:disabled { opacity:0.45; cursor:not-allowed; }
+    </style>
+</head>
+<body>
+<div class="app">
+
+    {% include 'perfect/_sidebar.html' %}
+
+    <!-- MAIN -->
+    <div class="main">
+        <div class="page-header">
+            <h1 class="page-title">Exercise Calendar</h1>
+            <p class="page-sub">Your monthly workout plan — auto-updates when you change your exercise schedule.</p>
+            <div class="page-actions">
+                <a class="page-action-link" href="/perfect/settings#exercise">Edit schedule →</a>
+            </div>
+        </div>
+
+        <!-- AI schedule editor panel -->
+        <div class="cal-edit-panel">
+            <div class="cal-edit-header">
+                <span class="cal-edit-title">AI Schedule Editor — edit by voice or text</span>
+                <button class="cal-edit-toggle" id="calEditToggleBtn" onclick="calEditToggle()">hide ▴</button>
+            </div>
+            <div id="calEditBody">
+                <div class="cal-edit-msgs" id="calEditMsgs">
+                    <div class="cal-edit-msg ai">
+                        <div class="cal-edit-bubble">Tell me what to change — rest days, exercise types, duration, time of day, anything. I'll update your calendar right away.</div>
+                    </div>
+                </div>
+                <p class="cal-edit-hint">e.g. "Rest on Sunday only, add swimming, change to morning sessions"</p>
+                <div class="cal-edit-row">
+                    <button class="cal-edit-mic" id="calEditMicBtn" onclick="calEditToggleMic()">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
+                        Mic
+                    </button>
+                    <input class="cal-edit-inp" id="calEditInp" type="text"
+                        placeholder="Describe what to change…"
+                        onkeydown="if(event.key==='Enter')calEditSend()">
+                    <button class="cal-edit-send" id="calEditSendBtn" onclick="calEditSend()">Update</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Calendar nav + grid -->
+        <div id="calWrap">
+            <div class="cal-nav">
+                <button class="cal-arrow" onclick="calNav(-1)">← prev month</button>
+                <span class="cal-week-label" id="calWeekLabel"></span>
+                <button class="cal-arrow" onclick="calNav(1)">next month →</button>
+            </div>
+            <div class="cal-grid" id="calGrid"></div>
+        </div>
+        <div class="cal-toast" id="calToast"></div>
+
+        <!-- Day view modal -->
+        <div class="dv-backdrop" id="dvBackdrop" onclick="closeDayView(event)">
+            <div class="dv-modal">
+                <div class="dv-head">
+                    <div class="dv-head-left">
+                        <p class="dv-title" id="dvTitle"></p>
+                        <span class="dv-badge" id="dvBadge"></span>
+                    </div>
+                    <button class="dv-close" onclick="closeDayView()">✕</button>
+                </div>
+                <div class="dv-scroll" id="dvScroll">
+                    <div class="dv-timeline" id="dvTimeline"></div>
+                </div>
+            </div>
+        </div>
+    </div><!-- /main -->
+</div><!-- /app -->
+
+<script>
+(function () {
+    const EX = {
+        types:    {{ exercise_types | tojson }}.split(',').map(s => s.trim()).filter(Boolean),
+        perWeek:  {{ exercise_days_per_week }},
+        restDays: {{ rest_day | tojson }}.split(',').map(s => s.trim()).filter(Boolean),
+        duration: {{ session_duration | tojson }},
+        timePref: {{ workout_time_pref | tojson }},
+        level:    {{ fitness_level | tojson }}
+    };
+
+    const WEEK  = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
+    const SHORT = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+    const DUR   = {'30min':'30 min','45min':'45 min','1hr':'1 hr','90min':'90 min','2hr':'2 hr+'};
+    const TPREF = {'early_morning':'5–7 am','morning':'7–10 am','afternoon':'12–4 pm','evening':'5–9 pm','flexible':'flexible'};
+
+    const _U = {{ username | tojson }};
+
+    // Per-exercise stored times (persists across sessions)
+    function getExTimes() { try { return JSON.parse(localStorage.getItem('tg_ex_times_' + _U)) || {}; } catch { return {}; } }
+    function setExTime(name, startH, endH) {
+        const t = getExTimes(); t[name.toLowerCase().trim()] = { startH, endH };
+        localStorage.setItem('tg_ex_times_' + _U, JSON.stringify(t));
+    }
+
+    // monthOffset: 0 = current month, -1 = prev, +1 = next
+    let monthOffset = 0;
+
+    const nonRest  = WEEK.filter(d => !EX.restDays.includes(d));
+    const active   = nonRest.slice(0, EX.perWeek);
+    const optional = nonRest.slice(EX.perWeek);
+
+    function jsToWeekIdx(jsDay) { return (jsDay + 6) % 7; }
+    function fmtDate(d) { return d.toLocaleDateString('en-GB', { day:'numeric', month:'short' }); }
+
+    function buildCalendar() {
+        const today = new Date(); today.setHours(0,0,0,0);
+
+        // Month being shown
+        const ref = new Date(today.getFullYear(), today.getMonth() + monthOffset, 1);
+        const yr  = ref.getFullYear(), mo = ref.getMonth();
+
+        // First day of month → back to Monday of that week
+        const firstDay = new Date(yr, mo, 1);
+        const dow = firstDay.getDay();
+        const gridStart = new Date(firstDay);
+        gridStart.setDate(1 - (dow === 0 ? 6 : dow - 1));
+
+        // Last day of month → forward to Sunday of that week
+        const lastDay = new Date(yr, mo + 1, 0);
+        const lastDow = lastDay.getDay();
+        const gridEnd = new Date(lastDay);
+        gridEnd.setDate(lastDay.getDate() + (lastDow === 0 ? 0 : 7 - lastDow));
+
+        // Build day list
+        const days = [];
+        for (let d = new Date(gridStart); d <= gridEnd; d.setDate(d.getDate() + 1))
+            days.push(new Date(d));
+
+        // Label: "July 2026"
+        document.getElementById('calWeekLabel').textContent =
+            ref.toLocaleDateString('en-GB', { month:'long', year:'numeric' });
+
+        const grid = document.getElementById('calGrid');
+        grid.innerHTML = '';
+
+        if (!EX.perWeek && !EX.restDays.length && !EX.types.length) {
+            grid.innerHTML = `<div class="cal-setup-msg" style="grid-column:1/-1">
+                No exercise schedule set yet.<br>
+                <a href="/perfect/settings?section=exercise">Set up your schedule →</a>
+            </div>`;
+            return;
+        }
+
+        days.forEach(date => {
+            const inMonth  = date.getMonth() === mo;
+            const wi       = jsToWeekIdx(date.getDay());
+            const dayName  = WEEK[wi];
+            const shortLbl = SHORT[wi];
+            const isToday  = date.getTime() === today.getTime();
+            const isPast   = date < today;
+            const isRest   = EX.restDays.includes(dayName);
+            const isActive = active.includes(dayName);
+            const isOpt    = optional.includes(dayName);
+
+            const cls = ['cal-day',
+                isToday   ? 'today'    : '',
+                isRest    ? 'rest'     : '',
+                isOpt     ? 'optional' : '',
+                !inMonth || isPast ? 'faded' : ''
+            ].filter(Boolean).join(' ');
+
+            const card = document.createElement('div');
+            card.className = cls;
+
+            let html = `
+                <span class="cal-day-name">${shortLbl}</span>
+                <span class="cal-date-num">${date.getDate()}</span>
+                ${isToday ? '<span class="cal-today-dot"></span>' : ''}
+            `;
+            if (isRest) {
+                html += `<span class="cal-rest-lbl" style="margin-top:auto">Rest</span>`;
+            } else if (isActive && inMonth && !isPast) {
+                // null  → day never opened → show full schedule
+                // []    → day opened, all blocks deleted → show nothing
+                // [...] → day opened, blocks remain → show those names
+                const rawEntry = localStorage.getItem(dvKey(date));
+                let chipNames;
+                if (rawEntry === null) {
+                    chipNames = EX.types;
+                } else {
+                    const blocks = JSON.parse(rawEntry) || [];
+                    chipNames = [...new Set(blocks.map(b => b.name).filter(Boolean))];
+                }
+                chipNames.slice(0, 3).forEach(ex => { html += `<span class="cal-ex-chip">${ex}</span>`; });
+                if (chipNames.length > 3) html += `<span class="cal-ex-meta">+${chipNames.length - 3} more</span>`;
+            } else if (isOpt && inMonth && !isPast) {
+                html += `<span class="cal-opt-lbl" style="margin-top:auto">Optional</span>`;
+            }
+            card.innerHTML = html;
+            card.addEventListener('click', () => openDayView(date, dayName, isToday, isRest, isActive, isOpt));
+            grid.appendChild(card);
+        });
+    }
+
+    // Navigate one month at a time
+    window.calNav = function(dir) { monthOffset += dir; buildCalendar(); };
+
+    /* ── Day view (interactive timeline) ── */
+    const DV_START = 5;   // 5 AM
+    const DV_END   = 23;  // 11 PM
+    const HR_PX    = 64;  // pixels per hour
+
+    const WORKOUT_START = { early_morning:5, morning:7, afternoon:15, evening:18, flexible:8 };
+    const WORKOUT_DUR_H = { '30min':0.5, '45min':0.75, '1hr':1, '90min':1.5, '2hr':2 };
+    const MEALS = [[8,'Breakfast'],[13,'Lunch'],[20,'Dinner']];
+
+    function fmtHour(h) {
+        if (h === 0 || h === 24) return '12 AM';
+        if (h === 12) return '12 PM';
+        return h < 12 ? `${h} AM` : `${h-12} PM`;
+    }
+    function fmtTimeH(h) {
+        const hh = Math.floor(h), mm = Math.round((h % 1) * 60);
+        const s = hh < 12 ? 'AM' : 'PM';
+        const d = hh === 0 || hh === 24 ? 12 : hh > 12 ? hh - 12 : hh;
+        return `${d}:${mm.toString().padStart(2,'0')} ${s}`;
+    }
+    function hToY(h) { return (h - DV_START) * HR_PX; }
+    function yToH(y) { return DV_START + y / HR_PX; }
+    function snapH(h) { return Math.round(h * 4) / 4; }  // 15-min snap
+
+    const DV_TOTAL_PX = (DV_END - DV_START) * HR_PX;
+
+    let _dvDate     = null;
+    let _dvBlocks   = [];
+    let _dvDrag     = null;
+    let _dvNowTimer = null;
+
+    function dvKey(d)  { return 'tg_cal_blocks_' + _U + '_' + d.toISOString().slice(0,10); }
+    function dvLoad(d) { try { return JSON.parse(localStorage.getItem(dvKey(d))) || []; } catch { return []; } }
+    function dvSave()  { localStorage.setItem(dvKey(_dvDate), JSON.stringify(_dvBlocks)); }
+
+    window.openDayView = function(date, dayName, isToday, isRest, isActive, isOpt) {
+        _dvDate   = date;
+        _dvBlocks = dvLoad(date);
+
+        // Pre-populate only on the very first open (no localStorage key at all) AND
+        // only when there are exercises to show. If the key exists but is empty [],
+        // the user (or the AI) explicitly cleared it — respect that.
+        const _rawEntry = localStorage.getItem(dvKey(date));
+        if ((isActive || isOpt) && _rawEntry === null && EX.types.length > 0) {
+            const exTimes = getExTimes();
+            const defaultDurH = WORKOUT_DUR_H[EX.duration] || 1;
+            EX.types.forEach((ex, i) => {
+                const stored = exTimes[ex.toLowerCase().trim()];
+                const sh = stored ? stored.startH : ((WORKOUT_START[EX.timePref] || 8) + i);
+                const eh = stored ? stored.endH   : sh + defaultDurH;
+                _dvBlocks.push({ id: `sched${i}`, startH: sh, endH: eh, name: ex });
+            });
+            dvSave();
+        }
+
+        document.getElementById('dvTitle').textContent =
+            date.toLocaleDateString('en-GB', {weekday:'long', day:'numeric', month:'long', year:'numeric'});
+
+        const badge = document.getElementById('dvBadge');
+        if      (isRest)   { badge.textContent='Rest day';    badge.className='dv-badge rest'; }
+        else if (isActive) { badge.textContent='Exercise day';badge.className='dv-badge exercise'; }
+        else if (isOpt)    { badge.textContent='Optional';    badge.className='dv-badge optional'; }
+        else               { badge.textContent='Free day';    badge.className='dv-badge free'; }
+
+        renderDayTimeline(isRest, isToday);
+        document.getElementById('dvBackdrop').classList.add('open');
+
+        // Scroll to workout / now
+        const scroll = document.getElementById('dvScroll');
+        const targetH = isToday
+            ? (new Date().getHours() + new Date().getMinutes()/60)
+            : (_dvBlocks.length ? _dvBlocks[0].startH : 7);
+        setTimeout(() => { scroll.scrollTop = Math.max(0, hToY(targetH) - 80); }, 50);
+
+        clearInterval(_dvNowTimer);
+        if (isToday) _dvNowTimer = setInterval(updateNowLine, 30000);
+    };
+
+    window.closeDayView = function(e) {
+        if (e && e.target !== document.getElementById('dvBackdrop')) return;
+        document.getElementById('dvBackdrop').classList.remove('open');
+        clearInterval(_dvNowTimer); _dvNowTimer = null;
+        document.removeEventListener('mousemove', _dvMouseMove);
+        document.removeEventListener('mouseup',   _dvMouseUp);
+        buildCalendar();
+    };
+
+    function renderDayTimeline(isRest, isToday) {
+        const tl = document.getElementById('dvTimeline');
+        tl.innerHTML = '';
+        tl.style.cssText = `position:relative;height:${DV_TOTAL_PX}px;margin-bottom:16px;`;
+
+        if (isRest) {
+            const msg = document.createElement('div');
+            msg.className = 'dv-rest-msg';
+            msg.textContent = 'Rest day — no workout scheduled.\nRecovery is part of the plan.';
+            msg.style.whiteSpace = 'pre-line';
+            tl.appendChild(msg);
+        }
+
+        // Hour grid lines + labels
+        for (let h = DV_START; h <= DV_END; h++) {
+            const line = document.createElement('div');
+            line.className = 'dv-hr';
+            line.style.top = hToY(h) + 'px';
+            tl.appendChild(line);
+            if (h < DV_END) {
+                const lbl = document.createElement('div');
+                lbl.className = 'dv-hr-lbl';
+                lbl.style.top = (hToY(h) + 4) + 'px';
+                lbl.textContent = fmtHour(h);
+                tl.appendChild(lbl);
+            }
+        }
+
+        // Meal markers
+        MEALS.forEach(([mh, name]) => {
+            if (mh >= DV_START && mh <= DV_END) {
+                const pill = document.createElement('div');
+                pill.className = 'dv-meal-pill';
+                pill.style.top = hToY(mh) + 'px';
+                pill.textContent = name;
+                tl.appendChild(pill);
+            }
+        });
+
+        // Transparent drag area (behind blocks)
+        const ia = document.createElement('div');
+        ia.className = 'dv-interact';
+        ia.style.height = DV_TOTAL_PX + 'px';
+        ia.addEventListener('mousedown', _dvCreateStart);
+        tl.appendChild(ia);
+
+        // Render saved blocks
+        _dvBlocks.forEach(b => _dvRenderBlock(b, tl));
+
+        // Current-time red line
+        const nowLine = document.createElement('div');
+        nowLine.id = 'dvNowLine'; nowLine.className = 'dv-now'; nowLine.style.display='none';
+        tl.appendChild(nowLine);
+        if (isToday) updateNowLine();
+    }
+
+    function _dvRenderBlock(b, container) {
+        const tl = container || document.getElementById('dvTimeline');
+        document.getElementById('dvb_' + b.id)?.remove();
+
+        const el = document.createElement('div');
+        el.className = 'dv-block'; el.id = 'dvb_' + b.id;
+
+        function reposition() {
+            el.style.top    = hToY(b.startH) + 'px';
+            el.style.height = Math.max(20, hToY(b.endH) - hToY(b.startH) - 2) + 'px';
+        }
+        reposition();
+
+        const nameInp = document.createElement('input');
+        nameInp.type = 'text'; nameInp.className = 'dv-block-name';
+        nameInp.value = b.name || ''; nameInp.placeholder = 'Name this block…';
+        nameInp.addEventListener('input',     () => { b.name = nameInp.value; });
+        nameInp.addEventListener('blur',      () => { b.name = nameInp.value; dvSave(); });
+        nameInp.addEventListener('mousedown', e  => e.stopPropagation());
+
+        const timeLbl = document.createElement('span');
+        timeLbl.className = 'dv-block-time';
+        timeLbl.textContent = fmtTimeH(b.startH) + ' – ' + fmtTimeH(b.endH);
+
+        const del = document.createElement('button');
+        del.className = 'dv-block-del'; del.textContent = '×';
+        del.addEventListener('mousedown', e => e.stopPropagation());
+        del.addEventListener('click', () => {
+            _dvBlocks = _dvBlocks.filter(x => x.id !== b.id);
+            dvSave(); el.remove();
+            buildCalendar();
+        });
+
+        const rz = document.createElement('div');
+        rz.className = 'dv-block-resize';
+        rz.addEventListener('mousedown', e => {
+            e.stopPropagation();
+            _dvDrag = { type:'resize', b, el, timeLbl, reposition, startY:e.clientY, origEnd:b.endH };
+            document.addEventListener('mousemove', _dvMouseMove);
+            document.addEventListener('mouseup',   _dvMouseUp);
+        });
+
+        el.appendChild(nameInp); el.appendChild(timeLbl);
+        el.appendChild(del); el.appendChild(rz);
+        tl.appendChild(el);
+        return el;
+    }
+
+    function _dvGetY(e) {
+        return e.clientY - document.getElementById('dvTimeline').getBoundingClientRect().top;
+    }
+
+    function _dvCreateStart(e) {
+        if (e.target.closest('.dv-block')) return;
+        const startH = snapH(Math.max(DV_START, Math.min(DV_END - 0.25, yToH(_dvGetY(e)))));
+        const draft  = document.createElement('div');
+        draft.className = 'dv-draft'; draft.id = 'dvDraft';
+        draft.style.top = hToY(startH) + 'px'; draft.style.height = '2px';
+        document.getElementById('dvTimeline').appendChild(draft);
+        _dvDrag = { type:'create', startH, endH: startH + 1, draft };
+        document.addEventListener('mousemove', _dvMouseMove);
+        document.addEventListener('mouseup',   _dvMouseUp);
+    }
+
+    function _dvMouseMove(e) {
+        if (!_dvDrag) return;
+        if (_dvDrag.type === 'create') {
+            const endH = snapH(Math.max(_dvDrag.startH + 0.25, Math.min(DV_END, yToH(_dvGetY(e)))));
+            _dvDrag.endH = endH;
+            _dvDrag.draft.style.top    = hToY(_dvDrag.startH) + 'px';
+            _dvDrag.draft.style.height = Math.max(4, hToY(endH) - hToY(_dvDrag.startH)) + 'px';
+        } else if (_dvDrag.type === 'resize') {
+            const newEnd = snapH(Math.max(_dvDrag.b.startH + 0.25,
+                                          Math.min(DV_END, _dvDrag.origEnd + (e.clientY - _dvDrag.startY) / HR_PX)));
+            _dvDrag.b.endH = newEnd;
+            _dvDrag.reposition();
+            _dvDrag.timeLbl.textContent = fmtTimeH(_dvDrag.b.startH) + ' – ' + fmtTimeH(newEnd);
+        }
+    }
+
+    function _dvMouseUp() {
+        if (!_dvDrag) return;
+        if (_dvDrag.type === 'create') {
+            _dvDrag.draft.remove();
+            if (_dvDrag.endH - _dvDrag.startH >= 0.2) {
+                const b = { id: Date.now().toString(), startH:_dvDrag.startH, endH:_dvDrag.endH, name:'' };
+                _dvBlocks.push(b); dvSave();
+                const el = _dvRenderBlock(b);
+                setTimeout(() => el.querySelector('input')?.focus(), 30);
+            }
+        } else if (_dvDrag.type === 'resize') {
+            dvSave();
+        }
+        _dvDrag = null;
+        document.removeEventListener('mousemove', _dvMouseMove);
+        document.removeEventListener('mouseup',   _dvMouseUp);
+    }
+
+    function updateNowLine() {
+        const line = document.getElementById('dvNowLine');
+        if (!line) return;
+        const now = new Date(), h = now.getHours() + now.getMinutes()/60;
+        if (h < DV_START || h >= DV_END) { line.style.display='none'; return; }
+        line.style.display=''; line.style.top = hToY(h) + 'px';
+    }
+
+    /* ── AI schedule editor panel ── */
+    let _ceHistory = [];
+    let _ceMicRecog = null, _ceMicFinal = '', _ceMicInterim = '', _ceMicActive = false;
+
+    let _toastTimer = null;
+    function showCalToast(msg, isErr) {
+        const t = document.getElementById('calToast');
+        t.textContent = msg;
+        t.className = 'cal-toast' + (isErr ? ' err' : '') + ' show';
+        clearTimeout(_toastTimer);
+        _toastTimer = setTimeout(() => t.classList.remove('show'), 4000);
+    }
+
+    window.calEditToggle = function() {
+        const body = document.getElementById('calEditBody');
+        const btn  = document.getElementById('calEditToggleBtn');
+        const open = body.style.display !== 'none';
+        body.style.display = open ? 'none' : '';
+        btn.textContent = open ? 'show ▾' : 'hide ▴';
+    };
+
+    window.calEditToggleMic = function() {
+        if (_ceMicActive) { calEditStopMic(); return; }
+        const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+        if (!SR) { alert('Microphone not supported in this browser.'); return; }
+        _ceMicRecog = new SR();
+        _ceMicFinal = ''; _ceMicInterim = '';
+        _ceMicRecog.continuous = true; _ceMicRecog.interimResults = true; _ceMicRecog.lang = 'en-US';
+        _ceMicRecog.onresult = e => {
+            let interim = '';
+            for (let i = e.resultIndex; i < e.results.length; i++) {
+                if (e.results[i].isFinal) _ceMicFinal += e.results[i][0].transcript + ' ';
+                else interim = e.results[i][0].transcript;
+            }
+            _ceMicInterim = interim;
+            document.getElementById('calEditInp').value = (_ceMicFinal + interim).trim();
+        };
+        _ceMicRecog.onerror = () => calEditStopMic();
+        _ceMicRecog.onend   = () => { if (_ceMicActive) _ceMicRecog.start(); };
+        _ceMicRecog.start();
+        _ceMicActive = true;
+        document.getElementById('calEditMicBtn').classList.add('recording');
+    };
+
+    function calEditStopMic() {
+        if (_ceMicRecog) { _ceMicRecog.onend = null; try { _ceMicRecog.stop(); } catch {} }
+        _ceMicActive = false;
+        document.getElementById('calEditMicBtn').classList.remove('recording');
+    }
+
+    function calEditBubble(role, text) {
+        const msgs = document.getElementById('calEditMsgs');
+        const div  = document.createElement('div');
+        div.className = 'cal-edit-msg ' + role;
+        div.innerHTML = `<div class="cal-edit-bubble">${text.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/\n/g,'<br>')}</div>`;
+        msgs.appendChild(div);
+        msgs.scrollTop = msgs.scrollHeight;
+    }
+
+    window.calEditSend = async function() {
+        if (_ceMicActive) calEditStopMic();
+        const inp = document.getElementById('calEditInp');
+        // inp.value already contains the full transcript (mic fills it), so just use it
+        const instruction = inp.value.trim();
+        if (!instruction) return;
+
+        inp.value = ''; _ceMicFinal = ''; _ceMicInterim = '';
+        calEditBubble('user', instruction);
+
+        const btn = document.getElementById('calEditSendBtn');
+        btn.disabled = true; btn.textContent = 'Updating…';
+
+        try {
+            const r = await fetch('/perfect/api/calendar-edit', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ instruction })
+            });
+            const data = await r.json();
+            if (data.ok && data.schedule) {
+                const s = data.schedule;
+                // always sync exercise_types — empty string means user cleared all exercises
+                EX.types = (s.exercise_types || '').split(',').map(t => t.trim()).filter(Boolean);
+                // rest_day: always sync — server preserves current value when AI didn't mention it
+                EX.restDays = (s.rest_day || '').split(',').map(t => t.trim()).filter(Boolean);
+                const pw = parseInt(s.exercise_days_per_week); if (pw >= 1) EX.perWeek = pw;
+                if (s.session_duration)  EX.duration = s.session_duration;
+                if (s.workout_time_pref) EX.timePref = s.workout_time_pref;
+                if (s.fitness_level)     EX.level    = s.fitness_level;
+                const nr = WEEK.filter(d => !EX.restDays.includes(d));
+                active.length = 0; optional.length = 0;
+                nr.slice(0, EX.perWeek).forEach(d => active.push(d));
+                nr.slice(EX.perWeek).forEach(d => optional.push(d));
+
+                // Store per-exercise times returned by AI (each exercise may have a different slot)
+                if (s.exercise_schedule && typeof s.exercise_schedule === 'object') {
+                    Object.entries(s.exercise_schedule).forEach(([exName, times]) => {
+                        if (times && times.startH != null && times.endH != null) {
+                            setExTime(exName, times.startH, times.endH);
+                        }
+                    });
+                }
+
+                // Update localStorage blocks for all future active days BEFORE rebuilding the grid
+                (function refreshDayBlocks() {
+                    const exTimes     = getExTimes();
+                    const defaultDurH = WORKOUT_DUR_H[EX.duration] || 1;
+                    const types       = EX.types; // no fallback — empty means clear all sched blocks
+                    const now = new Date(); now.setHours(0,0,0,0);
+                    for (let offset = 0; offset <= 90; offset++) {
+                        const d = new Date(now); d.setDate(d.getDate() + offset);
+                        const wi = (d.getDay() + 6) % 7;
+                        if (!active.includes(WEEK[wi])) continue;
+                        const k = 'tg_cal_blocks_' + d.toISOString().slice(0, 10);
+                        let blocks; try { blocks = JSON.parse(localStorage.getItem(k)) || []; } catch { blocks = []; }
+                        // Remove old sched* blocks; keep anything the user created manually
+                        blocks = blocks.filter(b => !b.id.startsWith('sched'));
+                        // Add one block per exercise (nothing added when types is empty)
+                        types.forEach((ex, i) => {
+                            const stored = exTimes[ex.toLowerCase().trim()];
+                            const sh = stored ? stored.startH : ((WORKOUT_START[EX.timePref] || 8) + i);
+                            const eh = stored ? stored.endH   : sh + defaultDurH;
+                            blocks.unshift({ id: `sched${i}`, startH: sh, endH: eh, name: ex });
+                        });
+                        localStorage.setItem(k, JSON.stringify(blocks));
+                    }
+                })();
+
+                // Rebuild grid after localStorage is up to date
+                buildCalendar();
+
+                // Push exercise times to server so nutrition AI can reference them
+                const exTimesNow = getExTimes();
+                if (Object.keys(exTimesNow).length) {
+                    fetch('/perfect/api/save-exercise-times', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ times: exTimesNow }),
+                    }).catch(() => {});
+                }
+
+                const reply = data.explanation || 'Schedule updated.';
+                calEditBubble('ai', reply);
+                showCalToast(reply);
+            } else {
+                const err = data.error || 'Something went wrong.';
+                calEditBubble('ai', err);
+                showCalToast(err, true);
+            }
+        } catch(e) {
+            const msg = 'Network error — try again.';
+            calEditBubble('ai', msg);
+            showCalToast(msg, true);
+        }
+        btn.disabled = false; btn.textContent = 'Update';
+    };
+
+    buildCalendar();
+})();
+</script>
+</body>
+</html>

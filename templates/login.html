@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Too Good</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='styleslogin.css') }}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Courier+Prime:ital,wght@0,400;0,700;1,400&family=Special+Elite&display=swap" rel="stylesheet">
+</head>
+
+<body>
+
+<nav class="navbar navbar-expand-md fixed-top custom-navbar">
+    <div class="container-fluid">
+        <a class="navbar-brand" href="{{ url_for('home') }}">
+            <img src="{{ url_for('static', filename='images/logo.svg') }}" alt="Too Good Logo" width="40" height="40">
+        </a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav me-auto mb-2 mb-md-0">
+                <li class="nav-item"><a class="nav-link active" href="{{ url_for('home') }}">Home</a></li>
+                <li class="nav-item"><a class="nav-link active" href="{{ url_for('features') }}">Features</a></li>
+                <li class="nav-item"><a class="nav-link active" href="{{ url_for('about') }}">About</a></li>
+            </ul>
+            <ul class="navbar-nav">
+                <li class="nav-item"><a class="nav-link active active-page" href="{{ url_for('login') }}">Login</a></li>
+                <li class="nav-item"><a class="nav-link active" href="{{ url_for('signup') }}">Sign Up</a></li>
+            </ul>
+        </div>
+    </div>
+</nav>
+
+<main class="auth-page">
+    <div class="auth-card">
+        <p class="auth-tag">ENTRY LOG // ACCESS</p>
+        <h1 class="auth-title">Welcome back</h1>
+        <p class="auth-subtitle">The body remembers. Sign back in to continue being better.</p>
+
+        <form class="auth-form" id="loginForm" action="{{ url_for('login') }}" method="post" novalidate>
+
+            <div class="field-group" id="fg-username">
+                <label for="username">Subject ID</label>
+                <input type="text"
+                       id="username"
+                       name="username"
+                       placeholder="USERNAME"
+                       value="{{ prev_username or '' }}"
+                       autocomplete="username"
+                       autofocus>
+            </div>
+
+            <div class="field-group" id="fg-password">
+                <label for="password">Passphrase</label>
+                <div class="pw-wrap">
+                    <input type="password" id="password" name="password" placeholder="••••••••" autocomplete="current-password">
+                    <button type="button" class="pw-eye" onclick="togglePw('password', this)" tabindex="-1" aria-label="Show password">
+                        <svg class="eye-open" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                        <svg class="eye-shut" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="display:none"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+                    </button>
+                </div>
+            </div>
+
+            <button type="submit" class="auth-submit">Log in</button>
+        </form>
+
+        <p class="auth-switch">No record on file? <a href="{{ url_for('signup') }}">Create one</a></p>
+    </div>
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+/* ── Eye toggle ── */
+function togglePw(id, btn) {
+    const input = document.getElementById(id);
+    const hidden = input.type === 'password';
+    input.type = hidden ? 'text' : 'password';
+    btn.querySelector('.eye-open').style.display = hidden ? 'none' : '';
+    btn.querySelector('.eye-shut').style.display = hidden ? '' : 'none';
+}
+
+/* ── Inline validation ── */
+function showError(groupId, message) {
+    const group = document.getElementById(groupId);
+    const old = group.querySelector('.field-error');
+    if (old) old.remove();
+    group.classList.add('has-error');
+    const span = document.createElement('span');
+    span.className = 'field-error';
+    span.textContent = message;
+    group.appendChild(span);
+    group.classList.remove('shaking');
+    void group.offsetWidth;
+    group.classList.add('shaking');
+    group.addEventListener('animationend', () => group.classList.remove('shaking'), { once: true });
+}
+
+function clearError(groupId) {
+    const group = document.getElementById(groupId);
+    group.classList.remove('has-error');
+    const old = group.querySelector('.field-error');
+    if (old) old.remove();
+}
+
+document.getElementById('loginForm').addEventListener('submit', function (e) {
+    clearError('fg-username');
+    clearError('fg-password');
+
+    const username = document.getElementById('username').value.trim();
+    const password = document.getElementById('password').value;
+    let firstError = null;
+
+    if (!username) {
+        showError('fg-username', 'Please enter your username.');
+        firstError = firstError || 'fg-username';
+    }
+
+    if (!password) {
+        showError('fg-password', 'Please enter your password.');
+        firstError = firstError || 'fg-password';
+    }
+
+    if (firstError) {
+        e.preventDefault();
+        document.getElementById(firstError).querySelector('input').focus();
+    }
+});
+
+// Clear error as user types
+['username', 'password'].forEach(function (id) {
+    const map = { username: 'fg-username', password: 'fg-password' };
+    document.getElementById(id).addEventListener('input', function () {
+        clearError(map[id]);
+    });
+});
+
+/* ── Show server-side errors inline ── */
+{% if server_error_field and server_error_msg %}
+document.addEventListener('DOMContentLoaded', function () {
+    showError('fg-{{ server_error_field }}', '{{ server_error_msg }}');
+    {% if server_error_field == 'password' %}
+    document.getElementById('password').focus();
+    {% endif %}
+});
+{% endif %}
+</script>
+</body>
+</html>

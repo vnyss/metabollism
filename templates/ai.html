@@ -1,0 +1,580 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<title>Ask AI — Too Good</title>
+
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
+<link rel="stylesheet" href="{{ url_for('static', filename='ai.css') }}">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Courier+Prime:ital,wght@0,400;0,700;1,400&family=Special+Elite&display=swap" rel="stylesheet">
+
+</head>
+
+<body>
+
+<!-- PLAN INTAKE MODAL -->
+<div class="plan-overlay" id="planOverlay">
+  <div class="plan-modal">
+    <p class="plan-modal-eyebrow">Before I build your plan</p>
+    <h2 class="plan-modal-title">Two quick questions</h2>
+
+    <div class="plan-q" id="planQ1">
+      <p class="plan-q-label">What's your primary goal?</p>
+      <div class="plan-opts">
+        <button class="plan-opt" data-q="1" data-val="Fat loss / cut weight">Fat loss</button>
+        <button class="plan-opt" data-q="1" data-val="Muscle gain / bulk">Muscle gain</button>
+        <button class="plan-opt" data-q="1" data-val="Maintain current weight">Maintain weight</button>
+        <button class="plan-opt" data-q="1" data-val="General health & energy">General health</button>
+      </div>
+    </div>
+
+    <div class="plan-q" id="planQ2">
+      <p class="plan-q-label">Any dietary style or restrictions?</p>
+      <div class="plan-opts">
+        <button class="plan-opt" data-q="2" data-val="No specific restrictions (omnivore)">No restrictions</button>
+        <button class="plan-opt" data-q="2" data-val="Vegetarian">Vegetarian</button>
+        <button class="plan-opt" data-q="2" data-val="Vegan">Vegan</button>
+        <button class="plan-opt" data-q="2" data-val="Gluten-free">Gluten-free</button>
+      </div>
+    </div>
+
+    <div class="plan-submit-row">
+      <button class="plan-submit" id="planSubmit" disabled aria-label="Build my plan">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M12 19V5M12 5L5 12M12 5L19 12" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- SIDEBAR -->
+<div class="sidebar-overlay" id="sidebarOverlay"></div>
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-top">
+    <span class="sidebar-title">Chat History</span>
+    <button class="sidebar-close" id="sidebarClose" aria-label="Close">&#x2715;</button>
+  </div>
+  <button class="new-chat-btn" id="newChatBtn">+ New Chat</button>
+  <div class="chat-list" id="chatList"></div>
+</aside>
+
+<nav class="navbar navbar-expand-md fixed-top custom-navbar">
+<div class="container-fluid">
+
+<button class="sidebar-toggle" id="sidebarToggle" aria-label="Chat history">
+  <svg width="18" height="14" viewBox="0 0 18 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M1 1h16M1 7h16M1 13h16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+  </svg>
+</button>
+
+<a class="navbar-brand" href="{{ url_for('home') }}">
+  <img src="{{ url_for('static', filename='images/logo.svg') }}" width="40" height="40">
+</a>
+
+<button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse">
+  <span class="navbar-toggler-icon"></span>
+</button>
+
+<div class="collapse navbar-collapse" id="navbarCollapse">
+<ul class="navbar-nav me-auto">
+  <li class="nav-item"><a class="nav-link" href="{{ url_for('home') }}">Home</a></li>
+  <li class="nav-item"><a class="nav-link" href="{{ url_for('features') }}">Features</a></li>
+  <li class="nav-item"><a class="nav-link" href="{{ url_for('about') }}">About</a></li>
+  <li class="nav-item"><a class="nav-link active" href="{{ url_for('ai') }}">Ask AI</a></li>
+</ul>
+<ul class="navbar-nav">
+  <li class="nav-item"><a class="nav-link" href="{{ url_for('login') }}">Login</a></li>
+  <li class="nav-item"><a class="nav-link" href="{{ url_for('signup') }}">Sign Up</a></li>
+</ul>
+</div>
+
+</div>
+</nav>
+
+<div class="chat-page">
+
+  <div class="chat-scroll" id="chatScroll">
+    <div class="chat-column">
+
+      <div class="chat-empty-state" id="emptyState">
+        <h1>What do you want to know about nutrition?</h1>
+        <p>Ask about food science, macronutrients, eating patterns, or how different diets actually work. General information only — not a substitute for a doctor or registered dietitian.</p>
+        <div class="prompt-chip-row">
+          <div class="prompt-chip" data-q="What does the evidence actually say about intermittent fasting?">Intermittent fasting evidence?</div>
+          <div class="prompt-chip" data-q="How much protein does an average active adult need per day?">Protein needs for active adults?</div>
+          <div class="prompt-chip" data-q="What's the difference between the Mediterranean diet and the DASH diet?">Mediterranean vs DASH?</div>
+          <div class="prompt-chip" data-q="Are seed oils actually unhealthy or is that overblown?">Are seed oils unhealthy?</div>
+        </div>
+      </div>
+
+      <div id="messages"></div>
+
+    </div>
+  </div>
+
+  <div class="composer-wrap">
+    <div class="composer-inner">
+      <div class="composer-box">
+        <button class="composer-mic" id="micBtn" aria-label="Voice input">
+          <span class="mic-icon">
+            <svg width="14" height="18" viewBox="0 0 14 22" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <rect x="3.5" y="1" width="7" height="13" rx="3.5" fill="currentColor"/>
+              <path d="M1 11a6 6 0 0 0 12 0" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+              <line x1="7" y1="17" x2="7" y2="21" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+              <line x1="4.5" y1="21" x2="9.5" y2="21" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+            </svg>
+          </span>
+          <span class="mic-wave" aria-hidden="true">
+            <span class="mic-bar"></span>
+            <span class="mic-bar"></span>
+            <span class="mic-bar"></span>
+            <span class="mic-bar"></span>
+            <span class="mic-bar"></span>
+          </span>
+        </button>
+        <textarea id="chatInput" rows="1" placeholder="Ask about diets, nutrients, or food science…"></textarea>
+        <button class="composer-send" id="sendBtn" aria-label="Send">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M12 19V5M12 5L5 12M12 5L19 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
+      </div>
+      <p class="composer-footnote">Not medical advice. General nutrition information only — talk to a doctor or registered dietitian for anything specific to your health.</p>
+    </div>
+  </div>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+(function () {
+  const CHAT_ENDPOINT = '/api/nutriai/chat';
+  const _U            = {{ username | tojson }};
+  const STORAGE_KEY   = _U ? ('nutriai_sessions_' + _U) : 'nutriai_sessions';
+  const PLAN_RE       = /(meal|diet|eating|nutrition)\s*plan|(build|make|create|give|get|want|need|suggest)\s+(me\s+)?(a\s+|an\s+)?(diet|meal|nutrition|eating)/i;
+
+  const FUNNY_COMMENTS = [
+    "Consulting the broccoli elders...",
+    "Asking 47 nutritionists who all disagree...",
+    "Checking if pizza counts as a vegetable...",
+    "Negotiating with your carbohydrates...",
+    "Running the calorie math... running it again...",
+    "Bribing the too good gnomes for insider tips...",
+    "Translating your body's cryptic demands...",
+    "Interrogating a rogue protein molecule...",
+    "Telling spinach it has a bright future...",
+    "Calculating how many salads equal happiness...",
+    "Convincing your too good to cooperate...",
+    "Pretending I know what adaptogens are...",
+    "Debating whether oat milk counts as a personality...",
+    "Summoning the ghost of ancient dietary wisdom...",
+  ];
+
+  const AVATAR_LETTER = `<span class="msg-avatar-letter">M</span>`;
+
+  const messagesEl     = document.getElementById('messages');
+  const emptyState     = document.getElementById('emptyState');
+  const chatScroll     = document.getElementById('chatScroll');
+  const inputEl        = document.getElementById('chatInput');
+  const sendBtn        = document.getElementById('sendBtn');
+  const micBtn         = document.getElementById('micBtn');
+  const chips          = document.querySelectorAll('.prompt-chip');
+
+  const planOverlay    = document.getElementById('planOverlay');
+  const planSubmit     = document.getElementById('planSubmit');
+  const planOpts       = document.querySelectorAll('.plan-opt');
+
+  const sidebar        = document.getElementById('sidebar');
+  const sidebarOverlay = document.getElementById('sidebarOverlay');
+  const sidebarToggle  = document.getElementById('sidebarToggle');
+  const sidebarClose   = document.getElementById('sidebarClose');
+  const newChatBtn     = document.getElementById('newChatBtn');
+  const chatList       = document.getElementById('chatList');
+
+  let history          = [];
+  let currentSessionId = Date.now().toString();
+  let pendingRequest   = null;
+  let planAnswers      = { 1: null, 2: null };
+  let listening        = false;
+  let committed        = '';
+  let speechChanging   = false;
+  let typingTimerId    = null;
+  let typingCommentIdx = 0;
+
+  // ── Utilities ────────────────────────────────────────────────────
+  function escapeHtml(str) {
+    const d = document.createElement('div');
+    d.textContent = str;
+    return d.innerHTML;
+  }
+
+  function renderRichText(text) {
+    const withBold = escapeHtml(text).replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+    const lines = withBold.split(/\n/);
+    let html = '', inList = false;
+    lines.forEach(line => {
+      const t = line.trim();
+      if (/^[-*]\s+/.test(t)) {
+        if (!inList) { html += '<ul>'; inList = true; }
+        html += `<li>${t.replace(/^[-*]\s+/, '')}</li>`;
+      } else {
+        if (inList) { html += '</ul>'; inList = false; }
+        if (t.length) html += `<p>${t}</p>`;
+      }
+    });
+    if (inList) html += '</ul>';
+    return html;
+  }
+
+  function scrollToBottom() { chatScroll.scrollTop = chatScroll.scrollHeight; }
+
+  // ── Plan intake modal ─────────────────────────────────────────────
+  function openPlanModal(originalText) {
+    pendingRequest = originalText;
+    planAnswers = { 1: null, 2: null };
+    planOpts.forEach(b => b.classList.remove('selected'));
+    planSubmit.disabled = true;
+    planOverlay.classList.add('visible');
+  }
+
+  function closePlanModal() {
+    planOverlay.classList.remove('visible');
+  }
+
+  planOpts.forEach(btn => {
+    btn.addEventListener('click', () => {
+      const q = btn.dataset.q;
+      document.querySelectorAll(`.plan-opt[data-q="${q}"]`).forEach(b => b.classList.remove('selected'));
+      btn.classList.add('selected');
+      planAnswers[q] = btn.dataset.val;
+      planSubmit.disabled = !(planAnswers[1] && planAnswers[2]);
+    });
+  });
+
+  planSubmit.addEventListener('click', () => {
+    closePlanModal();
+    const composed = `${pendingRequest}\n\nGoal: ${planAnswers[1]}. Dietary style: ${planAnswers[2]}.`;
+    pendingRequest = null;
+    dispatchMessage(composed);
+  });
+
+  // Close on backdrop click
+  planOverlay.addEventListener('click', e => {
+    if (e.target === planOverlay) closePlanModal();
+  });
+
+  // ── Messages ─────────────────────────────────────────────────────
+  function addMessage(role, text) {
+    emptyState.style.display = 'none';
+    const row = document.createElement('div');
+    row.className = `msg-row ${role}`;
+    if (role === 'assistant') {
+      const av = document.createElement('div');
+      av.className = 'msg-avatar';
+      av.innerHTML = AVATAR_LETTER;
+      row.appendChild(av);
+    }
+    const bubble = document.createElement('div');
+    bubble.className = 'msg-bubble';
+    bubble.innerHTML = renderRichText(text);
+    row.appendChild(bubble);
+    messagesEl.appendChild(row);
+    scrollToBottom();
+    return bubble;
+  }
+
+  function addTypingIndicator() {
+    const row = document.createElement('div');
+    row.className = 'msg-row assistant';
+    row.id = 'typingRow';
+
+    const av = document.createElement('div');
+    av.className = 'msg-avatar';
+    av.innerHTML = AVATAR_LETTER;
+    row.appendChild(av);
+
+    const bubble = document.createElement('div');
+    bubble.className = 'msg-bubble';
+    const comment = document.createElement('span');
+    comment.className = 'thinking-comment';
+    comment.id = 'thinkingComment';
+    typingCommentIdx = Math.floor(Math.random() * FUNNY_COMMENTS.length);
+    comment.textContent = FUNNY_COMMENTS[typingCommentIdx];
+    bubble.appendChild(comment);
+    row.appendChild(bubble);
+    messagesEl.appendChild(row);
+    scrollToBottom();
+
+    typingTimerId = setInterval(() => {
+      const el = document.getElementById('thinkingComment');
+      if (!el) return;
+      el.style.opacity = '0';
+      setTimeout(() => {
+        typingCommentIdx = (typingCommentIdx + 1) % FUNNY_COMMENTS.length;
+        el.textContent = FUNNY_COMMENTS[typingCommentIdx];
+        el.style.opacity = '1';
+      }, 380);
+    }, 2600);
+  }
+
+  function removeTypingIndicator() {
+    if (typingTimerId) { clearInterval(typingTimerId); typingTimerId = null; }
+    const el = document.getElementById('typingRow');
+    if (el) el.remove();
+  }
+
+  async function typewriterMessage(text) {
+    emptyState.style.display = 'none';
+    const row = document.createElement('div');
+    row.className = 'msg-row assistant';
+    const av = document.createElement('div');
+    av.className = 'msg-avatar';
+    av.innerHTML = AVATAR_LETTER;
+    row.appendChild(av);
+    const bubble = document.createElement('div');
+    bubble.className = 'msg-bubble';
+    row.appendChild(bubble);
+    messagesEl.appendChild(row);
+
+    const lines = text.split('\n');
+    const done = [];
+
+    function render(partial) {
+      let html = done.length ? renderRichText(done.join('\n')) : '';
+      if (partial !== undefined) {
+        html += `<p class="typing-line">${escapeHtml(partial)}<span class="typing-cursor">_</span></p>`;
+      }
+      bubble.innerHTML = html;
+      scrollToBottom();
+    }
+
+    for (const line of lines) {
+      if (line.trim() === '') {
+        done.push(line);
+        render();
+        await new Promise(r => setTimeout(r, 60));
+        continue;
+      }
+      for (let i = 0; i <= line.length; i++) {
+        render(line.slice(0, i));
+        await new Promise(r => setTimeout(r, 7));
+      }
+      done.push(line);
+      render();
+      await new Promise(r => setTimeout(r, 35));
+    }
+    bubble.innerHTML = renderRichText(text);
+    scrollToBottom();
+    return bubble;
+  }
+
+  // ── Trial limit (pre-login) ──
+  const TRIAL_KEY = 'tg_trial_count';
+  const TRIAL_MAX = 5;
+  function getTrialCount() { return parseInt(localStorage.getItem(TRIAL_KEY) || '0', 10); }
+  function bumpTrial()     { localStorage.setItem(TRIAL_KEY, getTrialCount() + 1); }
+
+  // ── Core send (no interception — called after modal or for non-plan messages) ──
+  async function dispatchMessage(text) {
+    if (getTrialCount() >= TRIAL_MAX) {
+      addMessage('user', text);
+      inputEl.value = '';
+      inputEl.style.height = 'auto';
+      const bubble = addMessage('assistant', '');
+      bubble.innerHTML = `<span style="color:var(--accent,#C9A84C)">You've used all 5 free messages.</span><br>
+        <a href="/signup" style="color:var(--accent,#C9A84C);text-decoration:underline">Create a free account</a> to keep chatting with no limits — and unlock personalised diet plans, progress tracking, and more.`;
+      return;
+    }
+    addMessage('user', text);
+    history.push({ role: 'user', content: text });
+    inputEl.value = '';
+    inputEl.style.height = 'auto';
+    sendBtn.disabled = true;
+    addTypingIndicator();
+
+    try {
+      const res  = await fetch(CHAT_ENDPOINT, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ messages: history }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Request failed: ' + res.status);
+      removeTypingIndicator();
+      const reply = data.reply || "Sorry, I couldn't generate a response just now. Please try again.";
+      await typewriterMessage(reply);
+      history.push({ role: 'assistant', content: reply });
+      bumpTrial();
+      saveCurrentSession();
+    } catch (err) {
+      removeTypingIndicator();
+      await typewriterMessage(err.message || "I'm having trouble connecting right now. Please try again.");
+      console.error('Chat error:', err);
+    } finally {
+      sendBtn.disabled = false;
+    }
+  }
+
+  // ── Public send — intercepts diet plan requests ────────────────
+  function sendMessage(text) {
+    const trimmed = text.trim();
+    if (!trimmed) return;
+    if (PLAN_RE.test(trimmed)) {
+      openPlanModal(trimmed);
+    } else {
+      dispatchMessage(trimmed);
+    }
+  }
+
+  // ── Microphone ────────────────────────────────────────────────────
+  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SpeechRecognition) {
+    micBtn.style.display = 'none';
+  } else {
+    const recognition = new SpeechRecognition();
+    recognition.lang = 'en-US';
+    recognition.continuous = true;
+    recognition.interimResults = true;
+
+    recognition.onresult = e => {
+      let interim = '';
+      for (let i = e.resultIndex; i < e.results.length; i++) {
+        const t = e.results[i][0].transcript;
+        if (e.results[i].isFinal) committed += t + ' ';
+        else interim += t;
+      }
+      speechChanging = true;
+      inputEl.value = committed + interim;
+      inputEl.dispatchEvent(new Event('input'));
+      speechChanging = false;
+    };
+
+    recognition.onend = () => {
+      listening = false;
+      micBtn.classList.remove('listening');
+    };
+
+    recognition.onerror = () => {
+      listening = false;
+      micBtn.classList.remove('listening');
+    };
+
+    micBtn.addEventListener('click', () => {
+      if (listening) {
+        recognition.stop();
+      } else {
+        committed = inputEl.value;
+        recognition.start();
+        listening = true;
+        micBtn.classList.add('listening');
+      }
+    });
+  }
+
+  // ── Sidebar / folders ─────────────────────────────────────────────
+  function loadSessions() {
+    try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || []; } catch { return []; }
+  }
+  function saveSessions(s) { localStorage.setItem(STORAGE_KEY, JSON.stringify(s)); }
+
+  function saveCurrentSession() {
+    if (!history.length) return;
+    const sessions = loadSessions();
+    const title = history[0].content.split('\n')[0].slice(0, 44);
+    const idx = sessions.findIndex(s => s.id === currentSessionId);
+    const entry = { id: currentSessionId, title, history: [...history], updatedAt: Date.now() };
+    if (idx >= 0) sessions[idx] = entry; else sessions.unshift(entry);
+    saveSessions(sessions);
+    renderSidebar();
+  }
+
+  function startNewChat() {
+    saveCurrentSession();
+    currentSessionId = Date.now().toString();
+    history = [];
+    messagesEl.innerHTML = '';
+    emptyState.style.display = '';
+    closeSidebar();
+  }
+
+  function loadSession(id) {
+    saveCurrentSession();
+    const session = loadSessions().find(s => s.id === id);
+    if (!session) return;
+    currentSessionId = id;
+    history = [...session.history];
+    messagesEl.innerHTML = '';
+    emptyState.style.display = 'none';
+    history.forEach(msg => addMessage(msg.role, msg.content));
+    closeSidebar();
+  }
+
+  function deleteSession(id) {
+    saveSessions(loadSessions().filter(s => s.id !== id));
+    if (id === currentSessionId) startNewChat(); else renderSidebar();
+  }
+
+  function renderSidebar() {
+    const sessions = loadSessions();
+    if (!sessions.length) {
+      chatList.innerHTML = '<p class="sidebar-empty">No saved chats yet.</p>';
+      return;
+    }
+    chatList.innerHTML = sessions.map(s =>
+      `<div class="chat-session${s.id === currentSessionId ? ' active' : ''}" data-id="${s.id}">
+        <span class="chat-session-title">${escapeHtml(s.title)}</span>
+        <button class="chat-session-del" data-del="${s.id}" title="Delete">&#x2715;</button>
+      </div>`
+    ).join('');
+  }
+
+  chatList.addEventListener('click', e => {
+    const del  = e.target.closest('[data-del]');
+    if (del)  { deleteSession(del.dataset.del); return; }
+    const sess = e.target.closest('[data-id]');
+    if (sess) loadSession(sess.dataset.id);
+  });
+
+  function openSidebar()  { sidebar.classList.add('open'); sidebarOverlay.classList.add('visible'); }
+  function closeSidebar() { sidebar.classList.remove('open'); sidebarOverlay.classList.remove('visible'); }
+
+  sidebarToggle.addEventListener('click', openSidebar);
+  sidebarClose.addEventListener('click', closeSidebar);
+  sidebarOverlay.addEventListener('click', closeSidebar);
+  newChatBtn.addEventListener('click', startNewChat);
+
+  // ── Input handlers ────────────────────────────────────────────────
+  sendBtn.addEventListener('click', () => sendMessage(inputEl.value));
+  inputEl.addEventListener('keydown', e => {
+    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(inputEl.value); }
+  });
+  inputEl.addEventListener('input', () => {
+    inputEl.style.height = 'auto';
+    inputEl.style.height = Math.min(inputEl.scrollHeight, 160) + 'px';
+    if (listening && !speechChanging) committed = inputEl.value;
+  });
+  chips.forEach(chip => chip.addEventListener('click', () => sendMessage(chip.dataset.q)));
+
+  renderSidebar();
+
+  // Pre-fill from dashboard suggestion cards
+  const prefill = sessionStorage.getItem('aiPrefill');
+  if (prefill) {
+    sessionStorage.removeItem('aiPrefill');
+    inputEl.value = prefill;
+    inputEl.dispatchEvent(new Event('input'));
+    setTimeout(() => sendMessage(prefill), 320);
+  }
+})();
+</script>
+
+</body>
+
+</html>

@@ -1,0 +1,326 @@
+/* ============================================================
+   METABOLISM — Features (Black & Gold / Old Money)
+   ============================================================ */
+
+:root {
+    --bg:       #080808;
+    --surface:  #0F0F0F;
+    --elevated: #161616;
+    --border:   rgba(201, 168, 76, 0.18);
+    --border-h: rgba(201, 168, 76, 0.42);
+    --gold:     #C9A84C;
+    --gold-h:   #DFC070;
+    --gold-dim: rgba(201, 168, 76, 0.10);
+    --text:     #E8DCC8;
+    --text-2:   #8A7A62;
+    --text-3:   #50422E;
+    --mono:     'Courier Prime', 'Courier New', monospace;
+    --display:  'Special Elite', 'Courier New', monospace;
+}
+
+body {
+    background: var(--bg);
+    font-family: var(--mono);
+    color: var(--text);
+    -webkit-font-smoothing: antialiased;
+}
+
+/* ── Navbar ─────────────────────────────────────────────── */
+.custom-navbar {
+    background: #080808;
+    border-bottom: 1px solid var(--border);
+    padding: 0 32px;
+}
+
+.custom-navbar .navbar-brand img {
+    opacity: 0.85;
+    transition: opacity 0.2s;
+    filter: sepia(0.3) saturate(1.5) hue-rotate(5deg);
+}
+.custom-navbar .navbar-brand:hover img { opacity: 1; }
+
+.custom-navbar .nav-link,
+.custom-navbar .navbar-brand {
+    font-family: var(--mono) !important;
+    font-size: 13px !important;
+    font-weight: 400 !important;
+    color: var(--text-2) !important;
+    letter-spacing: 0.08em !important;
+    text-shadow: none !important;
+    text-transform: uppercase;
+    transition: color 0.2s;
+}
+
+.custom-navbar .nav-link:hover {
+    color: var(--gold) !important;
+    background: transparent !important;
+}
+
+.custom-navbar .active-page {
+    color: var(--gold) !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    border-bottom: 1px solid var(--gold);
+}
+
+.custom-navbar ul.navbar-nav:last-child .nav-item:last-child .nav-link {
+    background: var(--gold) !important;
+    color: #080808 !important;
+    font-weight: 700 !important;
+    border-radius: 2px !important;
+    padding: 6px 16px !important;
+    letter-spacing: 0.1em !important;
+}
+.custom-navbar ul.navbar-nav:last-child .nav-item:last-child .nav-link:hover {
+    background: var(--gold-h) !important;
+}
+
+/* ── Hero Section ───────────────────────────────────────── */
+.bg-body-tertiary {
+    background: var(--surface) !important;
+    border: 1px solid var(--border) !important;
+    border-radius: 0 !important;
+    color: var(--text) !important;
+    margin: 88px auto 0 !important;
+    width: 90% !important;
+    max-width: 1200px !important;
+    min-height: auto !important;
+    display: block !important;
+    box-sizing: border-box;
+    position: relative;
+}
+
+.bg-body-tertiary::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0;
+    width: 40px;
+    height: 2px;
+    background: var(--gold);
+}
+
+.bg-body-tertiary h1 {
+    font-family: var(--display) !important;
+    font-size: clamp(24px, 3vw, 42px) !important;
+    font-weight: 400 !important;
+    color: var(--text) !important;
+    letter-spacing: 0.02em !important;
+    line-height: 1.2 !important;
+}
+
+.bg-body-tertiary p {
+    font-family: var(--mono) !important;
+    font-size: 15px !important;
+    font-weight: 400 !important;
+    color: var(--text-2) !important;
+    line-height: 1.75 !important;
+    letter-spacing: 0.02em !important;
+    margin-top: 14px !important;
+    margin-bottom: 28px !important;
+}
+
+/* ── Feature Jumbotron ──────────────────────────────────── */
+.feature-jumbotron {
+    background: var(--surface) !important;
+    border: 1px solid var(--border) !important;
+    border-radius: 0 !important;
+    color: var(--text) !important;
+    margin: 20px auto 0 !important;
+    width: 90% !important;
+    max-width: 1200px !important;
+    box-sizing: border-box;
+    position: relative;
+}
+
+.feature-jumbotron::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0;
+    width: 40px;
+    height: 2px;
+    background: var(--gold);
+}
+
+.feature-jumbotron h1 {
+    font-family: var(--display) !important;
+    font-size: clamp(24px, 3vw, 42px) !important;
+    font-weight: 400 !important;
+    color: var(--text) !important;
+    letter-spacing: 0.02em !important;
+    line-height: 1.2 !important;
+}
+
+.feature-jumbotron p {
+    font-family: var(--mono) !important;
+    font-size: 15px !important;
+    font-weight: 400 !important;
+    color: var(--text-2) !important;
+    line-height: 1.75 !important;
+    letter-spacing: 0.02em !important;
+    margin-top: 14px !important;
+    margin-bottom: 28px !important;
+}
+
+/* ── Cards ──────────────────────────────────────────────── */
+.ai-card,
+.error-card {
+    background: var(--surface) !important;
+    border: 1px solid var(--border) !important;
+    border-radius: 0 !important;
+    color: var(--text) !important;
+    transition: border-color 0.2s;
+}
+.ai-card:hover,
+.error-card:hover { border-color: var(--border-h) !important; }
+
+.ai-card h2,
+.error-card h2 {
+    font-family: var(--display) !important;
+    font-size: 22px !important;
+    font-weight: 400 !important;
+    color: var(--gold) !important;
+    letter-spacing: 0.04em !important;
+    margin-bottom: 12px !important;
+}
+
+.ai-card p,
+.error-card p {
+    font-family: var(--mono) !important;
+    font-size: 14px !important;
+    font-weight: 400 !important;
+    color: var(--text-2) !important;
+    line-height: 1.75 !important;
+    letter-spacing: 0.02em !important;
+    margin-bottom: 22px !important;
+}
+
+/* ── Buttons ─────────────────────────────────────────────── */
+.btn-primary {
+    font-family: var(--mono) !important;
+    font-size: 13px !important;
+    font-weight: 700 !important;
+    padding: 11px 24px !important;
+    border-radius: 2px !important;
+    letter-spacing: 0.12em !important;
+    text-transform: uppercase !important;
+    margin-top: 0 !important;
+    background: var(--gold) !important;
+    border: 1px solid var(--gold) !important;
+    color: #080808 !important;
+    transition: background 0.2s !important;
+    box-shadow: none !important;
+}
+.btn-primary:hover { background: var(--gold-h) !important; border-color: var(--gold-h) !important; }
+
+.btn-outline-secondary {
+    font-family: var(--mono) !important;
+    font-size: 13px !important;
+    font-weight: 400 !important;
+    padding: 11px 24px !important;
+    border-radius: 2px !important;
+    letter-spacing: 0.12em !important;
+    text-transform: uppercase !important;
+    margin-top: 0 !important;
+    background: transparent !important;
+    border: 1px solid var(--border-h) !important;
+    color: var(--text-2) !important;
+    transition: border-color 0.2s, color 0.2s !important;
+    box-shadow: none !important;
+}
+.btn-outline-secondary:hover {
+    border-color: var(--gold) !important;
+    color: var(--gold) !important;
+    background: transparent !important;
+}
+
+/* ── Alignment ──────────────────────────────────────────── */
+.feature-jumbotron,
+.row.align-items-md-stretch {
+    width: 90%;
+    max-width: 1200px;
+    margin: 20px auto 0;
+    box-sizing: border-box;
+}
+
+/* ── Section eyebrow ─────────────────────────────────────── */
+.section-eyebrow {
+    font-family: var(--mono) !important;
+    color: var(--text-3) !important;
+    font-size: 11px !important;
+    letter-spacing: 0.22em !important;
+    text-transform: uppercase !important;
+    margin: 0 0 14px !important;
+}
+
+/* ── Center helper ───────────────────────────────────────── */
+.section-center { text-align: center !important; }
+
+/* ── CTA sub text ────────────────────────────────────────── */
+.cta-sub {
+    font-family: var(--mono) !important;
+    color: var(--text-2) !important;
+    font-size: 14px !important;
+    font-style: italic !important;
+    letter-spacing: 0.02em !important;
+    margin: 12px 0 28px !important;
+}
+
+/* ── Stats bar ───────────────────────────────────────────── */
+.stats-bar {
+    width: 90%;
+    max-width: 1200px;
+    margin: 20px auto;
+    box-sizing: border-box;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    padding: 28px 48px;
+    position: relative;
+}
+.stats-bar::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0;
+    width: 40px; height: 2px;
+    background: var(--gold);
+}
+.stat-item { display: flex; flex-direction: column; align-items: center; text-align: center; flex: 1; }
+.stat-num  { font-family: var(--display); font-size: 32px; color: var(--gold); letter-spacing: 0.02em; line-height: 1.1; }
+.stat-label { font-family: var(--mono); font-size: 11px; color: var(--text-3); letter-spacing: 0.07em; text-transform: uppercase; margin-top: 6px; max-width: 130px; line-height: 1.45; }
+.stat-sep  { width: 1px; height: 48px; background: var(--border); flex-shrink: 0; }
+
+/* ── Feature detail grid ─────────────────────────────────── */
+.feature-detail-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 32px;
+    margin-top: 40px;
+}
+.feature-detail-item {
+    border-top: 1px solid var(--border);
+    padding-top: 18px;
+}
+.fd-label {
+    display: block;
+    font-family: var(--display);
+    font-size: 16px;
+    color: var(--gold);
+    letter-spacing: 0.04em;
+    margin-bottom: 10px;
+}
+.fd-desc {
+    font-family: var(--mono) !important;
+    font-size: 14px !important;
+    color: var(--text-2) !important;
+    line-height: 1.78 !important;
+    letter-spacing: 0.02em !important;
+    margin: 0 !important;
+}
+
+@media (max-width: 900px) {
+    .feature-detail-grid { grid-template-columns: 1fr; gap: 22px; }
+    .stats-bar { flex-direction: column; gap: 28px; padding: 28px 24px; }
+    .stat-sep { width: 60px; height: 1px; }
+}

@@ -1,0 +1,52 @@
+{
+  "expo": {
+    "name": "Too Good",
+    "slug": "too-good",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "dark",
+    "backgroundColor": "#080808",
+    "splash": {
+      "backgroundColor": "#080808",
+      "resizeMode": "contain"
+    },
+    "ios": {
+      "supportsTablet": false,
+      "bundleIdentifier": "com.toogood.app",
+      "infoPlist": {
+        "NSCameraUsageDescription": "Too Good uses your camera for barcode scanning and food photo analysis.",
+        "NSPhotoLibraryUsageDescription": "Too Good uses your photos to analyse food for calorie counting.",
+        "NSLocationWhenInUseUsageDescription": "Too Good uses your location to show local weather on your dashboard.",
+        "NSMicrophoneUsageDescription": "Too Good uses your microphone for voice input in the AI chat."
+      }
+    },
+    "android": {
+      "package": "com.toogood.app",
+      "adaptiveIcon": {
+        "backgroundColor": "#080808"
+      },
+      "permissions": [
+        "CAMERA",
+        "READ_EXTERNAL_STORAGE",
+        "WRITE_EXTERNAL_STORAGE",
+        "ACCESS_FINE_LOCATION",
+        "ACCESS_COARSE_LOCATION",
+        "RECORD_AUDIO"
+      ]
+    },
+    "plugins": [
+      [
+        "expo-camera",
+        { "cameraPermission": "Too Good uses your camera for barcode scanning and food analysis." }
+      ],
+      [
+        "expo-location",
+        { "locationWhenInUsePermission": "Too Good uses your location for local weather." }
+      ],
+      [
+        "expo-image-picker",
+        { "photosPermission": "Too Good accesses your photos to analyse food for calorie counting." }
+      ]
+    ]
+  }
+}
