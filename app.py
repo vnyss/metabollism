@@ -543,8 +543,10 @@ def api_v1_register():
                  b64_encode(email) or None, b64_encode(full_name) or None, b64_encode(country) or None),
             )
             conn.commit()
-        except sqlite3.IntegrityError:
+        except sqlite3.IntegrityError as ie:
             conn.close()
+            if 'email' in str(ie).lower():
+                return jsonify({"ok": False, "error": "That email is already registered."}), 409
             return jsonify({"ok": False, "error": "That username is already taken."}), 409
 
         token      = _sec.token_hex(32)
