@@ -6,6 +6,8 @@ import os
 import re
 import secrets
 import sqlite3
+from dotenv import load_dotenv
+load_dotenv()
 import json
 import smtplib
 from datetime import datetime, date, timedelta
