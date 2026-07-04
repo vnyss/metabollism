@@ -19,7 +19,7 @@ from flask import Flask, render_template, request, redirect, url_for, session, f
 from flask_cors import CORS
 from werkzeug.security import generate_password_hash, check_password_hash  # kept for old hashed accounts
 from authlib.integrations.flask_client import OAuth
-from database import get_db_connection, init_db, init_food_db, init_diary_db, init_blood_history_db, init_score_db, init_social_db, init_strava_db, init_daily_logs_db
+from database import get_db_connection, init_db, init_food_db, init_diary_db, init_blood_history_db, init_score_db, init_social_db, init_strava_db, init_daily_logs_db, init_watch_db
 import base64
 
 # ── Email config (set GMAIL_USER + GMAIL_APP_PASSWORD in .env) ──────────────
@@ -406,6 +406,7 @@ init_score_db()
 init_social_db()
 init_strava_db()
 init_daily_logs_db()
+init_watch_db()
 
 # Add auth_token, expiry, lockout, and chat_sessions_json columns for mobile app
 try:
@@ -618,6 +619,77 @@ def api_v1_forgot_password():
     return jsonify({"ok": True})
 
 
+@app.route("/api/v1/password-reset/send", methods=["POST"])
+def api_password_reset_send():
+    """Send a 6-digit OTP to the registered email."""
+    data  = request.get_json(silent=True) or {}
+    email = (data.get("email") or "").strip().lower()
+    if not email:
+        return jsonify({"ok": False, "error": "Email is required."}), 400
+    conn = get_db_connection()
+    row  = conn.execute("SELECT username FROM users WHERE email=?", (b64_encode(email),)).fetchone()
+    if not row:
+        conn.close()
+        return jsonify({"ok": True})  # don't reveal whether email exists
+    username = row["username"]
+    code     = f"{secrets.randbelow(1000000):06d}"
+    expires  = (datetime.utcnow() + timedelta(minutes=15)).strftime("%Y-%m-%d %H:%M:%S")
+    conn.execute(
+        "INSERT INTO password_resets (username, token, expires_at) VALUES (?, ?, ?)",
+        (username, f"otp:{code}", expires),
+    )
+    conn.commit()
+    conn.close()
+    html = (
+        "<div style='font-family:monospace;max-width:520px;margin:40px auto;"
+        "background:#0f0f0f;border:1px solid rgba(201,168,76,0.2);padding:40px;color:#E8DCC8;'>"
+        "<div style='color:#C9A84C;font-size:22px;margin-bottom:6px;'>TooGood</div>"
+        "<div style='font-size:11px;color:#4A3C2A;letter-spacing:3px;"
+        "text-transform:uppercase;margin-bottom:28px;'>Password Reset Code</div>"
+        f"<p style='margin:0 0 20px;line-height:1.7;color:#8A7A62;'>Reset requested for "
+        f"<strong style='color:#E8DCC8;'>@{username}</strong>. Use the code below — it expires in 15 minutes.</p>"
+        f"<div style='background:#1a1a1a;border:1px solid rgba(201,168,76,0.3);padding:20px 32px;"
+        f"text-align:center;letter-spacing:12px;font-size:32px;color:#C9A84C;"
+        f"font-weight:700;margin-bottom:24px;'>{code}</div>"
+        "<p style='margin:0;font-size:10px;color:#4A3C2A;'>If you didn't request this, ignore this email.</p>"
+        "</div>"
+    )
+    send_email(email, "Your TooGood reset code", html)
+    return jsonify({"ok": True})
+
+
+@app.route("/api/v1/password-reset/verify", methods=["POST"])
+def api_password_reset_verify():
+    """Verify OTP and set a new password in one step."""
+    data         = request.get_json(silent=True) or {}
+    email        = (data.get("email") or "").strip().lower()
+    code         = (data.get("code") or "").strip()
+    new_password = (data.get("new_password") or "").strip()
+    if not email or not code or not new_password:
+        return jsonify({"ok": False, "error": "Email, code and new password are required."}), 400
+    if len(new_password) < 8:
+        return jsonify({"ok": False, "error": "Password must be at least 8 characters."}), 400
+    conn = get_db_connection()
+    user_row = conn.execute("SELECT username FROM users WHERE email=?", (b64_encode(email),)).fetchone()
+    if not user_row:
+        conn.close()
+        return jsonify({"ok": False, "error": "Invalid or expired code."}), 400
+    username = user_row["username"]
+    now = datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S")
+    reset_row = conn.execute(
+        "SELECT id FROM password_resets WHERE username=? AND token=? AND used=0 AND expires_at > ? ORDER BY id DESC LIMIT 1",
+        (username, f"otp:{code}", now),
+    ).fetchone()
+    if not reset_row:
+        conn.close()
+        return jsonify({"ok": False, "error": "Invalid or expired code."}), 400
+    conn.execute("UPDATE password_resets SET used=1 WHERE id=?", (reset_row["id"],))
+    conn.execute("UPDATE users SET password_hash=? WHERE username=?", (generate_password_hash(new_password), username))
+    conn.commit()
+    conn.close()
+    return jsonify({"ok": True})
+
+
 @app.route("/reset-password", methods=["GET", "POST"])
 def reset_password_page():
     token = request.args.get("token") or request.form.get("token", "")
@@ -803,7 +875,30 @@ def api_v1_me():
     conn = get_db_connection()
     user = _decode_user_row(dict(conn.execute("SELECT * FROM users WHERE username=?", (me,)).fetchone()))
     conn.close()
-    return jsonify({"ok": True, "username": me, "full_name": user.get("full_name",""), "goal": user.get("goal","")})
+    return jsonify({
+        "ok": True,
+        "username": me,
+        "full_name": user.get("full_name", ""),
+        "email": user.get("email", ""),
+        "country": user.get("country", ""),
+        "age": user.get("age"),
+        "gender": user.get("gender", ""),
+        "weight_kg": user.get("weight_kg"),
+        "height_cm": user.get("height_cm"),
+        "target_weight_kg": user.get("target_weight_kg"),
+        "goal": user.get("goal", ""),
+        "activity_level": user.get("activity_level", ""),
+        "mobility_note": user.get("mobility_note", ""),
+        "food_prefs": user.get("food_prefs", ""),
+        "family_role": user.get("family_role", ""),
+        "exercise_types": user.get("exercise_types", ""),
+        "exercise_days_per_week": user.get("exercise_days_per_week"),
+        "rest_day": user.get("rest_day", ""),
+        "session_duration": user.get("session_duration", ""),
+        "workout_time_pref": user.get("workout_time_pref", ""),
+        "fitness_level": user.get("fitness_level", ""),
+        "onboarding_done": user.get("onboarding_done"),
+    })
 
 
 def _import_indb_data():
@@ -2243,12 +2338,29 @@ def perfect_assistant():
     d = request.get_json(silent=True) or {}
     message = (d.get("message") or "").strip()
     history  = d.get("history") or []
+    diary_review = bool(d.get("diary_review"))
     if not message:
         return jsonify({"ok": False}), 400
 
     api_key = os.environ.get("GROQ_API_KEY")
     if not api_key:
         return jsonify({"ok": True, "reply": "AI is not configured yet.", "logged": None})
+
+    # ── Diary review mode: different prompt, plain text reply ──────────────
+    if diary_review:
+        review_prompt = (
+            "You are a warm, insightful personal health and wellness coach inside the Too Good app. "
+            "The user has shared their diary entry for the day. "
+            "Give them a thoughtful, personal, and encouraging review. "
+            "Highlight what went well, acknowledge any struggles with empathy, and offer 1-2 gentle, actionable suggestions. "
+            "Keep your tone conversational and supportive — like a trusted friend who knows about health. "
+            "Write in plain text, 3-5 short paragraphs. No bullet points. No JSON. No sign-off."
+        )
+        try:
+            reply = _call_anthropic(api_key, review_prompt, [{"role": "user", "content": message}], max_tokens=600, temperature=0.75)
+        except Exception:
+            return jsonify({"ok": True, "reply": "Could not reach the AI. Check your connection and try again.", "logged": None})
+        return jsonify({"ok": True, "reply": reply.strip(), "logged": None})
 
     is_first_message = len([m for m in history if m.get("role") == "user"]) == 0
 
@@ -3392,6 +3504,114 @@ def perfect_monitor_extract():
     }
     clean = {k: str(v) for k, v in values.items() if k in known and v not in (None, "", "null")}
     return jsonify({"ok": True, "values": clean})
+
+
+FOOD_PHOTO_SYSTEM_PROMPT = """You are a nutrition vision system. Look at the photo of food and identify each distinct food item visible, estimating a realistic portion size from what's shown (plate size, container, hand for scale, etc).
+
+For each item, estimate calories and macros for the portion shown -- not generic per-100g values, the actual visible amount.
+
+Return ONLY a JSON object of this exact shape, nothing else:
+{"foods":[{"name":"Grilled chicken breast","serving":"~150g","calories":248,"protein":46,"carbs":0,"fat":5}],"confidence":"high"}
+
+Rules:
+- One entry per distinct food/dish you can identify (e.g. a thali photo might have 4-5 entries).
+- "confidence" is your overall confidence in the estimate: "high", "medium", or "low".
+- If you cannot identify any food in the image, return {"foods":[],"confidence":"low"}.
+- Never include commentary, markdown fences, or text outside the JSON object."""
+
+
+@app.route("/perfect/api/food/photo-extract", methods=["POST"])
+def perfect_food_photo_extract():
+    if not _api_user():
+        return jsonify({"error": "Not logged in"}), 401
+    api_key = os.environ.get("GROQ_API_KEY")
+    if not api_key:
+        return jsonify({"error": "AI not configured"}), 503
+
+    data       = request.get_json(force=True) or {}
+    image_b64  = data.get("image_b64")
+    image_mime = data.get("image_mime", "image/jpeg")
+    if not image_b64:
+        return jsonify({"error": "No image provided"}), 400
+    if len(image_b64) > 14_000_000:
+        return jsonify({"error": "Image too large. Please use an image under 10 MB."}), 400
+
+    vision_models = [
+        "meta-llama/llama-4-scout-17b-16e-instruct",
+        "meta-llama/llama-4-maverick-17b-128e-instruct",
+        "llama-3.2-90b-vision-preview",
+    ]
+    user_content = [
+        {"type": "image_url", "image_url": {"url": f"data:{image_mime};base64,{image_b64}"}},
+        {"type": "text", "text": "Identify the food(s) in this photo and estimate calories/macros for the portion shown."}
+    ]
+
+    raw = None
+    for vmodel in vision_models:
+        vision_payload = {
+            "model": vmodel,
+            "max_tokens": 1024,
+            "temperature": 0.0,
+            "messages": [
+                {"role": "system", "content": FOOD_PHOTO_SYSTEM_PROMPT},
+                {"role": "user", "content": user_content}
+            ]
+        }
+        req = Request(
+            GROQ_API_URL,
+            data=json.dumps(vision_payload).encode("utf-8"),
+            headers={
+                "Content-Type":  "application/json",
+                "Authorization": f"Bearer {api_key}",
+                "User-Agent":    "groq-python/0.9.0",
+            },
+            method="POST",
+        )
+        try:
+            with urlopen(req, timeout=60) as resp:
+                result = json.loads(resp.read().decode("utf-8"))
+            raw = result["choices"][0]["message"]["content"].strip()
+            break
+        except HTTPError:
+            continue
+        except Exception:
+            continue
+
+    if raw is None:
+        return jsonify({"error": "Image analysis service unavailable. Please try again."}), 502
+
+    raw = re.sub(r'^```[a-zA-Z]*\n?', '', raw).rstrip('`').strip()
+
+    try:
+        parsed = json.loads(raw)
+    except Exception:
+        m = re.search(r'\{.*\}', raw, re.DOTALL)
+        if not m:
+            return jsonify({"error": "Could not identify food in image", "raw": raw[:300]}), 500
+        try:
+            parsed = json.loads(m.group())
+        except Exception:
+            return jsonify({"error": "Could not identify food in image", "raw": raw[:300]}), 500
+
+    foods = []
+    for item in (parsed.get("foods") or [])[:10]:
+        if not isinstance(item, dict) or not item.get("name"):
+            continue
+        def _num(v):
+            try:
+                return round(float(v), 1)
+            except (TypeError, ValueError):
+                return 0
+        foods.append({
+            "name":     str(item.get("name"))[:80],
+            "serving":  str(item.get("serving", ""))[:40],
+            "calories": int(_num(item.get("calories"))),
+            "protein":  _num(item.get("protein")),
+            "carbs":    _num(item.get("carbs")),
+            "fat":      _num(item.get("fat")),
+        })
+
+    return jsonify({"ok": True, "foods": foods, "confidence": parsed.get("confidence", "medium")})
 
 
 @app.route("/perfect/api/monitor/save", methods=["POST"])
@@ -4566,6 +4786,504 @@ def api_comment():
     conn.close()
     return jsonify({"ok": True})
 
+
+# ══════════════════════════════════════════════════════════════════════════════
+# ── Watch / Wearable Integrations ─────────────────────────────────────────────
+# Providers: google_fit, garmin
+# ══════════════════════════════════════════════════════════════════════════════
+import requests as _watch_requests
+
+# In-memory state store for OAuth flows (nonce → {username, provider, at})
+_WATCH_STATES: dict = {}
+
+def _purge_watch_states():
+    cutoff = datetime.utcnow() - timedelta(minutes=15)
+    expired = [k for k, v in _WATCH_STATES.items() if v.get('at', datetime.utcnow()) < cutoff]
+    for k in expired:
+        _WATCH_STATES.pop(k, None)
+
+def _watch_token_get(username, provider):
+    conn = get_db_connection()
+    row = conn.execute(
+        'SELECT access_token, refresh_token, expires_at FROM watch_tokens WHERE username=? AND provider=?',
+        (username, provider)
+    ).fetchone()
+    conn.close()
+    return dict(row) if row else None
+
+def _watch_token_save(username, provider, access_token, refresh_token=None, expires_at=None):
+    conn = get_db_connection()
+    conn.execute("""
+        INSERT INTO watch_tokens (username, provider, access_token, refresh_token, expires_at)
+        VALUES (?,?,?,?,?)
+        ON CONFLICT(username, provider) DO UPDATE SET
+            access_token=excluded.access_token,
+            refresh_token=COALESCE(excluded.refresh_token, refresh_token),
+            expires_at=excluded.expires_at,
+            connected_at=CURRENT_TIMESTAMP
+    """, (username, provider, access_token, refresh_token, expires_at))
+    conn.commit()
+    conn.close()
+
+def _watch_sync_upsert(username, provider, date, steps=None, sleep_min=None,
+                        calories=None, heart_rate=None, active_min=None):
+    conn = get_db_connection()
+    existing = conn.execute(
+        'SELECT steps, sleep_min, calories, heart_rate, active_min FROM watch_sync_data WHERE username=? AND provider=? AND date=?',
+        (username, provider, date)
+    ).fetchone()
+    if existing:
+        conn.execute("""
+            UPDATE watch_sync_data SET
+                steps=COALESCE(?,steps), sleep_min=COALESCE(?,sleep_min),
+                calories=COALESCE(?,calories), heart_rate=COALESCE(?,heart_rate),
+                active_min=COALESCE(?,active_min), synced_at=CURRENT_TIMESTAMP
+            WHERE username=? AND provider=? AND date=?
+        """, (steps, sleep_min, calories, heart_rate, active_min, username, provider, date))
+    else:
+        conn.execute("""
+            INSERT INTO watch_sync_data (username, provider, date, steps, sleep_min, calories, heart_rate, active_min)
+            VALUES (?,?,?,?,?,?,?,?)
+        """, (username, provider, date, steps or 0, sleep_min or 0, calories or 0, heart_rate or 0, active_min or 0))
+    conn.commit()
+    conn.close()
+
+def _refresh_google_fit_token(username):
+    """Refresh Google Fit access token using refresh_token. Returns new access_token or None."""
+    row = _watch_token_get(username, 'google_fit')
+    if not row or not row.get('refresh_token'):
+        return None
+    client_id     = os.environ.get('GOOGLE_FIT_CLIENT_ID') or os.environ.get('GOOGLE_CLIENT_ID')
+    client_secret = os.environ.get('GOOGLE_FIT_CLIENT_SECRET') or os.environ.get('GOOGLE_CLIENT_SECRET')
+    try:
+        r = _watch_requests.post('https://oauth2.googleapis.com/token', data={
+            'client_id':     client_id,
+            'client_secret': client_secret,
+            'refresh_token': row['refresh_token'],
+            'grant_type':    'refresh_token',
+        }, timeout=10)
+        data = r.json()
+        if 'access_token' not in data:
+            return None
+        expires_at = (datetime.utcnow() + timedelta(seconds=data.get('expires_in', 3600))).isoformat()
+        _watch_token_save(username, 'google_fit', data['access_token'], row['refresh_token'], expires_at)
+        return data['access_token']
+    except Exception:
+        return None
+
+def _get_google_fit_token(username):
+    """Return valid Google Fit access token, refreshing if needed."""
+    row = _watch_token_get(username, 'google_fit')
+    if not row:
+        return None
+    if row.get('expires_at'):
+        try:
+            if datetime.fromisoformat(row['expires_at']) < datetime.utcnow() + timedelta(minutes=2):
+                return _refresh_google_fit_token(username)
+        except Exception:
+            pass
+    return row.get('access_token')
+
+def _refresh_garmin_token(username):
+    """Refresh Garmin access token. Returns new access_token or None."""
+    row = _watch_token_get(username, 'garmin')
+    if not row or not row.get('refresh_token'):
+        return None
+    client_id     = os.environ.get('GARMIN_CLIENT_ID', '')
+    client_secret = os.environ.get('GARMIN_CLIENT_SECRET', '')
+    try:
+        r = _watch_requests.post('https://connect.garmin.com/oauth-2.0/token', data={
+            'client_id':     client_id,
+            'client_secret': client_secret,
+            'refresh_token': row['refresh_token'],
+            'grant_type':    'refresh_token',
+        }, timeout=10)
+        data = r.json()
+        if 'access_token' not in data:
+            return None
+        expires_at = (datetime.utcnow() + timedelta(seconds=data.get('expires_in', 3600))).isoformat()
+        _watch_token_save(username, 'garmin', data['access_token'], row['refresh_token'], expires_at)
+        return data['access_token']
+    except Exception:
+        return None
+
+def _get_garmin_token(username):
+    row = _watch_token_get(username, 'garmin')
+    if not row:
+        return None
+    if row.get('expires_at'):
+        try:
+            if datetime.fromisoformat(row['expires_at']) < datetime.utcnow() + timedelta(minutes=2):
+                return _refresh_garmin_token(username)
+        except Exception:
+            pass
+    return row.get('access_token')
+
+
+# ── Status ─────────────────────────────────────────────────────────────────────
+@app.route('/api/v1/integrations/status')
+def watch_integration_status():
+    me = _api_user()
+    if not me: return jsonify({'error': 'Not logged in'}), 401
+    conn = get_db_connection()
+    rows = conn.execute(
+        'SELECT provider, connected_at FROM watch_tokens WHERE username=?', (me,)
+    ).fetchall()
+    conn.close()
+    result = {r['provider']: {'connected': True, 'connected_at': r['connected_at']} for r in rows}
+    return jsonify(result)
+
+
+# ── Google Fit ─────────────────────────────────────────────────────────────────
+GFIT_SCOPES = ' '.join([
+    'https://www.googleapis.com/auth/fitness.activity.read',
+    'https://www.googleapis.com/auth/fitness.sleep.read',
+    'https://www.googleapis.com/auth/fitness.body.read',
+    'https://www.googleapis.com/auth/fitness.heart_rate.read',
+])
+
+@app.route('/api/v1/integrations/google-fit/connect')
+def gfit_connect():
+    """Start Google Fit OAuth. Accepts Bearer token in ?auth= query param."""
+    auth_header = request.headers.get('Authorization', '')
+    auth_param  = request.args.get('auth', '')
+    # Allow token via query string so the browser can navigate directly
+    if auth_param and not auth_header:
+        request.environ['HTTP_AUTHORIZATION'] = f'Bearer {auth_param}'
+    me = _api_user()
+    if not me:
+        return jsonify({'error': 'Not logged in'}), 401
+
+    _purge_watch_states()
+    nonce = secrets.token_urlsafe(24)
+    _WATCH_STATES[nonce] = {'username': me, 'provider': 'google_fit', 'at': datetime.utcnow()}
+
+    client_id    = os.environ.get('GOOGLE_FIT_CLIENT_ID') or os.environ.get('GOOGLE_CLIENT_ID', '')
+    callback_url = f"{APP_URL}/api/v1/integrations/google-fit/callback"
+
+    from urllib.parse import urlencode
+    params = urlencode({
+        'client_id':     client_id,
+        'redirect_uri':  callback_url,
+        'response_type': 'code',
+        'scope':         GFIT_SCOPES,
+        'access_type':   'offline',
+        'prompt':        'consent',
+        'state':         nonce,
+    })
+    return redirect(f'https://accounts.google.com/o/oauth2/v2/auth?{params}')
+
+
+@app.route('/api/v1/integrations/google-fit/callback')
+def gfit_callback():
+    state = request.args.get('state', '')
+    code  = request.args.get('code', '')
+    error = request.args.get('error', '')
+
+    if error or not code or state not in _WATCH_STATES:
+        return redirect(f"{APP_URL}/#watch-error")
+
+    info = _WATCH_STATES.pop(state)
+    username = info['username']
+
+    client_id     = os.environ.get('GOOGLE_FIT_CLIENT_ID') or os.environ.get('GOOGLE_CLIENT_ID', '')
+    client_secret = os.environ.get('GOOGLE_FIT_CLIENT_SECRET') or os.environ.get('GOOGLE_CLIENT_SECRET', '')
+    callback_url  = f"{APP_URL}/api/v1/integrations/google-fit/callback"
+
+    try:
+        r = _watch_requests.post('https://oauth2.googleapis.com/token', data={
+            'client_id':     client_id,
+            'client_secret': client_secret,
+            'code':          code,
+            'redirect_uri':  callback_url,
+            'grant_type':    'authorization_code',
+        }, timeout=10)
+        data = r.json()
+        if 'access_token' not in data:
+            return redirect(f"{APP_URL}/#watch-error")
+        expires_at = (datetime.utcnow() + timedelta(seconds=data.get('expires_in', 3600))).isoformat()
+        _watch_token_save(username, 'google_fit', data['access_token'], data.get('refresh_token'), expires_at)
+    except Exception:
+        return redirect(f"{APP_URL}/#watch-error")
+
+    return redirect(f"{APP_URL}/#watch-connected-google_fit")
+
+
+@app.route('/api/v1/integrations/google-fit/sync', methods=['POST'])
+def gfit_sync():
+    me = _api_user()
+    if not me: return jsonify({'error': 'Not logged in'}), 401
+
+    token = _get_google_fit_token(me)
+    if not token:
+        return jsonify({'error': 'Google Fit not connected or token expired'}), 401
+
+    data = request.get_json(force=True) or {}
+    days = min(int(data.get('days', 7)), 30)
+
+    now_ms   = int(datetime.utcnow().timestamp() * 1000)
+    start_ms = int((datetime.utcnow() - timedelta(days=days)).timestamp() * 1000)
+
+    headers = {'Authorization': f'Bearer {token}', 'Content-Type': 'application/json'}
+    agg_url = 'https://www.googleapis.com/fitness/v1/users/me/dataset:aggregate'
+
+    def _agg(data_type, source_id=None):
+        body_entry = {'dataTypeName': data_type}
+        if source_id:
+            body_entry['dataSourceId'] = source_id
+        try:
+            r = _watch_requests.post(agg_url, headers=headers, json={
+                'aggregateBy':  [body_entry],
+                'bucketByTime': {'durationMillis': 86400000},
+                'startTimeMillis': start_ms,
+                'endTimeMillis':   now_ms,
+            }, timeout=15)
+            return r.json().get('bucket', [])
+        except Exception:
+            return []
+
+    steps_buckets  = _agg('com.google.step_count.delta',
+                           'derived:com.google.step_count.delta:com.google.android.gms:estimated_steps')
+    cal_buckets    = _agg('com.google.calories.expended')
+    hr_buckets     = _agg('com.google.heart_rate.bpm')
+    sleep_buckets  = _agg('com.google.sleep.segment')
+    active_buckets = _agg('com.google.active_minutes')
+
+    synced = []
+    for i, bucket in enumerate(steps_buckets):
+        bucket_start_ms = int(bucket.get('startTimeMillis', 0))
+        date_iso = datetime.utcfromtimestamp(bucket_start_ms / 1000).strftime('%Y-%m-%d')
+
+        # Steps
+        steps = 0
+        for ds in bucket.get('dataset', []):
+            for pt in ds.get('point', []):
+                for v in pt.get('value', []):
+                    steps += v.get('intVal', 0)
+
+        # Calories (same bucket index)
+        calories = 0
+        if i < len(cal_buckets):
+            for ds in cal_buckets[i].get('dataset', []):
+                for pt in ds.get('point', []):
+                    for v in pt.get('value', []):
+                        calories += int(v.get('fpVal', 0))
+
+        # Heart rate avg
+        hr_sum, hr_cnt = 0, 0
+        if i < len(hr_buckets):
+            for ds in hr_buckets[i].get('dataset', []):
+                for pt in ds.get('point', []):
+                    for v in pt.get('value', []):
+                        hr_sum += v.get('fpVal', 0); hr_cnt += 1
+        heart_rate = int(hr_sum / hr_cnt) if hr_cnt else 0
+
+        # Sleep (sum non-awake segments in minutes)
+        sleep_min = 0
+        if i < len(sleep_buckets):
+            for ds in sleep_buckets[i].get('dataset', []):
+                for pt in ds.get('point', []):
+                    # sleep type: 1=awake, 2=sleep, 3=out-of-bed, 4=light, 5=deep, 6=rem
+                    seg_type = (pt.get('value', [{}]) or [{}])[0].get('intVal', 0)
+                    if seg_type in (2, 4, 5, 6):
+                        start_ns = int(pt.get('startTimeNanos', 0))
+                        end_ns   = int(pt.get('endTimeNanos', 0))
+                        sleep_min += int((end_ns - start_ns) / 1e9 / 60)
+
+        # Active minutes
+        active_min = 0
+        if i < len(active_buckets):
+            for ds in active_buckets[i].get('dataset', []):
+                for pt in ds.get('point', []):
+                    for v in pt.get('value', []):
+                        active_min += v.get('intVal', 0)
+
+        if steps or sleep_min or calories:
+            _watch_sync_upsert(me, 'google_fit', date_iso, steps, sleep_min, calories, heart_rate, active_min)
+            synced.append({'date': date_iso, 'steps': steps, 'sleep_min': sleep_min,
+                           'calories': calories, 'heart_rate': heart_rate, 'active_min': active_min})
+
+    return jsonify({'ok': True, 'synced': synced, 'provider': 'google_fit'})
+
+
+@app.route('/api/v1/integrations/google-fit/disconnect', methods=['DELETE'])
+def gfit_disconnect():
+    me = _api_user()
+    if not me: return jsonify({'error': 'Not logged in'}), 401
+    conn = get_db_connection()
+    conn.execute('DELETE FROM watch_tokens WHERE username=? AND provider=?', (me, 'google_fit'))
+    conn.commit()
+    conn.close()
+    return jsonify({'ok': True})
+
+
+# ── Garmin ─────────────────────────────────────────────────────────────────────
+@app.route('/api/v1/integrations/garmin/connect')
+def garmin_connect():
+    auth_param = request.args.get('auth', '')
+    if auth_param:
+        request.environ['HTTP_AUTHORIZATION'] = f'Bearer {auth_param}'
+    me = _api_user()
+    if not me:
+        return jsonify({'error': 'Not logged in'}), 401
+
+    _purge_watch_states()
+    nonce = secrets.token_urlsafe(24)
+    _WATCH_STATES[nonce] = {'username': me, 'provider': 'garmin', 'at': datetime.utcnow()}
+
+    client_id    = os.environ.get('GARMIN_CLIENT_ID', '')
+    callback_url = f"{APP_URL}/api/v1/integrations/garmin/callback"
+
+    from urllib.parse import urlencode
+    params = urlencode({
+        'client_id':     client_id,
+        'redirect_uri':  callback_url,
+        'response_type': 'code',
+        'state':         nonce,
+    })
+    return redirect(f'https://connect.garmin.com/oauth-2.0/authorize?{params}')
+
+
+@app.route('/api/v1/integrations/garmin/callback')
+def garmin_callback():
+    state = request.args.get('state', '')
+    code  = request.args.get('code', '')
+    error = request.args.get('error', '')
+
+    if error or not code or state not in _WATCH_STATES:
+        return redirect(f"{APP_URL}/#watch-error")
+
+    info = _WATCH_STATES.pop(state)
+    username = info['username']
+
+    client_id     = os.environ.get('GARMIN_CLIENT_ID', '')
+    client_secret = os.environ.get('GARMIN_CLIENT_SECRET', '')
+    callback_url  = f"{APP_URL}/api/v1/integrations/garmin/callback"
+
+    try:
+        r = _watch_requests.post('https://connect.garmin.com/oauth-2.0/token', data={
+            'client_id':     client_id,
+            'client_secret': client_secret,
+            'code':          code,
+            'redirect_uri':  callback_url,
+            'grant_type':    'authorization_code',
+        }, timeout=10)
+        data = r.json()
+        if 'access_token' not in data:
+            return redirect(f"{APP_URL}/#watch-error")
+        expires_at = (datetime.utcnow() + timedelta(seconds=data.get('expires_in', 3600))).isoformat()
+        _watch_token_save(username, 'garmin', data['access_token'], data.get('refresh_token'), expires_at)
+    except Exception:
+        return redirect(f"{APP_URL}/#watch-error")
+
+    return redirect(f"{APP_URL}/#watch-connected-garmin")
+
+
+@app.route('/api/v1/integrations/garmin/sync', methods=['POST'])
+def garmin_sync():
+    me = _api_user()
+    if not me: return jsonify({'error': 'Not logged in'}), 401
+
+    token = _get_garmin_token(me)
+    if not token:
+        return jsonify({'error': 'Garmin not connected or token expired'}), 401
+
+    data = request.get_json(force=True) or {}
+    days = min(int(data.get('days', 7)), 30)
+
+    headers = {'Authorization': f'Bearer {token}', 'Content-Type': 'application/json'}
+
+    now_s   = int(datetime.utcnow().timestamp())
+    start_s = int((datetime.utcnow() - timedelta(days=days)).timestamp())
+
+    synced = []
+    errors = []
+
+    # Daily wellness summaries
+    try:
+        r = _watch_requests.get(
+            f'https://apis.garmin.com/wellness-api/rest/dailies?startTimeInSeconds={start_s}&endTimeInSeconds={now_s}',
+            headers=headers, timeout=15
+        )
+        if r.status_code == 200:
+            for day in r.json():
+                date_iso   = datetime.utcfromtimestamp(day.get('calendarDate', '') and
+                             datetime.strptime(day['calendarDate'], '%Y-%m-%d').timestamp()
+                             if day.get('calendarDate') else day.get('startTimeInSeconds', now_s)).strftime('%Y-%m-%d')
+                if day.get('calendarDate'):
+                    date_iso = day['calendarDate']
+                steps      = day.get('totalSteps', 0) or 0
+                calories   = day.get('activeKilocalories', 0) or 0
+                active_min = day.get('activeTime', 0) or 0
+                if active_min > 1000:  # Garmin returns seconds
+                    active_min = active_min // 60
+                avg_hr     = day.get('averageHeartRateInBeatsPerMinute', 0) or 0
+                _watch_sync_upsert(me, 'garmin', date_iso, steps, None, calories, avg_hr, active_min)
+                synced.append({'date': date_iso, 'steps': steps, 'calories': calories,
+                               'heart_rate': avg_hr, 'active_min': active_min})
+        else:
+            errors.append(f'dailies: HTTP {r.status_code}')
+    except Exception as e:
+        errors.append(f'dailies: {str(e)[:80]}')
+
+    # Sleep data
+    try:
+        r = _watch_requests.get(
+            f'https://apis.garmin.com/wellness-api/rest/sleeps?startTimeInSeconds={start_s}&endTimeInSeconds={now_s}',
+            headers=headers, timeout=15
+        )
+        if r.status_code == 200:
+            for sleep in r.json():
+                date_iso  = sleep.get('calendarDate', '')
+                sleep_sec = sleep.get('durationInSeconds', 0) or 0
+                if date_iso and sleep_sec:
+                    _watch_sync_upsert(me, 'garmin', date_iso, None, sleep_sec // 60, None, None, None)
+        else:
+            errors.append(f'sleeps: HTTP {r.status_code}')
+    except Exception as e:
+        errors.append(f'sleeps: {str(e)[:80]}')
+
+    return jsonify({'ok': True, 'synced': synced, 'errors': errors, 'provider': 'garmin'})
+
+
+@app.route('/api/v1/integrations/garmin/disconnect', methods=['DELETE'])
+def garmin_disconnect():
+    me = _api_user()
+    if not me: return jsonify({'error': 'Not logged in'}), 401
+    conn = get_db_connection()
+    conn.execute('DELETE FROM watch_tokens WHERE username=? AND provider=?', (me, 'garmin'))
+    conn.commit()
+    conn.close()
+    return jsonify({'ok': True})
+
+
+# ── Synced data query ──────────────────────────────────────────────────────────
+@app.route('/api/v1/integrations/data')
+def watch_data_range():
+    me = _api_user()
+    if not me: return jsonify({'error': 'Not logged in'}), 401
+
+    start = request.args.get('start', (date.today() - timedelta(days=6)).isoformat())
+    end   = request.args.get('end',   date.today().isoformat())
+
+    conn = get_db_connection()
+    rows = conn.execute("""
+        SELECT date, provider,
+               MAX(steps) as steps, MAX(sleep_min) as sleep_min,
+               MAX(calories) as calories, MAX(heart_rate) as heart_rate,
+               MAX(active_min) as active_min, MAX(synced_at) as synced_at
+        FROM watch_sync_data
+        WHERE username=? AND date >= ? AND date <= ?
+        GROUP BY date
+        ORDER BY date DESC
+    """, (me, start, end)).fetchall()
+    conn.close()
+    return jsonify([dict(r) for r in rows])
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# ── End Watch Integrations ─────────────────────────────────────────────────────
+# ══════════════════════════════════════════════════════════════════════════════
 
 if __name__ == "__main__":
     _debug = os.environ.get("FLASK_DEBUG", "0") == "1"

@@ -344,5 +344,39 @@ def init_daily_logs_db():
     conn.close()
 
 
+def init_watch_db():
+    """Create tables for wearable/watch OAuth tokens and synced fitness data."""
+    conn = get_db_connection()
+    conn.execute("""
+        CREATE TABLE IF NOT EXISTS watch_tokens (
+            id            INTEGER PRIMARY KEY AUTOINCREMENT,
+            username      TEXT NOT NULL,
+            provider      TEXT NOT NULL,
+            access_token  TEXT,
+            refresh_token TEXT,
+            expires_at    TEXT,
+            connected_at  TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            UNIQUE(username, provider)
+        )
+    """)
+    conn.execute("""
+        CREATE TABLE IF NOT EXISTS watch_sync_data (
+            id          INTEGER PRIMARY KEY AUTOINCREMENT,
+            username    TEXT NOT NULL,
+            provider    TEXT NOT NULL,
+            date        TEXT NOT NULL,
+            steps       INTEGER DEFAULT 0,
+            sleep_min   INTEGER DEFAULT 0,
+            calories    INTEGER DEFAULT 0,
+            heart_rate  INTEGER DEFAULT 0,
+            active_min  INTEGER DEFAULT 0,
+            synced_at   TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            UNIQUE(username, provider, date)
+        )
+    """)
+    conn.commit()
+    conn.close()
+
+
 if __name__ == "__main__":
     init_db()
