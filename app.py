@@ -98,6 +98,7 @@ def load_env_file():
 load_env_file()
 
 app = Flask(__name__)
+app.config['TEMPLATES_AUTO_RELOAD'] = True
 CORS(app, origins="*", supports_credentials=False)
 
 _ALLOWED_ORIGINS = [o.strip() for o in os.environ.get(
@@ -1005,6 +1006,22 @@ def about():
     return render_template("about.html")
 
 
+@app.route("/get")
+def get_app():
+    return render_template("get.html")
+
+
+@app.route("/download/<filename>")
+def download_file(filename):
+    from flask import send_from_directory, abort
+    import re
+    # Only allow safe installer filenames
+    if not re.match(r'^[\w\-]+(\.exe|\.dmg|\.AppImage)$', filename):
+        abort(404)
+    downloads_dir = os.path.join(app.static_folder, 'downloads')
+    return send_from_directory(downloads_dir, filename, as_attachment=True)
+
+
 @app.route("/ai")
 def ai():
     return render_template("ai.html", username=session.get("username", ""))
@@ -1424,7 +1441,7 @@ def _build_system_prompt(insult_count, food_prefs=None, country=None, ai_notes=N
                          goal=None, activity_level=None, target_weight_kg=None, weight_kg=None,
                          exercise_types=None, exercise_days_per_week=None, rest_day=None,
                          session_duration=None, workout_time_pref=None, fitness_level=None,
-                         exercise_schedule_json=None, blood_report_json=None):
+                         exercise_schedule_json=None, blood_report_json=None, user_name=None):
     """Return a system prompt calibrated to the user's current insult count."""
     if insult_count == 0:
         insult_rules = (
@@ -1615,7 +1632,11 @@ def _build_system_prompt(insult_count, food_prefs=None, country=None, ai_notes=N
         except Exception:
             pass
 
-    return NUTRITION_SYSTEM_PROMPT + food_context + country_context + goal_context + exercise_context + mobility_context + notes_context + blood_context + insult_rules
+    name_rule = ""
+    if user_name:
+        name_rule = f"\n\nUSER NAME: The user's name is {user_name}. Always start every response by addressing them by name (e.g. \"{user_name}, ...\" or \"Great question, {user_name} —\")."
+
+    return NUTRITION_SYSTEM_PROMPT + name_rule + food_context + country_context + goal_context + exercise_context + mobility_context + notes_context + blood_context + insult_rules
 
 
 def _get_insult_state(username):
@@ -1740,12 +1761,14 @@ def nutriai_chat():
     fitness_level          = None
     exercise_schedule_json = None
     blood_report_json      = None
+    user_name              = None
     if username:
         conn = get_db_connection()
         row = conn.execute(
             "SELECT food_prefs, country, ai_notes, mobility_note, goal, activity_level, "
             "target_weight_kg, weight_kg, exercise_types, exercise_days_per_week, rest_day, "
-            "session_duration, workout_time_pref, fitness_level, exercise_schedule_json, blood_report_json "
+            "session_duration, workout_time_pref, fitness_level, exercise_schedule_json, blood_report_json, "
+            "full_name, username "
             "FROM users WHERE username = ?", (username,)
         ).fetchone()
         conn.close()
@@ -1766,6 +1789,7 @@ def nutriai_chat():
             fitness_level          = row["fitness_level"] or None
             exercise_schedule_json = row["exercise_schedule_json"] or None
             blood_report_json      = row["blood_report_json"] or None
+            user_name              = row["full_name"] or row["username"] or None
     else:
         exercise_schedule_json = None
         blood_report_json      = None
@@ -1776,7 +1800,8 @@ def nutriai_chat():
         exercise_types, exercise_days_per_week, rest_day,
         session_duration, workout_time_pref, fitness_level,
         exercise_schedule_json=exercise_schedule_json,
-        blood_report_json=blood_report_json
+        blood_report_json=blood_report_json,
+        user_name=user_name
     )
 
     # Inject INDB nutrition data for the latest user message
@@ -2369,15 +2394,19 @@ def perfect_assistant():
         "Your ONLY output format is a single JSON object -- no extra text before or after.\n\n"
 
         "LOGGING FIELDS you can capture:\n"
-        "  - foods -- what they ate (name, serving size/quantity, calories, protein, carbs, fat)\n"
+        "  - foods -- what they ate (name, serving size/quantity, calories, protein, carbs, fat, meal)\n"
+        "    meal must be one of: breakfast, lunch, dinner, snack — infer from context (morning/woke up → breakfast, midday/noon → lunch, evening/night → dinner, in-between/tea-time → snack). If unclear, omit (null).\n"
         "  - weight -- body weight in kg\n"
         "  - steps -- steps walked today\n"
         "  - workout -- exercise description\n"
         "  - hunger -- hunger level today on a scale of 1--10 (1 = not hungry at all, 10 = very hungry)\n"
-        "  - energy -- energy level today on a scale of 1--10 (1 = exhausted, 10 = full of energy)\n\n"
+        "  - energy -- energy level today on a scale of 1--10 (1 = exhausted, 10 = full of energy)\n"
+        "  - sleep_hours -- hours of sleep last night (number, e.g. 7.5)\n"
+        "  - sleep_quality -- sleep quality on a scale of 1--10 (1 = terrible, 10 = excellent)\n"
+        "  - water -- glasses of water drunk today (integer)\n\n"
 
         "OUTPUT FORMAT when you have enough info to log:\n"
-        '{"reply":"<your message>","logged":{"foods":[{"name":"<name>","serving":"<amount>","calories":<number>,"protein":<number>,"carbs":<number>,"fat":<number>}],"weight":<kg or null>,"steps":<integer or null>,"workout":"<text or null>","hunger":<1-10 or null>,"energy":<1-10 or null>}}\n\n'
+        '{"reply":"<your message>","logged":{"foods":[{"name":"<name>","serving":"<amount>","calories":<number>,"protein":<number>,"carbs":<number>,"fat":<number>,"meal":"<breakfast|lunch|dinner|snack|null>"}],"weight":<kg or null>,"steps":<integer or null>,"workout":"<text or null>","hunger":<1-10 or null>,"energy":<1-10 or null>,"sleep_hours":<number or null>,"sleep_quality":<1-10 or null>,"water":<integer or null>}}\n\n'
 
         "OUTPUT FORMAT when asking a follow-up or just chatting:\n"
         '{"reply":"<your message>","logged":null}\n\n'
@@ -2388,10 +2417,12 @@ def perfect_assistant():
         "2. You MAY estimate calories/macros once you have the portion size.\n"
         "3. FIRST USER MESSAGE with food/activity: after acknowledging their food, "
         "ALWAYS ask in the same reply about any missing fields: "
-        "if weight not given †' ask weight; if steps not given †' ask steps; "
-        "if workout not given †' ask if they exercised today; "
-        "if hunger level not given †' ask how hungry they felt today (1--10); "
-        "if energy level not given †' ask how their energy was today (1--10). "
+        "if weight not given -> ask weight; if steps not given -> ask steps; "
+        "if workout not given -> ask if they exercised today; "
+        "if hunger level not given -> ask how hungry they felt today (1--10); "
+        "if energy level not given -> ask how their energy was today (1--10); "
+        "if sleep_hours not given -> ask how many hours they slept last night; "
+        "if water not given -> ask how many glasses of water they had today. "
         "Bundle ALL missing questions into ONE friendly reply.\n"
         "4. FOLLOW-UP MESSAGES: the user is answering your questions. "
         "Log the new info they provide in THIS message. "
@@ -2399,7 +2430,7 @@ def perfect_assistant():
         "5. CRITICAL -- foods array: include ONLY foods the user mentions in their CURRENT message. "
         "NEVER re-include foods from earlier messages -- the app has already saved those. "
         "If the user's current message has no food, set foods to [].\n"
-        "6. If the user says 'skip', 'nothing', 'no', or 'that's it' for any field †' leave it null.\n"
+        "6. If the user says 'skip', 'nothing', 'no', or 'that's it' for any field -- leave it null.\n"
         "7. If the user sends ONLY a greeting (hi, hello, hey, good morning etc.) with no health data: "
         "reply warmly in one sentence asking what they ate or how their day went. Set logged:null. Do NOT ask about all missing fields.\n"
         "8. If the user asks for something outside today's log (build a plan, change schedule, etc.): "
@@ -2837,7 +2868,7 @@ USER PROFILE:
 - Fitness level: {fit_level}
 - Preferred exercises: {exercises}
 
-Address them by name occasionally. Let their goal and level shape your advice naturally."""
+Always start every response by addressing them by name (e.g. "Saksham, ..." or "Great question, Saksham —"). Let their goal and level shape your advice naturally."""
 
     coach_messages = []
     if isinstance(history, list):

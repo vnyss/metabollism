@@ -1,0 +1,8 @@
+version: 1.1.1
+files:
+  - url: https://github.com/vnyss/metabollism/releases/download/v1.1.1/TooGood-Setup.exe
+    sha512: ZJ9fLYUoCPD7ZjplXaDSPTeqi4QRJ06zirpfSnkE6JZtwZD9fQzVHlIoPw62vGeGis5c4KBIxF1sN/puC8SXHg==
+    size: 185436544
+path: https://github.com/vnyss/metabollism/releases/download/v1.1.1/TooGood-Setup.exe
+sha512: ZJ9fLYUoCPD7ZjplXaDSPTeqi4QRJ06zirpfSnkE6JZtwZD9fQzVHlIoPw62vGeGis5c4KBIxF1sN/puC8SXHg==
+releaseDate: '2026-07-06T06:56:19.934Z'

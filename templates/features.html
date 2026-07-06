@@ -1,101 +1,380 @@
-﻿<!DOCTYPE html>
-<html>
+<!DOCTYPE html>
+<html lang="en">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Too Good</title>
-
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css"
-          rel="stylesheet">
+    <title>Features — Too Good</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="{{ url_for('static', filename='stylesfeatures.css') }}">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Courier+Prime:ital,wght@0,400;0,700;1,400&family=Special+Elite&display=swap" rel="stylesheet">
-</head>
+    <style>
+    /* ── All-features grid ── */
+    .all-features-section {
+        width: 90%; max-width: 1200px;
+        margin: 20px auto 0;
+        background: var(--surface);
+        border: 1px solid var(--border);
+        padding: 56px 56px 60px;
+        position: relative;
+        box-sizing: border-box;
+    }
+    .all-features-section::before {
+        content: ''; position: absolute; top: 0; left: 0;
+        width: 40px; height: 2px; background: var(--gold);
+    }
+    .all-features-section h2 {
+        font-family: var(--display); font-size: clamp(22px,2.8vw,38px);
+        color: var(--text); font-weight: 400; letter-spacing: 0.02em;
+        margin-bottom: 8px;
+    }
+    .all-features-section .intro-text {
+        font-family: var(--mono); font-size: 14px; color: var(--text-2);
+        line-height: 1.75; margin-bottom: 44px; max-width: 680px;
+    }
 
+    .feat-category { margin-bottom: 44px; }
+    .feat-category-label {
+        font-family: var(--mono); font-size: 10px; color: var(--gold);
+        letter-spacing: 3px; text-transform: uppercase;
+        margin-bottom: 18px; padding-bottom: 10px;
+        border-bottom: 1px solid var(--border);
+    }
+    .feat-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+        gap: 14px;
+    }
+    .feat-card {
+        background: var(--bg);
+        border: 1px solid rgba(201,168,76,0.10);
+        padding: 18px 20px;
+        transition: border-color 0.18s;
+    }
+    .feat-card:hover { border-color: rgba(201,168,76,0.32); }
+    .feat-card-name {
+        font-family: var(--display); font-size: 14px; color: var(--gold);
+        letter-spacing: 0.04em; margin-bottom: 6px;
+    }
+    .feat-card-desc {
+        font-family: var(--mono); font-size: 12px; color: var(--text-2);
+        line-height: 1.7; margin: 0;
+    }
+
+    /* Count bar */
+    .count-bar {
+        display: flex; gap: 32px; flex-wrap: wrap;
+        margin-bottom: 44px;
+    }
+    .count-item { display: flex; flex-direction: column; }
+    .count-num { font-family: var(--display); font-size: 40px; color: var(--gold); line-height: 1; }
+    .count-lbl { font-family: var(--mono); font-size: 10px; color: var(--text-3);
+                 letter-spacing: 2px; text-transform: uppercase; margin-top: 4px; }
+
+    @media (max-width: 700px) {
+        .all-features-section { padding: 32px 24px 40px; }
+        .feat-grid { grid-template-columns: 1fr 1fr; gap: 10px; }
+    }
+    @media (max-width: 420px) {
+        .feat-grid { grid-template-columns: 1fr; }
+    }
+    </style>
+</head>
 <body>
 
-<!-- Navbar starts -->
+<!-- Navbar -->
 <nav class="navbar navbar-expand-md fixed-top custom-navbar">
     <div class="container-fluid">
-
         <a class="navbar-brand" href="{{ url_for('home') }}">
             <img src="{{ url_for('static', filename='images/logo.svg') }}" alt="Too Good Logo" width="40" height="40">
         </a>
-
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse">
             <span class="navbar-toggler-icon"></span>
         </button>
-
         <div class="collapse navbar-collapse" id="navbarCollapse">
-
-            <!-- Left side -->
             <ul class="navbar-nav me-auto mb-2 mb-md-0">
-                <li class="nav-item">
-                    <a class="nav-link active" href="{{ url_for('home') }}">Home</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link active" href="{{ url_for('features') }}">Features</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link active" href="{{ url_for('about') }}">About</a>
-                </li>
+                <li class="nav-item"><a class="nav-link" href="{{ url_for('home') }}">Home</a></li>
+                <li class="nav-item"><a class="nav-link active-page" href="{{ url_for('features') }}">Features</a></li>
+                <li class="nav-item"><a class="nav-link" href="{{ url_for('about') }}">About</a></li>
+                <li class="nav-item"><a class="nav-link" href="{{ url_for('get_app') }}">Buy</a></li>
             </ul>
-
-            <!-- Right side -->
             <ul class="navbar-nav">
-                <li class="nav-item">
-                    <a class="nav-link active" href="https://visionary-palmier-db40fb.netlify.app">Login</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link active" href="https://visionary-palmier-db40fb.netlify.app">Sign Up</a>
-                </li>
+                <li class="nav-item"><a class="nav-link" href="/login">Login</a></li>
+                <li class="nav-item"><a class="nav-link" href="/signup">Sign Up</a></li>
             </ul>
-
         </div>
     </div>
 </nav>
 
-<!-- Hero (jumbotron 1) -->
+<!-- Hero -->
 <div class="p-5 mb-4 bg-body-tertiary rounded-3">
     <div class="container-fluid py-5">
-        <h1 class="display-5 fw-bold">Get Custom Diets in the blink of an eye!</h1>
-        <p class="col-md-8 fs-4">Personalised plans just for you, to allow you to achieve your goals in no time!</p>
-        <a href="https://visionary-palmier-db40fb.netlify.app" class="btn btn-outline-secondary btn-lg px-4 rounded-pill">
-            Get Started
-        </a>
+        <p class="section-eyebrow">Everything in one place</p>
+        <h1 class="display-5 fw-bold">45+ features. Zero compromises.</h1>
+        <p class="col-md-8 fs-4">AI coaching, nutrition tracking, workouts, health monitoring, social, and more — all working together in a single beautifully designed app.</p>
+        <a href="/signup" class="btn btn-outline-secondary btn-lg px-4 rounded-pill">Try It Free</a>
     </div>
 </div>
 
-<!-- Track Your Health (jumbotron 2) -->
-<div class="p-5 mb-4 feature-jumbotron rounded-3">
-    <div class="container-fluid py-5">
-        <h1 class="display-5 fw-bold">Track your Health</h1>
-        <p class="col-md-8 fs-4">Scan barcodes behind food items to receive their nutritional value and get pro-tips on whether to consume or not, thus allowing you to reach your deficit/gain faster!</p>
-       <a href="https://visionary-palmier-db40fb.netlify.app" class="btn btn-outline-secondary btn-lg px-4 rounded-pill">
-            Get Started
-        </a>
+<!-- Complete feature list -->
+<div class="all-features-section">
+    <div class="count-bar">
+        <div class="count-item"><span class="count-num">45+</span><span class="count-lbl">Total Features</span></div>
+        <div class="count-item"><span class="count-num">6</span><span class="count-lbl">Core Categories</span></div>
+        <div class="count-item"><span class="count-num">1</span><span class="count-lbl">App, All Platforms</span></div>
     </div>
-</div>
 
-<!-- Two column row -->
-<div class="row align-items-md-stretch">
-    <div class="col-md-6">
-        <div class="h-100 p-5 ai-card rounded-3">
-            <h2>Use our AI assistant</h2>
-            <p>Use our AI assistant, trained on diverse data from around the globe, to answer questions, provide clarifications, and support understanding of your personalized diet plan.</p>
-            <a href="https://visionary-palmier-db40fb.netlify.app" class="btn btn-outline-secondary btn-lg px-4 rounded-pill">
-            Get Started
-        </a>
+    <!-- AI & Coaching -->
+    <div class="feat-category">
+        <div class="feat-category-label">AI &amp; Coaching</div>
+        <div class="feat-grid">
+            <div class="feat-card">
+                <div class="feat-card-name">AI Assistant</div>
+                <p class="feat-card-desc">Ask anything about nutrition, training, or health. Powered by Claude. Voice input supported. Remembers your goals across sessions.</p>
+            </div>
+            <div class="feat-card">
+                <div class="feat-card-name">AI Coach</div>
+                <p class="feat-card-desc">A dedicated coaching chat that builds personalised plans, gives accountability check-ins, and adapts advice as you progress.</p>
+            </div>
+            <div class="feat-card">
+                <div class="feat-card-name">Adapt</div>
+                <p class="feat-card-desc">AI-driven adaptive planning. Your workouts and nutrition targets evolve automatically based on your recent logs and progress trends.</p>
+            </div>
+            <div class="feat-card">
+                <div class="feat-card-name">Smart Targets</div>
+                <p class="feat-card-desc">AI sets realistic, phased goals based on your starting point. Milestones, micro-targets, and projected timelines built for you.</p>
+            </div>
+            <div class="feat-card">
+                <div class="feat-card-name">Image Meal Analysis</div>
+                <p class="feat-card-desc">Photograph your plate and get an instant calorie and macro estimate. No manual logging required — just point and ask.</p>
+            </div>
+            <div class="feat-card">
+                <div class="feat-card-name">Contextual Memory</div>
+                <p class="feat-card-desc">The AI retains your preferences, intolerances, and history between every conversation. You never have to re-explain yourself.</p>
+            </div>
         </div>
     </div>
-    <div class="col-md-6">
-        <div class="h-100 p-5 error-card border rounded-3">
-            <h2>No Errors</h2>
-            <p>Our software minimizes errors in diet planning by analyzing nutritional data, applying validated rules, adapting to user preferences, and continuously checking recommendations for balance, consistency, and suitability.</p>
-            <a href="https://visionary-palmier-db40fb.netlify.app" class="btn btn-outline-secondary btn-lg px-4 rounded-pill">
-            Get Started
-        </a>
+
+    <!-- Nutrition & Food -->
+    <div class="feat-category">
+        <div class="feat-category-label">Nutrition &amp; Food</div>
+        <div class="feat-grid">
+            <div class="feat-card">
+                <div class="feat-card-name">Log Today</div>
+                <p class="feat-card-desc">Voice-powered daily logging. Just say "I had oats and a banana for breakfast" and it's logged. Covers food, sleep, and water in one screen.</p>
+            </div>
+            <div class="feat-card">
+                <div class="feat-card-name">Food Diary</div>
+                <p class="feat-card-desc">Full diary with daily breakdowns, history, streak tracking, and a calendar view. See every meal you've ever logged, searchable.</p>
+            </div>
+            <div class="feat-card">
+                <div class="feat-card-name">Barcode Scanner</div>
+                <p class="feat-card-desc">Scan any food packet barcode to pull in full nutritional data instantly. Works with millions of products globally.</p>
+            </div>
+            <div class="feat-card">
+                <div class="feat-card-name">Nutrient Tracker</div>
+                <p class="feat-card-desc">Deep breakdown beyond macros — vitamins, minerals, fibre, cholesterol, fatty acids. Know exactly what you're eating at a molecular level.</p>
+            </div>
+            <div class="feat-card">
+                <div class="feat-card-name">Water Tracker</div>
+                <p class="feat-card-desc">Hydration goals, glass-by-glass logging, and daily streak. Set reminders to drink every hour and hit your target.</p>
+            </div>
+            <div class="feat-card">
+                <div class="feat-card-name">Fasting Tracker</div>
+                <p class="feat-card-desc">Intermittent fasting timer with 16:8, 18:6, OMAD, and custom protocols. Live countdown, fasting history, and streak tracking.</p>
+            </div>
+            <div class="feat-card">
+                <div class="feat-card-name">Recipe Library</div>
+                <p class="feat-card-desc">Hundreds of healthy recipes with full nutritional information per serving. Filter by goal, cuisine, diet type, and cook time.</p>
+            </div>
+            <div class="feat-card">
+                <div class="feat-card-name">Meal Plans</div>
+                <p class="feat-card-desc">Ready-made weekly meal plans designed for fat loss, muscle gain, and maintenance. Adjust serving sizes and swap meals on demand.</p>
+            </div>
+            <div class="feat-card">
+                <div class="feat-card-name">Meal Planning</div>
+                <p class="feat-card-desc">Build your own weekly meal schedule from scratch. Drag, drop, and repeat across weeks. Shopping list generated automatically.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Fitness & Workouts -->
+    <div class="feat-category">
+        <div class="feat-category-label">Fitness &amp; Workouts</div>
+        <div class="feat-grid">
+            <div class="feat-card">
+                <div class="feat-card-name">Workout Logger</div>
+                <p class="feat-card-desc">Log any workout: sets, reps, weight, rest time. Supports free weights, machines, bodyweight, and cardio. Supersets included.</p>
+            </div>
+            <div class="feat-card">
+                <div class="feat-card-name">Workout Sessions</div>
+                <p class="feat-card-desc">Full history of every session you've completed — volume, duration, exercises, and performance trends over time.</p>
+            </div>
+            <div class="feat-card">
+                <div class="feat-card-name">Exercise Library</div>
+                <p class="feat-card-desc">Hundreds of exercises with instructions, muscle group diagrams, and form cues. Filter by muscle, equipment, and difficulty.</p>
+            </div>
+            <div class="feat-card">
+                <div class="feat-card-name">Guided Workout</div>
+                <p class="feat-card-desc">Follow along with guided sessions. Rest timers, exercise demos, and progress cues — like having a trainer in your pocket.</p>
+            </div>
+            <div class="feat-card">
+                <div class="feat-card-name">Home Workout</div>
+                <p class="feat-card-desc">Zero-equipment programs for every level. Full body, upper/lower, HIIT, yoga, and stretch routines you can do anywhere.</p>
+            </div>
+            <div class="feat-card">
+                <div class="feat-card-name">Workout Programs</div>
+                <p class="feat-card-desc">Follow structured multi-week programs: PPL, 5x5, GZCLP, upper/lower, and more. Progress tracked automatically session to session.</p>
+            </div>
+            <div class="feat-card">
+                <div class="feat-card-name">Programs Library</div>
+                <p class="feat-card-desc">Browse, preview, and download training programs. Beginner to advanced. Powerlifting, hypertrophy, endurance, and sports-specific.</p>
+            </div>
+            <div class="feat-card">
+                <div class="feat-card-name">HIIT Timer</div>
+                <p class="feat-card-desc">Fully configurable interval timer. Set work, rest, and rounds. Tabata presets built in. Runs with screen off and audio cues.</p>
+            </div>
+            <div class="feat-card">
+                <div class="feat-card-name">Gym Progress</div>
+                <p class="feat-card-desc">Track personal records per exercise. Charts show strength progression over weeks and months. Spot plateaus before they demotivate you.</p>
+            </div>
+            <div class="feat-card">
+                <div class="feat-card-name">Gym Tools</div>
+                <p class="feat-card-desc">One-rep max calculator, TDEE calculator, plate calculator, macro calculator, and body fat estimator — all in one toolkit.</p>
+            </div>
+            <div class="feat-card">
+                <div class="feat-card-name">Schedule</div>
+                <p class="feat-card-desc">Plan your training week. Assign workout types to days, set rest days, and get a visual weekly overview of your planned activity.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Health Monitoring -->
+    <div class="feat-category">
+        <div class="feat-category-label">Health Monitoring</div>
+        <div class="feat-grid">
+            <div class="feat-card">
+                <div class="feat-card-name">Health Monitor</div>
+                <p class="feat-card-desc">Log and track blood markers: glucose, cholesterol, haemoglobin, blood pressure, and more. Trend charts with reference ranges.</p>
+            </div>
+            <div class="feat-card">
+                <div class="feat-card-name">Health Metrics</div>
+                <p class="feat-card-desc">Comprehensive health dashboard — resting heart rate, VO2 max, recovery score, energy levels, and weekly health snapshot.</p>
+            </div>
+            <div class="feat-card">
+                <div class="feat-card-name">Health Risk Score</div>
+                <p class="feat-card-desc">AI-calculated risk assessment across cardiovascular, metabolic, and lifestyle factors. Actionable recommendations to improve your score.</p>
+            </div>
+            <div class="feat-card">
+                <div class="feat-card-name">Step Tracker</div>
+                <p class="feat-card-desc">Daily step count with goal setting, weekly average, and streak. Connects to your device sensors and fitness watches.</p>
+            </div>
+            <div class="feat-card">
+                <div class="feat-card-name">Sleep Tracker</div>
+                <p class="feat-card-desc">Log sleep duration and quality. Track sleep debt, bedtime consistency, and weekly sleep trends. Tie sleep to energy and mood.</p>
+            </div>
+            <div class="feat-card">
+                <div class="feat-card-name">BMI Calculator</div>
+                <p class="feat-card-desc">Body mass index with history, trend chart, and context. Track how your BMI changes as your composition improves over months.</p>
+            </div>
+            <div class="feat-card">
+                <div class="feat-card-name">Period Tracker</div>
+                <p class="feat-card-desc">Cycle logging, flow intensity, symptom tracking, and ovulation predictions. Nutrition and workout adjustments suggested per phase.</p>
+            </div>
+            <div class="feat-card">
+                <div class="feat-card-name">Transformation Photos</div>
+                <p class="feat-card-desc">Before/after photo comparisons with consistent framing guides. Side-by-side view across any two dates to see your real progress.</p>
+            </div>
+            <div class="feat-card">
+                <div class="feat-card-name">Trackers Hub</div>
+                <p class="feat-card-desc">All your trackers in one place — steps, sleep, water, weight, body fat. A single view of every health metric that matters to you.</p>
+            </div>
+            <div class="feat-card">
+                <div class="feat-card-name">Reminders</div>
+                <p class="feat-card-desc">Smart reminders for workouts, water, meals, sleep, supplements, and measurements. Customise time, frequency, and message.</p>
+            </div>
+            <div class="feat-card">
+                <div class="feat-card-name">Watch Connect</div>
+                <p class="feat-card-desc">Sync with Apple Watch, Garmin, Google Fit, and other wearables. Pull step counts, heart rate, and workouts automatically.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Goals & Progress -->
+    <div class="feat-category">
+        <div class="feat-category-label">Goals &amp; Progress</div>
+        <div class="feat-grid">
+            <div class="feat-card">
+                <div class="feat-card-name">Goals Progress</div>
+                <p class="feat-card-desc">Visual progress toward every active goal. Weight targets, strength targets, habit streaks — all tracked with percentage completion.</p>
+            </div>
+            <div class="feat-card">
+                <div class="feat-card-name">Score System</div>
+                <p class="feat-card-desc">A daily health and fitness score based on your nutrition, activity, sleep, and consistency. Gamified, so every healthy choice counts.</p>
+            </div>
+            <div class="feat-card">
+                <div class="feat-card-name">Activity Calendar</div>
+                <p class="feat-card-desc">Full calendar view of every workout, meal log, and achievement. Spot gaps, celebrate streaks, and review any past day.</p>
+            </div>
+            <div class="feat-card">
+                <div class="feat-card-name">Segments</div>
+                <p class="feat-card-desc">Define performance segments — a route, an exercise, a time trial. Race your own history and see improvement over repeated efforts.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Social & Community -->
+    <div class="feat-category">
+        <div class="feat-category-label">Social &amp; Community</div>
+        <div class="feat-grid">
+            <div class="feat-card">
+                <div class="feat-card-name">Social Feed</div>
+                <p class="feat-card-desc">Share workouts, meals, and milestones with your network. React and comment on others' progress. Accountability built in.</p>
+            </div>
+            <div class="feat-card">
+                <div class="feat-card-name">User Profile</div>
+                <p class="feat-card-desc">Your public stats, badges, streak record, and recent activity. Share your profile or keep it private — your choice.</p>
+            </div>
+            <div class="feat-card">
+                <div class="feat-card-name">Fitness Clubs</div>
+                <p class="feat-card-desc">Create or join clubs around a sport, goal, or lifestyle. Club feed, shared challenges, and leaderboards for members.</p>
+            </div>
+            <div class="feat-card">
+                <div class="feat-card-name">Challenges</div>
+                <p class="feat-card-desc">Join weekly and monthly challenges: step count, workout frequency, calorie targets. Compete, earn badges, top the board.</p>
+            </div>
+            <div class="feat-card">
+                <div class="feat-card-name">Compete</div>
+                <p class="feat-card-desc">Head-to-head and group competitions on any metric. Challenge a friend to a 30-day step battle or a monthly weight-loss race.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Appearance & Experience -->
+    <div class="feat-category">
+        <div class="feat-category-label">Appearance &amp; Experience</div>
+        <div class="feat-grid">
+            <div class="feat-card">
+                <div class="feat-card-name">8 Colour Themes</div>
+                <p class="feat-card-desc">Gold, forest green, crimson, ice blue, violet, sand, graphite, and rose. Every theme applies live with one tap — no reload.</p>
+            </div>
+            <div class="feat-card">
+                <div class="feat-card-name">Live Weather Effects</div>
+                <p class="feat-card-desc">Rain, snow, fog, thunderstorm, or sunshine — the dashboard reflects your real local weather with live animated effects.</p>
+            </div>
+            <div class="feat-card">
+                <div class="feat-card-name">Festival Greetings</div>
+                <p class="feat-card-desc">Greets you on Diwali, Eid, Holi, Christmas, Lunar New Year, and 50+ festivals from 35+ countries, based on your location.</p>
+            </div>
+            <div class="feat-card">
+                <div class="feat-card-name">Family Celebrations</div>
+                <p class="feat-card-desc">Tell us your family role and get a personalised greeting on Mother's Day, Father's Day, Grandparents' Day, and more.</p>
+            </div>
+            <div class="feat-card">
+                <div class="feat-card-name">Full UI Control</div>
+                <p class="feat-card-desc">Font size, corner radius, sidebar width, chat density, animation speed, dark/light mode — every detail tunable to your preference.</p>
+            </div>
         </div>
     </div>
 </div>
@@ -103,22 +382,27 @@
 <!-- Stats bar -->
 <div class="stats-bar">
     <div class="stat-item">
-        <span class="stat-num">50+</span>
-        <span class="stat-label">diet frameworks supported</span>
-    </div>
-    <div class="stat-sep"></div>
-    <div class="stat-item">
-        <span class="stat-num">1,000+</span>
-        <span class="stat-label">nutrition studies in training data</span>
+        <span class="stat-num">45+</span>
+        <span class="stat-label">features in one app</span>
     </div>
     <div class="stat-sep"></div>
     <div class="stat-item">
         <span class="stat-num">Real-time</span>
-        <span class="stat-label">AI responses, no queue waiting</span>
+        <span class="stat-label">AI responses, no queue</span>
+    </div>
+    <div class="stat-sep"></div>
+    <div class="stat-item">
+        <span class="stat-num">1,000+</span>
+        <span class="stat-label">Indian foods in database</span>
+    </div>
+    <div class="stat-sep"></div>
+    <div class="stat-item">
+        <span class="stat-num">35+</span>
+        <span class="stat-label">countries for festivals</span>
     </div>
 </div>
 
-<!-- AI Feature detail -->
+<!-- AI detail -->
 <div class="p-5 feature-jumbotron rounded-3">
     <div class="container-fluid py-5">
         <p class="section-eyebrow">The AI</p>
@@ -145,12 +429,66 @@
     </div>
 </div>
 
+<!-- Fitness detail -->
+<div class="p-5 feature-jumbotron rounded-3">
+    <div class="container-fluid py-5">
+        <p class="section-eyebrow">Fitness</p>
+        <h1 class="display-5 fw-bold">Every tool a serious athlete needs.</h1>
+        <p class="col-md-8 fs-4">From a beginner's first home workout to an advanced powerlifter tracking PRs — Too Good covers every stage of the fitness journey with purpose-built tools.</p>
+        <div class="feature-detail-grid">
+            <div class="feature-detail-item">
+                <span class="fd-label">Full Workout Logging</span>
+                <p class="fd-desc">Log sets, reps, weight, RPE, rest time, and notes for any exercise. Supersets, drop sets, and warmup sets all tracked separately.</p>
+            </div>
+            <div class="feature-detail-item">
+                <span class="fd-label">Structured Programs</span>
+                <p class="fd-desc">Follow proven multi-week programs session by session. Progressive overload applied automatically. Never wonder what to do at the gym again.</p>
+            </div>
+            <div class="feature-detail-item">
+                <span class="fd-label">HIIT & Guided Sessions</span>
+                <p class="fd-desc">Configurable interval timer with audio cues, plus guided follow-along sessions with exercise demos and coaching prompts.</p>
+            </div>
+            <div class="feature-detail-item">
+                <span class="fd-label">Strength Progress Charts</span>
+                <p class="fd-desc">See your bench, squat, and deadlift grow over months. Charts per exercise, estimated 1RM trends, and volume load analysis.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Health monitoring detail -->
+<div class="p-5 feature-jumbotron rounded-3">
+    <div class="container-fluid py-5">
+        <p class="section-eyebrow">Health Monitoring</p>
+        <h1 class="display-5 fw-bold">Know your body. All of it.</h1>
+        <p class="col-md-8 fs-4">Steps, sleep, blood markers, cycle, transformation photos — Too Good tracks everything that matters so you can see the full picture of your health, not just your calories.</p>
+        <div class="feature-detail-grid">
+            <div class="feature-detail-item">
+                <span class="fd-label">Blood Marker Tracking</span>
+                <p class="fd-desc">Log cholesterol, glucose, haemoglobin, blood pressure, and 20+ other markers. Trend charts with clinical reference ranges shown clearly.</p>
+            </div>
+            <div class="feature-detail-item">
+                <span class="fd-label">Sleep Analysis</span>
+                <p class="fd-desc">Track sleep duration, quality, and consistency. See how sleep debt correlates with your energy, workout performance, and appetite.</p>
+            </div>
+            <div class="feature-detail-item">
+                <span class="fd-label">Health Risk Score</span>
+                <p class="fd-desc">AI calculates a composite health risk score across lifestyle, nutrition, and activity. Get specific, ranked actions to reduce your risk.</p>
+            </div>
+            <div class="feature-detail-item">
+                <span class="fd-label">Transformation Tracking</span>
+                <p class="fd-desc">Side-by-side photo comparisons with consistent framing guides. The most honest measure of your progress — better than the scale.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
 <!-- Personalisation detail -->
 <div class="p-5 feature-jumbotron rounded-3">
     <div class="container-fluid py-5">
         <p class="section-eyebrow">Personalisation</p>
         <h1 class="display-5 fw-bold">Not a template. A plan built for you.</h1>
-        <p class="col-md-8 fs-4">Generic diet plans fail because generic bodies do not exist. Too Good asks about your lifestyle, food preferences, schedule, and goal — then builds something you can actually follow.</p>
+        <p class="col-md-8 fs-4">Generic plans fail because generic bodies do not exist. Too Good asks about your lifestyle, preferences, schedule, and goals — then builds something you can actually follow.</p>
         <div class="feature-detail-grid">
             <div class="feature-detail-item">
                 <span class="fd-label">Goal Targeting</span>
@@ -166,7 +504,7 @@
             </div>
             <div class="feature-detail-item">
                 <span class="fd-label">No Extremes</span>
-                <p class="fd-desc">Too Good never recommends crash diets, extreme deficits, or supplements with questionable evidence. Sustainable is the default.</p>
+                <p class="fd-desc">Too Good never recommends crash diets or extreme deficits. Sustainable is the default. Your long-term health matters more than speed.</p>
             </div>
         </div>
     </div>
@@ -199,7 +537,7 @@
     </div>
 </div>
 
-<!-- Appearance + Celebrations detail -->
+<!-- Appearance detail -->
 <div class="p-5 feature-jumbotron rounded-3">
     <div class="container-fluid py-5">
         <p class="section-eyebrow">Your Space</p>
@@ -238,23 +576,25 @@
     <div class="col-md-6">
         <div class="h-100 p-5 error-card border rounded-3">
             <h2>Safe &amp; Private</h2>
-            <p>Your health data is yours. We store only what is necessary to run your sessions, never sell it, and never use it to train AI models without consent.</p>
-            <a href="https://visionary-palmier-db40fb.netlify.app" class="btn btn-outline-secondary btn-lg px-4 rounded-pill">Sign Up Free</a>
+            <p>Your health data is yours. We store only what is necessary to run your sessions, never sell it, and never use it to train AI models without your consent.</p>
+            <a href="/signup" class="btn btn-outline-secondary btn-lg px-4 rounded-pill">Sign Up Free</a>
         </div>
     </div>
 </div>
 
-<!-- Features CTA -->
-<div class="p-5 mb-4 feature-jumbotron rounded-3 section-center">
+<!-- CTA -->
+<div class="p-5 mb-4 feature-jumbotron rounded-3 section-center" style="margin-bottom: 60px !important;">
     <div class="container-fluid py-5">
         <p class="section-eyebrow">Get Started</p>
         <h1 class="display-5 fw-bold">All of this. Free to try.</h1>
         <p class="cta-sub">No subscription required to start. No credit card. No fine print worth worrying about.</p>
-        <a href="https://visionary-palmier-db40fb.netlify.app" class="btn btn-primary btn-lg px-4 rounded-pill">Create Free Account</a>
+        <div style="display:flex;gap:14px;justify-content:center;flex-wrap:wrap;">
+            <a href="/signup" class="btn btn-primary btn-lg px-4 rounded-pill">Create Free Account</a>
+            <a href="{{ url_for('get_app') }}" class="btn btn-outline-secondary btn-lg px-4 rounded-pill">Download Desktop App</a>
+        </div>
     </div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
-
 </body>
 </html>

@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Get Too Good — Download</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
+<link rel="stylesheet" href="{{ url_for('static', filename='stylesindex.css') }}">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Courier+Prime:ital,wght@0,400;0,700;1,400&family=Special+Elite&display=swap" rel="stylesheet">
+<style>
+/* ── Get page specific ── */
+.get-hero {
+    margin-top: 80px;
+    padding: 100px 24px 80px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+}
+.get-hero::before {
+    content: '';
+    position: absolute;
+    top: -160px; left: 50%;
+    transform: translateX(-50%);
+    width: 700px; height: 700px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(201,168,76,0.07) 0%, transparent 70%);
+    pointer-events: none;
+}
+.get-eyebrow {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 20px;
+    opacity: 0.85;
+}
+.get-hero h1 {
+    font-family: var(--display);
+    font-size: clamp(2.8rem, 6vw, 5rem);
+    color: var(--text);
+    line-height: 1.1;
+    margin-bottom: 24px;
+    letter-spacing: -0.02em;
+}
+.get-hero h1 span { color: var(--gold); }
+.get-hero p {
+    font-family: var(--mono);
+    font-size: 15px;
+    color: var(--text-2);
+    max-width: 520px;
+    margin: 0 auto 48px;
+    line-height: 1.8;
+}
+
+/* ── Download card ── */
+.download-card {
+    background: #0F0F0F;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 40px 48px;
+    max-width: 560px;
+    margin: 0 auto 20px;
+    text-align: left;
+    position: relative;
+}
+.download-card::before {
+    content: '';
+    position: absolute;
+    inset: -1px;
+    border-radius: 4px;
+    background: linear-gradient(135deg, rgba(201,168,76,0.22), transparent 50%, rgba(201,168,76,0.06));
+    z-index: 0;
+    pointer-events: none;
+}
+.download-card > * { position: relative; z-index: 1; }
+
+.platform-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--text-3);
+    border: 1px solid rgba(201,168,76,0.15);
+    padding: 5px 12px;
+    border-radius: 2px;
+    margin-bottom: 24px;
+}
+.platform-badge svg { opacity: 0.5; }
+
+.download-card h2 {
+    font-family: var(--display);
+    font-size: 22px;
+    color: var(--text);
+    margin-bottom: 8px;
+    letter-spacing: 0.02em;
+}
+.download-card .version {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--text-3);
+    letter-spacing: 1px;
+    margin-bottom: 28px;
+}
+
+.btn-download {
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    background: var(--gold);
+    color: #080808 !important;
+    font-family: var(--mono);
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    text-decoration: none !important;
+    padding: 14px 28px;
+    border-radius: 2px;
+    transition: background 0.2s, transform 0.15s;
+    width: 100%;
+    justify-content: center;
+    margin-bottom: 16px;
+}
+.btn-download:hover {
+    background: var(--gold-h);
+    transform: translateY(-1px);
+}
+.btn-download:active { transform: translateY(0); }
+.btn-download svg { flex-shrink: 0; }
+
+.download-meta {
+    display: flex;
+    gap: 20px;
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--text-3);
+    letter-spacing: 0.5px;
+}
+.download-meta span { display: flex; align-items: center; gap: 5px; }
+
+/* ── Mobile notice ── */
+.mobile-notice {
+    background: #0F0F0F;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 40px 48px;
+    max-width: 560px;
+    margin: 0 auto 20px;
+    text-align: center;
+}
+.mobile-notice h2 {
+    font-family: var(--display);
+    font-size: 20px;
+    color: var(--text);
+    margin-bottom: 12px;
+}
+.mobile-notice p {
+    font-family: var(--mono);
+    font-size: 13px;
+    color: var(--text-2);
+    line-height: 1.7;
+    margin: 0;
+}
+.mobile-notice .web-link {
+    display: inline-block;
+    margin-top: 20px;
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--gold);
+    letter-spacing: 1px;
+    text-decoration: none;
+    border-bottom: 1px solid rgba(201,168,76,0.4);
+    padding-bottom: 2px;
+    transition: color 0.2s;
+}
+.mobile-notice .web-link:hover { color: var(--gold-h); }
+
+/* ── Features strip ── */
+.features-strip {
+    padding: 80px 24px;
+    max-width: 900px;
+    margin: 0 auto;
+}
+.features-strip h3 {
+    font-family: var(--display);
+    font-size: 13px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--text-3);
+    text-align: center;
+    margin-bottom: 48px;
+}
+.feature-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 24px;
+}
+.feature-tile {
+    background: #0F0F0F;
+    border: 1px solid var(--border);
+    padding: 24px;
+    border-radius: 3px;
+    transition: border-color 0.2s;
+}
+.feature-tile:hover { border-color: rgba(201,168,76,0.35); }
+.feature-tile-icon {
+    width: 36px; height: 36px;
+    background: rgba(201,168,76,0.08);
+    border: 1px solid rgba(201,168,76,0.18);
+    border-radius: 6px;
+    display: flex; align-items: center; justify-content: center;
+    margin-bottom: 14px;
+    color: var(--gold);
+}
+.feature-tile h4 {
+    font-family: var(--mono);
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--text);
+    letter-spacing: 0.5px;
+    margin-bottom: 8px;
+    text-transform: uppercase;
+}
+.feature-tile p {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--text-2);
+    line-height: 1.7;
+    margin: 0;
+}
+
+/* ── Requirements ── */
+.requirements {
+    max-width: 560px;
+    margin: 0 auto;
+    padding: 0 24px 80px;
+}
+.requirements h3 {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 2.5px;
+    text-transform: uppercase;
+    color: var(--text-3);
+    margin-bottom: 20px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--border);
+}
+.req-row {
+    display: flex;
+    justify-content: space-between;
+    font-family: var(--mono);
+    font-size: 12px;
+    padding: 10px 0;
+    border-bottom: 1px solid rgba(201,168,76,0.06);
+}
+.req-row .req-label { color: var(--text-3); }
+.req-row .req-val   { color: var(--text-2); }
+
+/* ── Safe badge ── */
+.safe-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--text-3);
+    letter-spacing: 1px;
+    margin-top: 4px;
+}
+.safe-row svg { color: var(--gold); opacity: 0.7; }
+</style>
+</head>
+<body>
+
+<!-- Nav -->
+<nav class="navbar navbar-expand-md fixed-top custom-navbar">
+<div class="container-fluid">
+  <a class="navbar-brand" href="{{ url_for('home') }}">
+    <img src="{{ url_for('static', filename='images/logo.svg') }}" width="40" height="40">
+  </a>
+  <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse">
+    <span class="navbar-toggler-icon"></span>
+  </button>
+  <div class="collapse navbar-collapse" id="navbarCollapse">
+    <ul class="navbar-nav me-auto">
+      <li class="nav-item"><a class="nav-link" href="{{ url_for('home') }}">Home</a></li>
+      <li class="nav-item"><a class="nav-link" href="{{ url_for('features') }}">Features</a></li>
+      <li class="nav-item"><a class="nav-link" href="{{ url_for('about') }}">About</a></li>
+      <li class="nav-item"><a class="nav-link active-page" href="{{ url_for('get_app') }}">Buy</a></li>
+    </ul>
+    <ul class="navbar-nav">
+      <li class="nav-item"><a class="nav-link" href="/login">Login</a></li>
+      <li class="nav-item"><a class="nav-link" href="/signup">Sign Up</a></li>
+    </ul>
+  </div>
+</div>
+</nav>
+
+<!-- Hero -->
+<div class="get-hero">
+  <p class="get-eyebrow">&#x2014;&nbsp; desktop application &nbsp;&#x2014;</p>
+  <h1>Too Good<br><span>for Windows</span></h1>
+  <p>The full Too Good experience — AI coaching, nutrition tracking, workouts, sleep, and more — running natively on your desktop.</p>
+
+  <!-- Download card (desktop only) -->
+  <div id="desktopDownload">
+    <div class="download-card">
+      <div class="platform-badge">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M0 3.449L9.75 2.1v9.451H0m10.949-9.602L24 0v11.4H10.949M0 12.6h9.75v9.451L0 20.699M10.949 12.6H24V24l-12.9-1.801"/></svg>
+        Windows 10 / 11
+      </div>
+      <h2>Too Good Desktop</h2>
+      <div class="version">Version 1.0.0 &nbsp;·&nbsp; Windows Installer (.exe)</div>
+
+      <a id="downloadBtn" href="/download/TooGood-Setup.exe" class="btn-download" download>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+          <polyline points="7 10 12 15 17 10"/>
+          <line x1="12" y1="15" x2="12" y2="3"/>
+        </svg>
+        Download for Windows
+      </a>
+
+      <div class="download-meta">
+        <span>
+          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+          Safe &amp; verified
+        </span>
+        <span>
+          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          ~176 MB
+        </span>
+        <span>
+          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+          NSIS installer
+        </span>
+      </div>
+    </div>
+    <div class="safe-row">
+      <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+      No account required to install &nbsp;·&nbsp; Uninstall anytime from Windows Settings
+    </div>
+  </div>
+
+  <!-- Mobile fallback -->
+  <div id="mobileNotice" style="display:none">
+    <div class="mobile-notice">
+      <h2>Too Good is a Desktop App</h2>
+      <p>The installer is designed for Windows laptops and PCs. Visit this page on your computer to download.</p>
+      <a href="/perfect" class="web-link">Or use the web app instead →</a>
+    </div>
+  </div>
+</div>
+
+<!-- Features — full list -->
+<div class="features-strip" style="max-width:1100px;padding:72px 40px 80px;">
+
+  <h3 style="text-align:left;margin-bottom:10px;font-size:13px;letter-spacing:3px;">Everything included</h3>
+  <p style="font-family:var(--mono);font-size:13px;color:var(--text-2);margin-bottom:48px;max-width:600px;line-height:1.7;">45+ features across AI coaching, nutrition, fitness, health monitoring, social, and personalisation — all in the desktop app.</p>
+
+  <!-- AI & Coaching -->
+  <p style="font-family:var(--mono);font-size:10px;color:var(--gold);letter-spacing:3px;text-transform:uppercase;margin-bottom:14px;padding-bottom:8px;border-bottom:1px solid rgba(201,168,76,0.15);">AI &amp; Coaching</p>
+  <div class="feature-grid" style="margin-bottom:36px;">
+    <div class="feature-tile"><h4>AI Assistant</h4><p>Ask Claude anything about nutrition, training, or health. Voice input. Remembers your goals across sessions.</p></div>
+    <div class="feature-tile"><h4>AI Coach</h4><p>Dedicated coaching chat with personalised plans, accountability check-ins, and adaptive advice.</p></div>
+    <div class="feature-tile"><h4>Adapt</h4><p>AI-driven adaptive planning — workouts and nutrition targets evolve automatically with your progress.</p></div>
+    <div class="feature-tile"><h4>Smart Targets</h4><p>AI sets realistic phased goals, milestones, and projected timelines based on your starting point.</p></div>
+    <div class="feature-tile"><h4>Image Meal Analysis</h4><p>Photograph your plate for an instant calorie and macro estimate. No manual logging required.</p></div>
+    <div class="feature-tile"><h4>Contextual Memory</h4><p>The AI retains your preferences, intolerances, and history. You never have to re-explain yourself.</p></div>
+  </div>
+
+  <!-- Nutrition & Food -->
+  <p style="font-family:var(--mono);font-size:10px;color:var(--gold);letter-spacing:3px;text-transform:uppercase;margin-bottom:14px;padding-bottom:8px;border-bottom:1px solid rgba(201,168,76,0.15);">Nutrition &amp; Food</p>
+  <div class="feature-grid" style="margin-bottom:36px;">
+    <div class="feature-tile"><h4>Log Today</h4><p>Voice-powered daily logging for food, sleep, and water in one screen. Just speak and it's done.</p></div>
+    <div class="feature-tile"><h4>Food Diary</h4><p>Full diary with daily breakdowns, history, streak tracking, and a searchable calendar view.</p></div>
+    <div class="feature-tile"><h4>Barcode Scanner</h4><p>Scan any food packet barcode to pull in full nutritional data instantly. Millions of products supported.</p></div>
+    <div class="feature-tile"><h4>Nutrient Tracker</h4><p>Deep breakdown beyond macros — vitamins, minerals, fibre, cholesterol, and fatty acids per meal.</p></div>
+    <div class="feature-tile"><h4>Water Tracker</h4><p>Hydration goals, glass-by-glass logging, daily streak, and hourly reminder support.</p></div>
+    <div class="feature-tile"><h4>Fasting Tracker</h4><p>Intermittent fasting timer. 16:8, 18:6, OMAD, and custom protocols. Live countdown and fasting history.</p></div>
+    <div class="feature-tile"><h4>Recipe Library</h4><p>Hundreds of healthy recipes with full nutrition info per serving. Filter by diet, cuisine, and cook time.</p></div>
+    <div class="feature-tile"><h4>Meal Plans</h4><p>Ready-made weekly meal plans for fat loss, muscle gain, and maintenance. Swap meals on demand.</p></div>
+    <div class="feature-tile"><h4>Meal Planning</h4><p>Build your own weekly meal schedule from scratch with auto-generated shopping lists.</p></div>
+  </div>
+
+  <!-- Fitness & Workouts -->
+  <p style="font-family:var(--mono);font-size:10px;color:var(--gold);letter-spacing:3px;text-transform:uppercase;margin-bottom:14px;padding-bottom:8px;border-bottom:1px solid rgba(201,168,76,0.15);">Fitness &amp; Workouts</p>
+  <div class="feature-grid" style="margin-bottom:36px;">
+    <div class="feature-tile"><h4>Workout Logger</h4><p>Log sets, reps, weight, rest time, and RPE for any exercise. Supersets and drop sets supported.</p></div>
+    <div class="feature-tile"><h4>Workout Sessions</h4><p>Full history of every session — volume, duration, exercises, and performance trends over time.</p></div>
+    <div class="feature-tile"><h4>Exercise Library</h4><p>Hundreds of exercises with instructions, muscle diagrams, and form cues. Filter by muscle and equipment.</p></div>
+    <div class="feature-tile"><h4>Guided Workout</h4><p>Follow-along sessions with rest timers, exercise demos, and coaching cues — like a trainer in your pocket.</p></div>
+    <div class="feature-tile"><h4>Home Workout</h4><p>Zero-equipment programs for every level. Full body, upper/lower, HIIT, yoga, and stretch routines.</p></div>
+    <div class="feature-tile"><h4>Workout Programs</h4><p>Follow structured multi-week programs: PPL, 5x5, GZCLP, upper/lower. Progressive overload auto-applied.</p></div>
+    <div class="feature-tile"><h4>Programs Library</h4><p>Browse and download training programs from beginner to advanced — powerlifting, hypertrophy, endurance.</p></div>
+    <div class="feature-tile"><h4>HIIT Timer</h4><p>Configurable interval timer. Set work, rest, and rounds. Tabata presets. Runs with audio cues.</p></div>
+    <div class="feature-tile"><h4>Gym Progress</h4><p>Track personal records per exercise. Strength charts, estimated 1RM trends, and volume load analysis.</p></div>
+    <div class="feature-tile"><h4>Gym Tools</h4><p>1RM calculator, TDEE calculator, plate calculator, macro calculator, and body fat estimator.</p></div>
+    <div class="feature-tile"><h4>Schedule</h4><p>Plan your training week — assign workouts to days, set rest days, get a visual weekly overview.</p></div>
+  </div>
+
+  <!-- Health Monitoring -->
+  <p style="font-family:var(--mono);font-size:10px;color:var(--gold);letter-spacing:3px;text-transform:uppercase;margin-bottom:14px;padding-bottom:8px;border-bottom:1px solid rgba(201,168,76,0.15);">Health Monitoring</p>
+  <div class="feature-grid" style="margin-bottom:36px;">
+    <div class="feature-tile"><h4>Health Monitor</h4><p>Log and track blood markers: glucose, cholesterol, blood pressure, and more. Trend charts with reference ranges.</p></div>
+    <div class="feature-tile"><h4>Health Metrics</h4><p>Comprehensive health dashboard — resting HR, VO2 max, recovery score, energy, and weekly snapshot.</p></div>
+    <div class="feature-tile"><h4>Health Risk Score</h4><p>AI-calculated risk assessment across lifestyle, nutrition, and activity. Ranked actions to reduce your risk.</p></div>
+    <div class="feature-tile"><h4>Step Tracker</h4><p>Daily step count with goal setting, weekly average, streak, and wearable sync support.</p></div>
+    <div class="feature-tile"><h4>Sleep Tracker</h4><p>Log sleep duration and quality. Track debt, bedtime consistency, and weekly sleep trends.</p></div>
+    <div class="feature-tile"><h4>BMI Calculator</h4><p>Body mass index with history and trend chart. Watch your composition change over months of data.</p></div>
+    <div class="feature-tile"><h4>Period Tracker</h4><p>Cycle logging, flow, symptoms, and ovulation predictions. Nutrition and workout suggestions per phase.</p></div>
+    <div class="feature-tile"><h4>Transformation Photos</h4><p>Before/after comparisons with consistent framing guides. Side-by-side view across any two dates.</p></div>
+    <div class="feature-tile"><h4>Trackers Hub</h4><p>Steps, sleep, water, weight, body fat — all your trackers in one single view.</p></div>
+    <div class="feature-tile"><h4>Reminders</h4><p>Smart reminders for workouts, water, meals, sleep, and measurements. Custom time, frequency, message.</p></div>
+    <div class="feature-tile"><h4>Watch Connect</h4><p>Sync with Apple Watch, Garmin, Google Fit, and other wearables. Pull step counts and workouts automatically.</p></div>
+  </div>
+
+  <!-- Goals & Progress -->
+  <p style="font-family:var(--mono);font-size:10px;color:var(--gold);letter-spacing:3px;text-transform:uppercase;margin-bottom:14px;padding-bottom:8px;border-bottom:1px solid rgba(201,168,76,0.15);">Goals &amp; Progress</p>
+  <div class="feature-grid" style="margin-bottom:36px;">
+    <div class="feature-tile"><h4>Goals Progress</h4><p>Visual progress toward every active goal — weight, strength, habits — with percentage completion.</p></div>
+    <div class="feature-tile"><h4>Score System</h4><p>Daily health and fitness score based on nutrition, activity, sleep, and consistency. Every healthy choice counts.</p></div>
+    <div class="feature-tile"><h4>Activity Calendar</h4><p>Full calendar of every workout, meal log, and achievement. Spot gaps, celebrate streaks, review any day.</p></div>
+    <div class="feature-tile"><h4>Segments</h4><p>Define performance segments and race your own history. See improvement over repeated efforts.</p></div>
+  </div>
+
+  <!-- Social & Community -->
+  <p style="font-family:var(--mono);font-size:10px;color:var(--gold);letter-spacing:3px;text-transform:uppercase;margin-bottom:14px;padding-bottom:8px;border-bottom:1px solid rgba(201,168,76,0.15);">Social &amp; Community</p>
+  <div class="feature-grid" style="margin-bottom:36px;">
+    <div class="feature-tile"><h4>Social Feed</h4><p>Share workouts, meals, and milestones. React and comment on others' progress. Accountability built in.</p></div>
+    <div class="feature-tile"><h4>User Profile</h4><p>Your public stats, badges, streak record, and recent activity. Share or keep private.</p></div>
+    <div class="feature-tile"><h4>Fitness Clubs</h4><p>Create or join clubs around a sport or goal. Club feed, shared challenges, and member leaderboards.</p></div>
+    <div class="feature-tile"><h4>Challenges</h4><p>Join weekly and monthly challenges on step count, workout frequency, and calorie targets. Earn badges.</p></div>
+    <div class="feature-tile"><h4>Compete</h4><p>Head-to-head and group competitions on any metric. Challenge a friend to a 30-day step battle.</p></div>
+  </div>
+
+  <!-- Appearance -->
+  <p style="font-family:var(--mono);font-size:10px;color:var(--gold);letter-spacing:3px;text-transform:uppercase;margin-bottom:14px;padding-bottom:8px;border-bottom:1px solid rgba(201,168,76,0.15);">Appearance &amp; Experience</p>
+  <div class="feature-grid">
+    <div class="feature-tile"><h4>8 Colour Themes</h4><p>Gold, forest green, crimson, ice blue, violet, sand, graphite, rose. All apply live with one tap.</p></div>
+    <div class="feature-tile"><h4>Live Weather Effects</h4><p>Dashboard reflects your real local weather — rain, snow, fog, or sunshine — with live animations.</p></div>
+    <div class="feature-tile"><h4>Festival Greetings</h4><p>Greets you on Diwali, Eid, Holi, Christmas, Lunar New Year, and 50+ festivals from 35+ countries.</p></div>
+    <div class="feature-tile"><h4>Full UI Control</h4><p>Font size, corner radius, sidebar width, chat density, animation speed, dark/light mode — all tunable.</p></div>
+  </div>
+</div>
+
+<!-- System requirements -->
+<div class="requirements">
+  <h3>System Requirements</h3>
+  <div class="req-row"><span class="req-label">Operating System</span><span class="req-val">Windows 10 / 11 (64-bit)</span></div>
+  <div class="req-row"><span class="req-label">RAM</span><span class="req-val">4 GB minimum</span></div>
+  <div class="req-row"><span class="req-label">Storage</span><span class="req-val">200 MB free disk space</span></div>
+  <div class="req-row"><span class="req-label">Internet</span><span class="req-val">Required for AI features</span></div>
+  <div class="req-row"><span class="req-label">Architecture</span><span class="req-val">x64 (Intel / AMD)</span></div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+(function() {
+  var ua = navigator.userAgent;
+  var isMobile = /Android|iPhone|iPad|iPod|Opera Mini|IEMobile|WPDesktop/i.test(ua);
+  if (isMobile) {
+    document.getElementById('desktopDownload').style.display = 'none';
+    document.getElementById('mobileNotice').style.display   = 'block';
+  }
+})();
+</script>
+</body>
+</html>

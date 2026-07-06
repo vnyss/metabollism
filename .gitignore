@@ -32,6 +32,10 @@ yarn-error.log
 # Claude local settings (contains machine-specific config)
 .claude/
 
+# Desktop app installers — too large for git, hosted on GitHub releases
+static/downloads/*.exe
+static/downloads/*.blockmap
+
 # OS
 .DS_Store
 Thumbs.db
