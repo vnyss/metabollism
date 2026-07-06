@@ -317,7 +317,7 @@
         Windows 10 / 11
       </div>
       <h2>Too Good Desktop</h2>
-      <div class="version">Version 1.1.1 &nbsp;·&nbsp; Windows Installer (.exe)</div>
+      <div class="version" id="appVersion">Version 1.1.2 &nbsp;·&nbsp; Windows Installer (.exe)</div>
 
       <a id="downloadBtn" href="https://github.com/vnyss/toogoodapp/releases/latest/download/TooGood-Setup.exe" class="btn-download" download>
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
@@ -471,6 +471,17 @@
     document.getElementById('mobileNotice').style.display   = 'block';
   }
 })();
+</script>
+<script>
+fetch('https://api.github.com/repos/vnyss/toogoodapp/releases/latest')
+  .then(r => r.json())
+  .then(d => {
+    if (d.tag_name) {
+      const v = d.tag_name.replace(/^v/, '');
+      document.getElementById('appVersion').innerHTML = 'Version ' + v + ' &nbsp;&middot;&nbsp; Windows Installer (.exe)';
+    }
+  })
+  .catch(() => {});
 </script>
 </body>
 </html>
