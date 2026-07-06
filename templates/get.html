@@ -13,7 +13,7 @@
 /* ── Get page specific ── */
 .get-hero {
     margin-top: 80px;
-    padding: 100px 24px 80px;
+    padding: 100px 24px 60px;
     text-align: center;
     position: relative;
     overflow: hidden;
@@ -46,13 +46,24 @@
     letter-spacing: -0.02em;
 }
 .get-hero h1 span { color: var(--gold); }
-.get-hero p {
+.get-hero > p {
     font-family: var(--mono);
     font-size: 15px;
     color: var(--text-2);
     max-width: 520px;
-    margin: 0 auto 48px;
+    margin: 0 auto 56px;
     line-height: 1.8;
+}
+
+/* ── Platform cards row ── */
+.platform-cards {
+    display: flex;
+    gap: 20px;
+    justify-content: center;
+    align-items: stretch;
+    flex-wrap: wrap;
+    max-width: 1100px;
+    margin: 0 auto 12px;
 }
 
 /* ── Download card ── */
@@ -60,18 +71,28 @@
     background: #0F0F0F;
     border: 1px solid var(--border);
     border-radius: 4px;
-    padding: 40px 48px;
-    max-width: 560px;
-    margin: 0 auto 20px;
+    padding: 36px 40px;
+    flex: 1;
+    min-width: 280px;
+    max-width: 360px;
     text-align: left;
     position: relative;
 }
-.download-card::before {
+.download-card.active-platform::before {
     content: '';
     position: absolute;
     inset: -1px;
     border-radius: 4px;
     background: linear-gradient(135deg, rgba(201,168,76,0.22), transparent 50%, rgba(201,168,76,0.06));
+    z-index: 0;
+    pointer-events: none;
+}
+.download-card.soon::before {
+    content: '';
+    position: absolute;
+    inset: -1px;
+    border-radius: 4px;
+    background: linear-gradient(135deg, rgba(255,255,255,0.04), transparent 60%);
     z-index: 0;
     pointer-events: none;
 }
@@ -92,14 +113,18 @@
     margin-bottom: 24px;
 }
 .platform-badge svg { opacity: 0.5; }
+.download-card.soon .platform-badge {
+    border-color: rgba(255,255,255,0.08);
+}
 
 .download-card h2 {
     font-family: var(--display);
-    font-size: 22px;
+    font-size: 20px;
     color: var(--text);
     margin-bottom: 8px;
     letter-spacing: 0.02em;
 }
+.download-card.soon h2 { opacity: 0.6; }
 .download-card .version {
     font-family: var(--mono);
     font-size: 11px;
@@ -134,13 +159,35 @@
 .btn-download:active { transform: translateY(0); }
 .btn-download svg { flex-shrink: 0; }
 
+.btn-soon {
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    background: rgba(255,255,255,0.04);
+    color: var(--text-3) !important;
+    font-family: var(--mono);
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    text-decoration: none !important;
+    padding: 14px 28px;
+    border-radius: 2px;
+    border: 1px solid rgba(255,255,255,0.07);
+    width: 100%;
+    justify-content: center;
+    margin-bottom: 16px;
+    cursor: default;
+}
+
 .download-meta {
     display: flex;
-    gap: 20px;
+    gap: 16px;
     font-family: var(--mono);
     font-size: 10px;
     color: var(--text-3);
     letter-spacing: 0.5px;
+    flex-wrap: wrap;
 }
 .download-meta span { display: flex; align-items: center; gap: 5px; }
 
@@ -306,46 +353,104 @@
 <!-- Hero -->
 <div class="get-hero">
   <p class="get-eyebrow">&#x2014;&nbsp; desktop application &nbsp;&#x2014;</p>
-  <h1>Too Good<br><span>for Windows</span></h1>
+  <h1>Too Good<br><span>for Desktop</span></h1>
   <p>The full Too Good experience — AI coaching, nutrition tracking, workouts, sleep, and more — running natively on your desktop.</p>
 
-  <!-- Download card (desktop only) -->
+  <!-- Download cards (desktop only) -->
   <div id="desktopDownload">
-    <div class="download-card">
-      <div class="platform-badge">
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M0 3.449L9.75 2.1v9.451H0m10.949-9.602L24 0v11.4H10.949M0 12.6h9.75v9.451L0 20.699M10.949 12.6H24V24l-12.9-1.801"/></svg>
-        Windows 10 / 11
-      </div>
-      <h2>Too Good Desktop</h2>
-      <div class="version" id="appVersion">Version 1.1.4 &nbsp;·&nbsp; Windows Installer (.exe)</div>
+    <div class="platform-cards">
 
-      <a id="downloadBtn" href="https://github.com/vnyss/toogoodapp/releases/latest/download/TooGood-Setup.exe" class="btn-download" download>
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-          <polyline points="7 10 12 15 17 10"/>
-          <line x1="12" y1="15" x2="12" y2="3"/>
-        </svg>
-        Download for Windows
-      </a>
-
-      <div class="download-meta">
-        <span>
-          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-          Safe &amp; verified
-        </span>
-        <span>
-          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-          ~176 MB
-        </span>
-        <span>
-          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>
-          NSIS installer
-        </span>
+      <!-- Windows -->
+      <div class="download-card active-platform">
+        <div class="platform-badge">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M0 3.449L9.75 2.1v9.451H0m10.949-9.602L24 0v11.4H10.949M0 12.6h9.75v9.451L0 20.699M10.949 12.6H24V24l-12.9-1.801"/></svg>
+          Windows 10 / 11
+        </div>
+        <h2>Too Good Desktop</h2>
+        <div class="version" id="appVersion">Version 1.1.9 &nbsp;·&nbsp; Windows Installer (.exe)</div>
+        <a id="downloadBtn" href="https://github.com/vnyss/toogoodapp/releases/latest/download/TooGood-Setup.exe" class="btn-download" download>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+            <polyline points="7 10 12 15 17 10"/>
+            <line x1="12" y1="15" x2="12" y2="3"/>
+          </svg>
+          Download for Windows
+        </a>
+        <div class="download-meta">
+          <span>
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+            Safe &amp; verified
+          </span>
+          <span>
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            ~176 MB
+          </span>
+          <span>
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+            NSIS installer
+          </span>
+        </div>
       </div>
-    </div>
-    <div class="safe-row">
+
+      <!-- macOS -->
+      <div class="download-card soon">
+        <div class="platform-badge">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a10 10 0 1 0 0 20A10 10 0 0 0 12 2z"/><path d="M12 8c-1.5 0-3 .8-3.8 2"/><path d="M9 15c0 1.7 1.3 3 3 3s3-1.3 3-3"/><circle cx="12" cy="12" r="2"/></svg>
+          macOS 12+
+        </div>
+        <h2>Too Good Desktop</h2>
+        <div class="version">Coming Soon &nbsp;·&nbsp; macOS Disk Image (.dmg)</div>
+        <div class="btn-soon">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"/>
+            <polyline points="12 6 12 12 16 14"/>
+          </svg>
+          Coming Soon
+        </div>
+        <div class="download-meta">
+          <span>
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+            Apple Silicon &amp; Intel
+          </span>
+          <span>
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+            Universal binary
+          </span>
+        </div>
+      </div>
+
+      <!-- Chrome OS -->
+      <div class="download-card soon">
+        <div class="platform-badge">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="4"/><line x1="21.17" y1="8" x2="12" y2="8"/><line x1="3.95" y1="6.06" x2="8.54" y2="14"/><line x1="10.88" y1="21.94" x2="15.46" y2="14"/></svg>
+          Chrome OS
+        </div>
+        <h2>Too Good Desktop</h2>
+        <div class="version">Coming Soon &nbsp;·&nbsp; Linux App (.deb)</div>
+        <div class="btn-soon">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"/>
+            <polyline points="12 6 12 12 16 14"/>
+          </svg>
+          Coming Soon
+        </div>
+        <div class="download-meta">
+          <span>
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+            Via Linux (Beta)
+          </span>
+          <span>
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+            x64 Chromebooks
+          </span>
+        </div>
+      </div>
+
+    </div><!-- /.platform-cards -->
+
+    <div class="safe-row" style="margin-top:8px;">
       <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-      No account required to install &nbsp;·&nbsp; Uninstall anytime from Windows Settings
+      No account required to install &nbsp;·&nbsp; Auto-updates built in
     </div>
   </div>
 
@@ -353,7 +458,7 @@
   <div id="mobileNotice" style="display:none">
     <div class="mobile-notice">
       <h2>Too Good is a Desktop App</h2>
-      <p>The installer is designed for Windows laptops and PCs. Visit this page on your computer to download.</p>
+      <p>The installer is designed for Windows, macOS, and Chrome OS. Visit this page on your computer to download.</p>
       <a href="/perfect" class="web-link">Or use the web app instead →</a>
     </div>
   </div>
@@ -452,13 +557,28 @@
 </div>
 
 <!-- System requirements -->
-<div class="requirements">
+<div class="requirements" style="max-width:900px;">
   <h3>System Requirements</h3>
-  <div class="req-row"><span class="req-label">Operating System</span><span class="req-val">Windows 10 / 11 (64-bit)</span></div>
+
+  <p style="font-family:var(--mono);font-size:10px;color:var(--gold);letter-spacing:2px;text-transform:uppercase;margin-bottom:10px;margin-top:4px;">Windows</p>
+  <div class="req-row"><span class="req-label">OS</span><span class="req-val">Windows 10 / 11 (64-bit)</span></div>
   <div class="req-row"><span class="req-label">RAM</span><span class="req-val">4 GB minimum</span></div>
   <div class="req-row"><span class="req-label">Storage</span><span class="req-val">200 MB free disk space</span></div>
-  <div class="req-row"><span class="req-label">Internet</span><span class="req-val">Required for AI features</span></div>
   <div class="req-row"><span class="req-label">Architecture</span><span class="req-val">x64 (Intel / AMD)</span></div>
+  <div class="req-row" style="margin-bottom:24px;"><span class="req-label">Internet</span><span class="req-val">Required for AI features</span></div>
+
+  <p style="font-family:var(--mono);font-size:10px;color:var(--gold);letter-spacing:2px;text-transform:uppercase;margin-bottom:10px;">macOS <span style="color:var(--text-3);letter-spacing:1px;font-size:9px;">(Coming Soon)</span></p>
+  <div class="req-row"><span class="req-label">OS</span><span class="req-val">macOS 12 Monterey or later</span></div>
+  <div class="req-row"><span class="req-label">RAM</span><span class="req-val">4 GB minimum</span></div>
+  <div class="req-row"><span class="req-label">Storage</span><span class="req-val">200 MB free disk space</span></div>
+  <div class="req-row" style="margin-bottom:24px;"><span class="req-label">Architecture</span><span class="req-val">Apple Silicon (M1+) &amp; Intel x64</span></div>
+
+  <p style="font-family:var(--mono);font-size:10px;color:var(--gold);letter-spacing:2px;text-transform:uppercase;margin-bottom:10px;">Chrome OS <span style="color:var(--text-3);letter-spacing:1px;font-size:9px;">(Coming Soon)</span></p>
+  <div class="req-row"><span class="req-label">OS</span><span class="req-val">Chrome OS 111+ with Linux (Beta) enabled</span></div>
+  <div class="req-row"><span class="req-label">RAM</span><span class="req-val">4 GB minimum</span></div>
+  <div class="req-row"><span class="req-label">Storage</span><span class="req-val">200 MB free disk space</span></div>
+  <div class="req-row"><span class="req-label">Architecture</span><span class="req-val">x64 Chromebooks</span></div>
+  <div class="req-row"><span class="req-label">Setup</span><span class="req-val">Enable Linux (Beta) in Chrome OS Settings → Developers</span></div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
@@ -478,7 +598,8 @@ fetch('https://api.github.com/repos/vnyss/toogoodapp/releases/latest')
   .then(d => {
     if (d.tag_name) {
       const v = d.tag_name.replace(/^v/, '');
-      document.getElementById('appVersion').innerHTML = 'Version ' + v + ' &nbsp;&middot;&nbsp; Windows Installer (.exe)';
+      const el = document.getElementById('appVersion');
+      if (el) el.innerHTML = 'Version ' + v + ' &nbsp;&middot;&nbsp; Windows Installer (.exe)';
     }
   })
   .catch(() => {});
