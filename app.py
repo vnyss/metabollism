@@ -5418,39 +5418,61 @@ def _cache_barcode(code, d):
 @app.route("/api/v1/barcode/<code>")
 def barcode_lookup(code):
     """
-    Multi-source barcode lookup:
-      1. Local cache (barcode_cache table) — fastest, grows over time
-      2. Open Food Facts — free public database
-      3. AI fallback — fills gaps when OFF has wrong/missing data
-    Result is cached so future scans of the same barcode are instant.
+    AI-first barcode lookup:
+      1. Local cache (barcode_cache, source=user_corrected or ai) — skip if source=openfoodfacts
+         (OFF data may be wrong; AI-sourced cache is trusted)
+      2. AI identifies the product by barcode number — name/brand always from AI
+      3. Open Food Facts — supplies verified nutrition numbers when available
+      4. Result is merged (AI name + OFF numbers) and cached
     """
     if not _api_user():
         return jsonify({"error": "Not logged in"}), 401
 
     code = code.strip()
 
-    # 1. Local cache
+    # 1. Local cache — only trust entries that came from AI or user correction, not raw OFF
     conn = get_db_connection()
     row = conn.execute("SELECT * FROM barcode_cache WHERE barcode = ?", (code,)).fetchone()
     conn.close()
-    if row:
+    if row and row["source"] in ("ai", "user_corrected"):
         return jsonify(dict(row))
 
-    # 2. Open Food Facts
-    product = _fetch_off(code)
+    # 2. AI identifies the product by barcode (always runs — name from AI is reliable)
+    ai_data = _ai_barcode_lookup(code)
 
-    # 3. AI fallback — also used when OFF has zero calories (bad data)
-    if product is None or product.get("calories", 0) == 0:
-        hint = product.get("name", "") if product else ""
-        ai_data = _ai_barcode_lookup(code, hint)
-        if ai_data:
-            # Keep OFF name/brand if they look real and AI calories are better
-            if product and product.get("name") and ai_data.get("calories", 0) > 0:
-                ai_data["name"]  = product["name"]
-                ai_data["brand"] = product.get("brand") or ai_data.get("brand", "")
+    # 3. Open Food Facts supplies nutrition numbers (name from OFF is NOT trusted)
+    off_data = _fetch_off(code)
+
+    # 4. Merge: AI name/brand + OFF nutrition numbers when OFF has real calories
+    if ai_data:
+        if off_data and off_data.get("calories", 0) > 0:
+            product = {
+                "name":      ai_data.get("name", ""),
+                "brand":     ai_data.get("brand") or off_data.get("brand", ""),
+                "serving":   off_data.get("serving", "100g"),
+                "calories":  off_data["calories"],
+                "protein":   off_data.get("protein",   ai_data.get("protein",   0)),
+                "carbs":     off_data.get("carbs",     ai_data.get("carbs",     0)),
+                "fat":       off_data.get("fat",       ai_data.get("fat",       0)),
+                "fiber":     off_data.get("fiber",     ai_data.get("fiber",     0)),
+                "sugar":     off_data.get("sugar",     ai_data.get("sugar",     0)),
+                "sodium":    off_data.get("sodium",    ai_data.get("sodium",    0)),
+                "vit_a":     off_data.get("vit_a",     ai_data.get("vit_a",     0)),
+                "vit_c":     off_data.get("vit_c",     ai_data.get("vit_c",     0)),
+                "vit_d":     off_data.get("vit_d",     ai_data.get("vit_d",     0)),
+                "vit_b12":   off_data.get("vit_b12",   ai_data.get("vit_b12",   0)),
+                "iron":      off_data.get("iron",      ai_data.get("iron",      0)),
+                "calcium":   off_data.get("calcium",   ai_data.get("calcium",   0)),
+                "potassium": off_data.get("potassium", ai_data.get("potassium", 0)),
+                "magnesium": off_data.get("magnesium", ai_data.get("magnesium", 0)),
+                "zinc":      off_data.get("zinc",      ai_data.get("zinc",      0)),
+                "source":    "ai",
+            }
+        else:
             product = ai_data
-
-    if not product:
+    elif off_data:
+        product = off_data
+    else:
         return jsonify({"error": "Product not found"}), 404
 
     product["barcode"] = code
