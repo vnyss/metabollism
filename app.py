@@ -19,7 +19,7 @@ from flask import Flask, render_template, request, redirect, url_for, session, f
 from flask_cors import CORS
 from werkzeug.security import generate_password_hash, check_password_hash  # kept for old hashed accounts
 from authlib.integrations.flask_client import OAuth
-from database import get_db_connection, init_db, init_food_db, init_diary_db, init_blood_history_db, init_score_db, init_social_db, init_strava_db, init_daily_logs_db, init_watch_db
+from database import get_db_connection, init_db, init_food_db, init_diary_db, init_blood_history_db, init_score_db, init_social_db, init_strava_db, init_daily_logs_db, init_watch_db, init_barcode_db
 import base64
 
 # ── Email config (set GMAIL_USER + GMAIL_APP_PASSWORD in .env) ──────────────
@@ -408,6 +408,7 @@ init_social_db()
 init_strava_db()
 init_daily_logs_db()
 init_watch_db()
+init_barcode_db()
 
 # Add auth_token, expiry, lockout, and chat_sessions_json columns for mobile app
 try:
@@ -5310,6 +5311,164 @@ def watch_data_range():
     """, (me, start, end)).fetchall()
     conn.close()
     return jsonify([dict(r) for r in rows])
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# ── Barcode Lookup ─────────────────────────────────────────────────────────────
+# ══════════════════════════════════════════════════════════════════════════════
+
+def _fetch_off(code):
+    """Fetch product data from Open Food Facts. Returns dict or None."""
+    try:
+        url = f"https://world.openfoodfacts.org/api/v2/product/{code}.json?fields=product_name,product_name_en,brands,serving_size,nutriments"
+        req_obj = Request(url, headers={"User-Agent": "TooGoodApp/1.0"})
+        with urlopen(req_obj, timeout=8) as resp:
+            data = json.loads(resp.read().decode("utf-8"))
+        if data.get("status") != 1 or not data.get("product"):
+            return None
+        p = data["product"]
+        n = p.get("nutriments", {})
+        name = (p.get("product_name") or p.get("product_name_en") or "").strip()
+        if not name:
+            return None
+        return {
+            "name":      name,
+            "brand":     (p.get("brands") or "").strip(),
+            "serving":   p.get("serving_size") or "100g",
+            "calories":  round(float(n.get("energy-kcal_100g") or n.get("energy-kcal") or 0)),
+            "protein":   round(float(n.get("proteins_100g")        or 0), 1),
+            "carbs":     round(float(n.get("carbohydrates_100g")   or 0), 1),
+            "fat":       round(float(n.get("fat_100g")             or 0), 1),
+            "fiber":     round(float(n.get("fiber_100g")           or 0), 1),
+            "sugar":     round(float(n.get("sugars_100g")          or 0), 1),
+            "sodium":    round(float(n.get("sodium_100g")          or 0) * 1000),
+            "vit_a":     round(float(n.get("vitamin-a_100g")       or 0)),
+            "vit_c":     round(float(n.get("vitamin-c_100g")       or 0), 1),
+            "vit_d":     round(float(n.get("vitamin-d_100g")       or 0), 1),
+            "vit_b12":   round(float(n.get("vitamin-b12_100g")     or 0), 1),
+            "iron":      round(float(n.get("iron_100g")            or 0) * 1000, 1),
+            "calcium":   round(float(n.get("calcium_100g")         or 0) * 1000),
+            "potassium": round(float(n.get("potassium_100g")       or 0) * 1000),
+            "magnesium": round(float(n.get("magnesium_100g")       or 0) * 1000),
+            "zinc":      round(float(n.get("zinc_100g")            or 0) * 1000, 1),
+            "source":    "openfoodfacts",
+        }
+    except Exception:
+        return None
+
+
+def _ai_barcode_lookup(code, hint_name=""):
+    """Ask the AI to provide nutritional data for a barcode number. Returns dict or None."""
+    api_key = os.environ.get("GROQ_API_KEY")
+    if not api_key:
+        return None
+    hint = f' The product name may be "{hint_name}".' if hint_name else ""
+    prompt = (
+        f"Barcode: {code}.{hint}\n"
+        "Look up this product and respond ONLY with valid JSON — no extra text, no markdown:\n"
+        '{"name":"<product name>","brand":"<brand or empty>","serving":"<serving size, e.g. 100g or 30g>","calories":<kcal per 100g>,'
+        '"protein":<g per 100g>,"carbs":<g per 100g>,"fat":<g per 100g>,'
+        '"fiber":<g per 100g>,"sugar":<g per 100g>,"sodium":<mg per 100g>,'
+        '"vit_a":<µg per 100g>,"vit_c":<mg per 100g>,"vit_d":<µg per 100g>,"vit_b12":<µg per 100g>,'
+        '"iron":<mg per 100g>,"calcium":<mg per 100g>,"potassium":<mg per 100g>,"magnesium":<mg per 100g>,"zinc":<mg per 100g>}\n'
+        "Use real nutrition label values. If unknown, use 0."
+    )
+    try:
+        reply = _call_anthropic(api_key, None, [{"role": "user", "content": prompt}], max_tokens=400, temperature=0)
+        # Strip any markdown code fences
+        reply = reply.strip().lstrip("```json").lstrip("```").rstrip("```").strip()
+        data = json.loads(reply)
+        if not data.get("name"):
+            return None
+        data["source"] = "ai"
+        # Ensure all numeric fields are present
+        for field in ("calories", "protein", "carbs", "fat", "fiber", "sugar", "sodium",
+                      "vit_a", "vit_c", "vit_d", "vit_b12", "iron", "calcium", "potassium", "magnesium", "zinc"):
+            data[field] = float(data.get(field) or 0)
+        return data
+    except Exception:
+        return None
+
+
+def _cache_barcode(code, d):
+    """Store product data in barcode_cache table."""
+    try:
+        conn = get_db_connection()
+        conn.execute("""
+            INSERT OR REPLACE INTO barcode_cache
+            (barcode, name, brand, serving, calories, protein, carbs, fat,
+             fiber, sugar, sodium, vit_a, vit_c, vit_d, vit_b12,
+             iron, calcium, potassium, magnesium, zinc, source, cached_at)
+            VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,CURRENT_TIMESTAMP)
+        """, (
+            code,
+            d.get("name", ""), d.get("brand", ""), d.get("serving", "100g"),
+            d.get("calories", 0), d.get("protein", 0), d.get("carbs", 0), d.get("fat", 0),
+            d.get("fiber", 0), d.get("sugar", 0), d.get("sodium", 0),
+            d.get("vit_a", 0), d.get("vit_c", 0), d.get("vit_d", 0), d.get("vit_b12", 0),
+            d.get("iron", 0), d.get("calcium", 0), d.get("potassium", 0), d.get("magnesium", 0),
+            d.get("zinc", 0), d.get("source", "ai"),
+        ))
+        conn.commit()
+        conn.close()
+    except Exception:
+        pass
+
+
+@app.route("/api/v1/barcode/<code>")
+def barcode_lookup(code):
+    """
+    Multi-source barcode lookup:
+      1. Local cache (barcode_cache table) — fastest, grows over time
+      2. Open Food Facts — free public database
+      3. AI fallback — fills gaps when OFF has wrong/missing data
+    Result is cached so future scans of the same barcode are instant.
+    """
+    if not _api_user():
+        return jsonify({"error": "Not logged in"}), 401
+
+    code = code.strip()
+
+    # 1. Local cache
+    conn = get_db_connection()
+    row = conn.execute("SELECT * FROM barcode_cache WHERE barcode = ?", (code,)).fetchone()
+    conn.close()
+    if row:
+        return jsonify(dict(row))
+
+    # 2. Open Food Facts
+    product = _fetch_off(code)
+
+    # 3. AI fallback — also used when OFF has zero calories (bad data)
+    if product is None or product.get("calories", 0) == 0:
+        hint = product.get("name", "") if product else ""
+        ai_data = _ai_barcode_lookup(code, hint)
+        if ai_data:
+            # Keep OFF name/brand if they look real and AI calories are better
+            if product and product.get("name") and ai_data.get("calories", 0) > 0:
+                ai_data["name"]  = product["name"]
+                ai_data["brand"] = product.get("brand") or ai_data.get("brand", "")
+            product = ai_data
+
+    if not product:
+        return jsonify({"error": "Product not found"}), 404
+
+    product["barcode"] = code
+    _cache_barcode(code, product)
+    return jsonify(product)
+
+
+@app.route("/api/v1/barcode/<code>/correct", methods=["POST"])
+def barcode_correct(code):
+    """Allow a user to submit a correction for a barcode entry."""
+    if not _api_user():
+        return jsonify({"error": "Not logged in"}), 401
+    data = request.get_json(silent=True) or {}
+    if not data.get("name"):
+        return jsonify({"error": "name is required"}), 400
+    data["source"] = "user_corrected"
+    _cache_barcode(code.strip(), data)
+    return jsonify({"ok": True})
 
 
 # ══════════════════════════════════════════════════════════════════════════════

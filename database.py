@@ -378,5 +378,38 @@ def init_watch_db():
     conn.close()
 
 
+def init_barcode_db():
+    """Create the barcode_cache table for storing verified product data."""
+    conn = get_db_connection()
+    conn.execute("""
+        CREATE TABLE IF NOT EXISTS barcode_cache (
+            barcode     TEXT PRIMARY KEY,
+            name        TEXT NOT NULL,
+            brand       TEXT DEFAULT '',
+            serving     TEXT DEFAULT '100g',
+            calories    REAL DEFAULT 0,
+            protein     REAL DEFAULT 0,
+            carbs       REAL DEFAULT 0,
+            fat         REAL DEFAULT 0,
+            fiber       REAL DEFAULT 0,
+            sugar       REAL DEFAULT 0,
+            sodium      REAL DEFAULT 0,
+            vit_a       REAL DEFAULT 0,
+            vit_c       REAL DEFAULT 0,
+            vit_d       REAL DEFAULT 0,
+            vit_b12     REAL DEFAULT 0,
+            iron        REAL DEFAULT 0,
+            calcium     REAL DEFAULT 0,
+            potassium   REAL DEFAULT 0,
+            magnesium   REAL DEFAULT 0,
+            zinc        REAL DEFAULT 0,
+            source      TEXT DEFAULT 'ai',
+            cached_at   TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+    """)
+    conn.commit()
+    conn.close()
+
+
 if __name__ == "__main__":
     init_db()
