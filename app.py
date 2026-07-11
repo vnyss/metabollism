@@ -4045,7 +4045,11 @@ def _display_name(row):
 # CHALLENGES
 # 
 
-# Challenges page moved to mobile app (toogoodapp)
+@app.route("/perfect/compete")
+def perfect_compete():
+    if not session.get("username"):
+        return redirect(url_for("login"))
+    return render_template("perfect/compete.html", page_active="compete", **_user_context(session["username"]))
 
 
 @app.route("/perfect/api/challenges")
