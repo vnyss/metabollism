@@ -1,0 +1,811 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Community — Too Good</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Courier+Prime:wght@400;700&family=Special+Elite&family=Playfair+Display:wght@400;700&display=swap" rel="stylesheet">
+<script>(function(){
+    var r=document.documentElement;
+    if(localStorage.getItem('tg_mode')==='light') r.classList.add('light-mode');
+    var fs=localStorage.getItem('tg_fontsize'); if(fs) r.style.setProperty('--fs',{sm:'12px',md:'14px',lg:'16px'}[fs]||'14px');
+    var sw=localStorage.getItem('tg_sw'); if(sw) r.style.setProperty('--sw',{narrow:'220px',normal:'260px',wide:'320px'}[sw]||'260px');
+    var cr=localStorage.getItem('tg_corner'); if(cr) r.style.setProperty('--radius',{sharp:'0px',soft:'6px',rounded:'14px'}[cr]||'6px');
+})();</script>
+<style>
+:root{--bg:#080808;--sidebar:#060606;--surface:#0F0F0F;--elevated:#161616;--border:rgba(201,168,76,0.12);--border-h:rgba(201,168,76,0.38);--gold:#C9A84C;--gold-dim:rgba(201,168,76,0.07);--text:#EDE3CE;--text-2:#9A8B72;--text-3:#554430;--green:#4CAF82;--red:#E05555;--mono:'Courier Prime',monospace;--display:'Special Elite',monospace;--sw:260px;--radius:6px}
+html.light-mode{--bg:#F5F0E8;--sidebar:#EDE8DF;--surface:#FFFFFF;--elevated:#F0EBE1;--border:rgba(100,80,40,0.14);--border-h:rgba(100,80,40,0.36);--gold-dim:rgba(201,168,76,0.10);--text:#2C2010;--text-2:#6B5B3E;--text-3:#A89070}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:var(--mono);font-size:14px;display:flex;min-height:100vh;overflow:hidden}
+.app{display:flex;height:100vh;width:100%}
+.main{margin-left:var(--sw);flex:1;display:flex;flex-direction:column;height:100vh;overflow:hidden}
+.merge-tabs{display:flex;border-bottom:1px solid var(--border);flex-shrink:0}
+.merge-tab{padding:10px 24px;font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--text-3);background:none;border:none;border-bottom:2px solid transparent;cursor:pointer;margin-bottom:-1px;transition:color .15s,border-color .15s}
+.merge-tab.active{color:var(--gold);border-bottom-color:var(--gold)}
+.merge-tab:hover{color:var(--text)}
+.pane{display:none;flex:1;min-height:0;flex-direction:column}
+.pane.active{display:flex}
+
+/* ── SOCIALS ── */
+.pane-socials{flex-direction:row!important;overflow:hidden}
+.soc-left{width:272px;min-width:272px;border-right:1px solid var(--border);display:flex;flex-direction:column;height:100%;overflow:hidden;background:var(--sidebar)}
+.panel-head{padding:18px 14px 12px;border-bottom:1px solid var(--border);flex-shrink:0}
+.panel-title{font-family:var(--display);font-size:17px;color:var(--text);letter-spacing:.06em;margin-bottom:12px}
+.search-wrap{position:relative}
+.search-inp{width:100%;background:var(--surface);border:1px solid var(--border);color:var(--text);font-family:var(--mono);font-size:12px;padding:8px 10px 8px 32px;outline:none;transition:border-color .15s}
+.search-inp:focus{border-color:var(--border-h)}
+.s-icon{position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--text-3);pointer-events:none}
+.search-drop{position:absolute;top:calc(100%+4px);left:0;right:0;background:var(--elevated);border:1px solid var(--border-h);z-index:300;max-height:260px;overflow-y:auto;display:none}
+.search-drop.open{display:block}
+.sd-item{display:flex;align-items:center;gap:10px;padding:10px 12px;border-bottom:1px solid var(--border)}
+.sd-av{width:30px;height:30px;background:var(--gold-dim);border:1px solid var(--border-h);display:flex;align-items:center;justify-content:center;font-family:var(--display);font-size:14px;color:var(--gold);flex-shrink:0}
+.sd-name{flex:1;font-size:12px;color:var(--text)}
+.sd-btn{font-size:10px;padding:3px 9px;border:1px solid;background:none;cursor:pointer;font-family:var(--mono);letter-spacing:.04em;white-space:nowrap}
+.sd-btn.add{color:var(--gold);border-color:rgba(201,168,76,.4);transition:background .12s}
+.sd-btn.add:hover{background:var(--gold-dim)}
+.sd-btn.sent{color:var(--text-3);border-color:var(--border);cursor:default}
+.sd-btn.buddies{color:var(--green);border-color:rgba(76,175,130,.4);cursor:pointer}
+.buddy-scroll{flex:1;overflow-y:auto}
+.buddy-scroll::-webkit-scrollbar{width:2px}
+.bl-label{font-size:10px;color:var(--text-3);letter-spacing:.2em;text-transform:uppercase;padding:12px 14px 4px}
+.bl-empty{padding:16px 14px;font-size:11px;color:var(--text-3);line-height:1.7}
+.buddy-row{display:flex;align-items:center;gap:10px;padding:11px 14px;cursor:pointer;border-bottom:1px solid var(--border);transition:background .12s;border-left:2px solid transparent}
+.buddy-row:hover{background:var(--gold-dim)}
+.buddy-row.active{background:rgba(201,168,76,.08);border-left-color:var(--gold)}
+.br-av{width:34px;height:34px;background:var(--gold-dim);border:1px solid var(--border-h);display:flex;align-items:center;justify-content:center;font-family:var(--display);font-size:16px;color:var(--gold);flex-shrink:0}
+.br-info{flex:1;min-width:0}
+.br-name{font-size:13px;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.br-sub{font-size:10px;color:var(--text-3);margin-top:2px}
+.req-row{padding:10px 14px;border-bottom:1px solid var(--border)}
+.req-top{display:flex;align-items:center;gap:10px}
+.req-btns{display:flex;gap:6px;margin-top:6px;padding-left:44px}
+.req-btn{font-size:10px;padding:3px 10px;border:1px solid;background:none;cursor:pointer;font-family:var(--mono);letter-spacing:.04em;transition:background .12s}
+.req-btn.acc{color:var(--green);border-color:rgba(76,175,130,.4)}
+.req-btn.acc:hover{background:rgba(76,175,130,.1)}
+.req-btn.dec{color:var(--text-3);border-color:var(--border)}
+.req-btn.dec:hover{background:rgba(255,255,255,.05)}
+.soc-right{flex:1;overflow-y:auto;padding:36px 44px;min-height:0}
+.soc-right::-webkit-scrollbar{width:3px}
+.soc-right::-webkit-scrollbar-thumb{background:var(--border)}
+.feed-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;height:65vh;color:var(--text-3);gap:14px;text-align:center}
+.profile-card{display:flex;align-items:center;gap:22px;padding:24px 28px;background:var(--surface);border:1px solid var(--border);margin-bottom:20px}
+.pc-av{width:54px;height:54px;background:var(--gold-dim);border:1px solid var(--border-h);display:flex;align-items:center;justify-content:center;font-family:var(--display);font-size:28px;color:var(--gold);flex-shrink:0}
+.pc-name{font-family:'Playfair Display',serif;font-size:22px;color:var(--text);margin-bottom:4px}
+.pc-meta{font-size:11px;color:var(--text-3);line-height:1.8;letter-spacing:.04em}
+.pc-stats{margin-left:auto;display:flex;gap:28px;text-align:center}
+.pc-sv{font-family:'Playfair Display',serif;font-size:24px;color:var(--gold)}
+.pc-sl{font-size:10px;color:var(--text-3);letter-spacing:.1em;text-transform:uppercase;margin-top:2px}
+.info-box{display:flex;gap:24px;flex-wrap:wrap;padding:14px 20px;background:var(--surface);border:1px solid var(--border);border-top:none;margin-bottom:20px;font-size:12px;color:var(--text-3)}
+.ib-v{color:var(--text);margin-left:5px}
+.feed-head{font-size:11px;color:var(--text-3);letter-spacing:.18em;text-transform:uppercase;margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid var(--border)}
+.feed-list{display:flex;flex-direction:column;gap:2px}
+.feed-item{display:flex;align-items:center;gap:14px;padding:13px 16px;background:var(--surface);border:1px solid var(--border)}
+.fi-icon{font-size:19px;width:30px;text-align:center;flex-shrink:0}
+.fi-label{flex:1;font-size:13px;color:var(--text)}
+.fi-note{font-size:10px;color:var(--text-3);margin-top:2px}
+.fi-xp{font-family:'Playfair Display',serif;font-size:14px;color:var(--gold);white-space:nowrap;margin-right:6px}
+.fi-time{font-size:10px;color:var(--text-3);white-space:nowrap}
+.feed-none{padding:20px 0;font-size:12px;color:var(--text-3);letter-spacing:.06em}
+.soc-right .feed-card{background:var(--surface);border:1px solid var(--border);margin-bottom:2px}
+.soc-right .feed-card .feed-item{border:none;margin-bottom:0}
+.social-bar{display:flex;align-items:center;gap:8px;padding:6px 16px 8px;border-top:1px solid var(--border)}
+.react-row{display:flex;gap:5px;flex:1}
+.react-btn{background:none;border:1px solid var(--border);padding:3px 8px;cursor:pointer;font-size:13px;color:var(--text);transition:border-color .15s,background .15s;display:flex;align-items:center;gap:4px}
+.react-btn:hover{border-color:var(--border-h);background:var(--gold-dim)}
+.react-count{font-family:var(--mono);font-size:10px;color:var(--gold)}
+.comment-toggle{background:none;border:1px solid var(--border);padding:3px 10px;cursor:pointer;font-family:var(--mono);font-size:10px;color:var(--text-3);letter-spacing:.04em;transition:border-color .15s,color .15s}
+.comment-toggle:hover{border-color:var(--border-h);color:var(--text)}
+.comments-wrap{padding:8px 16px;border-top:1px solid var(--border);display:flex;flex-direction:column;gap:5px}
+.comment-item{font-size:12px;color:var(--text-2);line-height:1.5}
+.comment-who{color:var(--gold);margin-right:6px;font-size:11px;letter-spacing:.04em}
+.comment-form{display:flex;gap:6px;padding:8px 16px;border-top:1px solid var(--border)}
+.comment-inp{flex:1;background:var(--elevated);border:1px solid var(--border);color:var(--text);font-family:var(--mono);font-size:12px;padding:6px 10px;outline:none;transition:border-color .15s}
+.comment-inp:focus{border-color:var(--border-h)}
+.comment-send{padding:6px 14px;background:var(--gold);color:#0A0A0A;font-family:var(--mono);font-size:11px;font-weight:700;border:none;cursor:pointer;letter-spacing:.08em;transition:opacity .15s}
+.comment-send:hover{opacity:.85}
+
+/* ── COMPETE ── */
+.pane-compete{overflow:hidden}
+.compete-page-header{padding:44px 56px 0;flex-shrink:0}
+.page-label{font-size:10px;color:var(--text-3);letter-spacing:.24em;text-transform:uppercase;margin-bottom:6px}
+.compete-title{font-family:'Playfair Display',serif;font-size:32px;color:var(--text);margin-bottom:4px}
+.compete-tabs{display:flex;gap:0;padding:24px 56px 0;border-bottom:1px solid var(--border);flex-shrink:0}
+.ctab{padding:10px 20px;font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--text-3);background:none;border:none;border-bottom:2px solid transparent;cursor:pointer;transition:color .15s,border-color .15s;margin-bottom:-1px}
+.ctab:hover{color:var(--text)}
+.ctab.active{color:var(--gold);border-bottom-color:var(--gold)}
+.compete-pane{display:none;flex:1;min-height:0}
+.compete-pane.active{display:flex;flex-direction:column}
+.ch-content{padding:32px 56px 48px;flex:1;overflow-y:auto}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(380px,1fr));gap:16px}
+.ch-card{background:var(--surface);border:1px solid var(--border);padding:28px;position:relative;transition:border-color .15s}
+.ch-card:hover{border-color:var(--border-h)}
+.ch-card.completed{border-color:rgba(76,175,130,.4)}
+.ch-done-badge{position:absolute;top:14px;right:14px;font-size:10px;color:var(--green);border:1px solid rgba(76,175,130,.4);padding:3px 8px;letter-spacing:.1em;text-transform:uppercase}
+.ch-title{font-family:'Playfair Display',serif;font-size:20px;color:var(--text);margin-bottom:6px}
+.ch-desc{font-size:11px;color:var(--text-3);margin-bottom:20px;line-height:1.7}
+.prog-row{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px}
+.prog-val{font-family:'Playfair Display',serif;font-size:18px;color:var(--gold)}
+.prog-target{font-size:11px;color:var(--text-3)}
+.prog-bar{height:4px;background:var(--border);position:relative;margin-bottom:20px}
+.prog-fill{position:absolute;inset:0 auto 0 0;background:var(--gold);transition:width .4s}
+.prog-fill.done{background:var(--green)}
+.lb-head{font-size:10px;color:var(--text-3);letter-spacing:.16em;text-transform:uppercase;margin-bottom:8px}
+.lb-row{display:flex;align-items:center;gap:10px;padding:6px 0;border-bottom:1px solid var(--border)}
+.lb-row:last-child{border:none}
+.lb-rank{font-size:11px;color:var(--text-3);width:18px;text-align:center;flex-shrink:0}
+.lb-name{flex:1;font-size:12px;color:var(--text)}
+.lb-name.me{color:var(--gold)}
+.lb-prog{font-size:12px;color:var(--text-2)}
+.lb-more{font-size:11px;color:var(--text-3);cursor:pointer;text-align:right;margin-top:8px;letter-spacing:.06em}
+.lb-more:hover{color:var(--gold)}
+.dual-panel{display:flex;flex:1;overflow:hidden}
+.dp-left{width:280px;flex-shrink:0;border-right:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden}
+.dp-right{flex:1;overflow-y:auto;padding:40px 48px;min-height:0}
+.empty-state{padding:60px 0;text-align:center;color:var(--text-3);font-size:13px;line-height:2}
+.lp-head{padding:20px 20px 14px;border-bottom:1px solid var(--border);flex-shrink:0}
+.lp-title{font-family:'Playfair Display',serif;font-size:18px;color:var(--text);margin-bottom:10px}
+.btn-create{width:100%;padding:9px;font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--gold);border:1px solid rgba(201,168,76,.45);background:none;cursor:pointer;transition:background .15s}
+.btn-create:hover{background:var(--gold-dim)}
+.tab-row{display:flex;border-bottom:1px solid var(--border);flex-shrink:0}
+.subtab{flex:1;padding:9px;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--text-3);cursor:pointer;text-align:center;border-bottom:2px solid transparent;transition:color .15s,border-color .15s;background:none;border-top:none;border-left:none;border-right:none;font-family:var(--mono)}
+.subtab.active{color:var(--gold);border-bottom-color:var(--gold)}
+.item-scroll{flex:1;overflow-y:auto}
+.club-item{padding:12px 20px;border-bottom:1px solid var(--border);cursor:pointer;transition:background .12s}
+.club-item:hover,.club-item.active{background:var(--gold-dim)}
+.club-item-name{font-size:13px;color:var(--text);margin-bottom:3px}
+.club-item-meta{font-size:10px;color:var(--text-3);letter-spacing:.04em}
+.club-item-join{font-size:10px;color:var(--gold);letter-spacing:.08em;margin-top:4px;cursor:pointer}
+.club-hero{display:flex;align-items:center;gap:20px;padding:24px 28px;background:var(--surface);border:1px solid var(--border);margin-bottom:20px}
+.club-av{width:48px;height:48px;background:var(--gold-dim);border:1px solid var(--border-h);display:flex;align-items:center;justify-content:center;font-family:var(--display);font-size:24px;color:var(--gold);flex-shrink:0}
+.club-name{font-family:'Playfair Display',serif;font-size:22px;color:var(--text);margin-bottom:4px}
+.club-desc{font-size:11px;color:var(--text-3);line-height:1.7}
+.club-actions{margin-left:auto;display:flex;gap:8px;flex-shrink:0}
+.btn-join{padding:7px 16px;font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--gold);border:1px solid rgba(201,168,76,.5);background:none;cursor:pointer;transition:background .15s}
+.btn-join:hover{background:var(--gold-dim)}
+.btn-leave{padding:7px 16px;font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--text-3);border:1px solid var(--border);background:none;cursor:pointer}
+.detail-cols{display:grid;grid-template-columns:1fr 260px;gap:16px}
+.section-head{font-size:10px;color:var(--text-3);letter-spacing:.18em;text-transform:uppercase;margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid var(--border)}
+.pane-compete .feed-card{background:var(--surface);border:1px solid var(--border);padding:12px 14px;margin-bottom:2px}
+.feed-top{display:flex;align-items:center;gap:10px}
+.feed-av{width:26px;height:26px;background:var(--gold-dim);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:11px;color:var(--gold);flex-shrink:0}
+.feed-who{font-size:12px;color:var(--text-2)}
+.feed-who strong{color:var(--text)}
+.feed-xp{margin-left:auto;font-family:'Playfair Display',serif;font-size:13px;color:var(--gold);white-space:nowrap}
+.feed-time{font-size:10px;color:var(--text-3);white-space:nowrap;margin-left:8px}
+.mb-row{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--border)}
+.mb-row:last-child{border:none}
+.mb-rank{font-size:12px;color:var(--text-3);width:20px;text-align:center;flex-shrink:0}
+.mb-name{flex:1;font-size:12px;color:var(--text)}
+.mb-name.me{color:var(--gold)}
+.mb-xp{font-size:11px;color:var(--text-3)}
+.panel-box{background:var(--surface);border:1px solid var(--border);padding:18px}
+.filter-row{display:flex;gap:4px;padding:10px 14px;border-bottom:1px solid var(--border);flex-wrap:wrap;flex-shrink:0}
+.filter-btn{padding:4px 10px;font-size:10px;letter-spacing:.08em;border:1px solid var(--border);color:var(--text-3);background:none;cursor:pointer;transition:all .12s}
+.filter-btn.active{border-color:rgba(201,168,76,.5);color:var(--gold);background:var(--gold-dim)}
+.seg-item{padding:12px 20px;border-bottom:1px solid var(--border);cursor:pointer;transition:background .12s}
+.seg-item:hover,.seg-item.sel{background:var(--gold-dim)}
+.seg-top{display:flex;align-items:center;gap:8px;margin-bottom:4px}
+.seg-emoji{font-size:15px}
+.seg-name{font-size:13px;color:var(--text);flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.seg-kom{font-size:10px;color:var(--gold)}
+.seg-meta{font-size:10px;color:var(--text-3);letter-spacing:.03em}
+.seg-hero{display:flex;align-items:flex-start;gap:20px;padding:24px 28px;background:var(--surface);border:1px solid var(--border);margin-bottom:20px}
+.seg-hero-icon{font-size:36px;flex-shrink:0;line-height:1}
+.seg-hero-name{font-family:'Playfair Display',serif;font-size:24px;color:var(--text);margin-bottom:6px}
+.seg-hero-meta{font-size:11px;color:var(--text-3);line-height:1.9}
+.seg-hero-actions{margin-left:auto;display:flex;flex-direction:column;gap:8px;align-items:flex-end;flex-shrink:0}
+.btn-log{padding:9px 20px;font-family:var(--mono);font-size:12px;letter-spacing:.1em;text-transform:uppercase;background:var(--gold);color:#0A0A0A;border:none;cursor:pointer;font-weight:700}
+.btn-del{font-size:10px;color:var(--text-3);border:none;background:none;cursor:pointer;letter-spacing:.06em}
+.btn-del:hover{color:var(--red)}
+.kom-banner{display:flex;align-items:center;gap:16px;padding:16px 22px;background:linear-gradient(135deg,rgba(201,168,76,.1),rgba(201,168,76,.03));border:1px solid rgba(201,168,76,.4);margin-bottom:20px}
+.kom-crown{font-size:28px}
+.kom-label{font-size:10px;color:var(--gold);letter-spacing:.2em;text-transform:uppercase;margin-bottom:3px}
+.kom-name{font-family:'Playfair Display',serif;font-size:18px;color:var(--text)}
+.kom-pb{margin-left:auto;font-family:'Playfair Display',serif;font-size:20px;color:var(--gold)}
+.slb-row{display:flex;align-items:center;gap:12px;padding:9px 0;border-bottom:1px solid var(--border)}
+.slb-row:last-child{border:none}
+.slb-rank{font-size:14px;width:24px;text-align:center;flex-shrink:0;color:var(--text-3)}
+.slb-name{flex:1;font-size:12px;color:var(--text)}
+.slb-name.me{color:var(--gold);font-weight:700}
+.slb-val{font-family:'Playfair Display',serif;font-size:14px;color:var(--text-2);white-space:nowrap}
+.slb-date{font-size:10px;color:var(--text-3);white-space:nowrap}
+.hist-row{display:flex;align-items:center;gap:12px;padding:7px 0;border-bottom:1px solid var(--border)}
+.hist-row:last-child{border:none}
+.hist-val{font-family:'Playfair Display',serif;font-size:15px;color:var(--gold)}
+.hist-note{flex:1;font-size:11px;color:var(--text-3)}
+.hist-date{font-size:10px;color:var(--text-3)}
+.pb-card{padding:14px;background:var(--surface);border:1px solid var(--border);text-align:center;margin-bottom:16px}
+.pb-label{font-size:10px;color:var(--text-3);letter-spacing:.16em;text-transform:uppercase;margin-bottom:6px}
+.pb-val{font-family:'Playfair Display',serif;font-size:26px;color:var(--gold);margin-bottom:4px}
+.pb-rank{font-size:12px;color:var(--text-2)}
+.modal-bd{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:9000;align-items:center;justify-content:center}
+.modal-bd.open{display:flex}
+.modal{background:var(--elevated);border:1px solid var(--border-h);padding:32px;min-width:360px;max-width:500px;max-height:80vh;overflow-y:auto;position:relative}
+.modal-close{position:absolute;top:14px;right:18px;cursor:pointer;font-size:18px;color:var(--text-3);background:none;border:none}
+.modal-title{font-family:'Playfair Display',serif;font-size:20px;color:var(--text);margin-bottom:4px}
+.modal-sub{font-size:11px;color:var(--text-3);margin-bottom:20px}
+.full-lb-row{display:flex;align-items:center;gap:12px;padding:8px 0;border-bottom:1px solid var(--border)}
+.full-lb-row:last-child{border:none}
+.full-lb-rank{font-family:'Playfair Display',serif;font-size:16px;color:var(--text-3);width:24px;flex-shrink:0}
+.full-lb-name{flex:1;font-size:13px;color:var(--text)}
+.full-lb-name.me{color:var(--gold);font-weight:700}
+.full-lb-bar{width:70px;height:3px;background:var(--border);position:relative;flex-shrink:0}
+.full-lb-bar-fill{position:absolute;inset:0 auto 0 0;background:var(--gold)}
+.full-lb-val{font-size:12px;color:var(--text-2);white-space:nowrap;width:48px;text-align:right;flex-shrink:0}
+.form-field{margin-bottom:14px}
+.form-label{font-size:10px;color:var(--text-3);letter-spacing:.14em;text-transform:uppercase;margin-bottom:6px;display:block}
+.form-inp{width:100%;background:var(--bg);border:1px solid var(--border);color:var(--text);padding:9px 12px;font-family:var(--mono);font-size:13px}
+.form-inp:focus{outline:none;border-color:var(--border-h)}
+.select-inp{width:100%;background:var(--bg);border:1px solid var(--border);color:var(--text);padding:9px 12px;font-family:var(--mono);font-size:13px;-webkit-appearance:none;cursor:pointer}
+.select-inp:focus{outline:none;border-color:var(--border-h)}
+option{background:var(--elevated)}
+.form-row{display:flex;gap:10px;justify-content:flex-end;margin-top:20px}
+.btn-cancel{padding:9px 18px;font-family:var(--mono);font-size:11px;color:var(--text-3);border:1px solid var(--border);background:none;cursor:pointer}
+.btn-submit{padding:9px 18px;font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;background:var(--gold);color:#0A0A0A;border:none;cursor:pointer;font-weight:700}
+</style>
+</head>
+<body>
+<div class="app">
+{% include 'perfect/_sidebar.html' %}
+
+<div class="main">
+    <div class="merge-tabs">
+        <button class="merge-tab active" id="ctab-socials" onclick="showCommunityPane('socials')">Socials</button>
+        <button class="merge-tab" id="ctab-compete" onclick="showCommunityPane('compete')">Compete</button>
+    </div>
+
+    <!-- ══ SOCIALS PANE ══ -->
+    <div class="pane pane-socials active" id="pane-socials">
+        <div class="soc-left">
+            <div class="panel-head">
+                <div class="panel-title">Socials</div>
+                <div class="search-wrap">
+                    <svg class="s-icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                    <input class="search-inp" id="searchInp" type="text" placeholder="Search by username…" autocomplete="off">
+                    <div class="search-drop" id="searchDrop"></div>
+                </div>
+            </div>
+            <div class="buddy-scroll" id="buddyScroll"><div class="bl-empty">Loading…</div></div>
+        </div>
+        <div class="soc-right" id="mainPanel">
+            <div class="feed-empty">
+                <div style="font-size:44px;opacity:.3">👥</div>
+                <div style="font-size:13px;letter-spacing:.06em">Select a buddy to view their activity</div>
+                <div style="font-size:11px;color:var(--text-3)">Search by username above to send a buddy request first</div>
+            </div>
+        </div>
+    </div><!-- /pane-socials -->
+
+    <!-- ══ COMPETE PANE ══ -->
+    <div class="pane pane-compete" id="pane-compete">
+        <div class="compete-page-header">
+            <div class="page-label">Community</div>
+            <div class="compete-title">Compete</div>
+        </div>
+        <div class="compete-tabs">
+            <button class="ctab active" onclick="showCompeteTab('challenges',this)">Challenges</button>
+            <button class="ctab" onclick="showCompeteTab('clubs',this)">Clubs</button>
+            <button class="ctab" onclick="showCompeteTab('segments',this)">Segments</button>
+        </div>
+
+        <div id="pane-challenges" class="compete-pane active">
+            <div class="ch-content">
+                <div style="font-size:11px;color:var(--text-3);margin-bottom:24px">This month · Rankings reset each month · Top performers earn glory</div>
+                <div class="grid" id="challengeGrid"><div style="color:var(--text-3);font-size:12px">Loading…</div></div>
+            </div>
+        </div>
+
+        <div id="pane-clubs" class="compete-pane">
+            <div class="dual-panel">
+                <div class="dp-left">
+                    <div class="lp-head">
+                        <div class="lp-title">Clubs</div>
+                        <button class="btn-create" onclick="openClubCreate()">+ Create Club</button>
+                    </div>
+                    <div class="tab-row">
+                        <button class="subtab active" id="clubTabMine" onclick="switchClubTab('mine')">My Clubs</button>
+                        <button class="subtab" id="clubTabDiscover" onclick="switchClubTab('discover')">Discover</button>
+                    </div>
+                    <div class="item-scroll" id="clubList"><div style="padding:16px;font-size:11px;color:var(--text-3)">Loading…</div></div>
+                </div>
+                <div class="dp-right" id="clubsMainPanel">
+                    <div class="empty-state">Select a club to view its feed and members.<br>Or create one and invite your buddies.</div>
+                </div>
+            </div>
+        </div>
+
+        <div id="pane-segments" class="compete-pane">
+            <div class="dual-panel">
+                <div class="dp-left">
+                    <div class="lp-head">
+                        <div class="lp-title">Segments</div>
+                        <button class="btn-create" onclick="openSegCreate()">+ Create Segment</button>
+                    </div>
+                    <div class="filter-row" id="segFilterRow">
+                        <button class="filter-btn active" data-cat="all"   onclick="setSegFilter('all',this)">All</button>
+                        <button class="filter-btn" data-cat="run"          onclick="setSegFilter('run',this)">🏃 Run</button>
+                        <button class="filter-btn" data-cat="gym"          onclick="setSegFilter('gym',this)">💪 Gym</button>
+                        <button class="filter-btn" data-cat="cycle"        onclick="setSegFilter('cycle',this)">🚴 Cycle</button>
+                        <button class="filter-btn" data-cat="swim"         onclick="setSegFilter('swim',this)">🏊 Swim</button>
+                    </div>
+                    <div class="item-scroll" id="segList"><div style="padding:16px;font-size:11px;color:var(--text-3)">Loading…</div></div>
+                </div>
+                <div class="dp-right" id="segsMainPanel">
+                    <div class="empty-state">Select a segment to view its leaderboard.<br>Create one to challenge everyone on the app.<br><span style="font-size:11px;color:var(--text-3)">Fastest time, most reps, or longest distance wins.</span></div>
+                </div>
+            </div>
+        </div>
+    </div><!-- /pane-compete -->
+
+</div><!-- /main -->
+</div><!-- /app -->
+
+<!-- Modals (fixed, work from any pane) -->
+<div class="modal-bd" id="chLbModal" onclick="if(event.target===this)closeCHLb()">
+    <div class="modal">
+        <button class="modal-close" onclick="closeCHLb()">✕</button>
+        <div class="modal-title" id="chLbTitle">Leaderboard</div>
+        <div class="modal-sub" id="chLbSub"></div>
+        <div id="chLbBody"></div>
+    </div>
+</div>
+<div class="modal-bd" id="clubCreateModal" onclick="if(event.target===this)closeClubCreate()">
+    <div class="modal">
+        <div class="modal-title">Create a Club</div>
+        <div class="form-field"><label class="form-label">Club Name</label><input class="form-inp" id="clubNameInp" placeholder="e.g. Morning Warriors" maxlength="40"></div>
+        <div class="form-field"><label class="form-label">Description (optional)</label><input class="form-inp" id="clubDescInp" placeholder="What's this club about?" maxlength="120"></div>
+        <div class="form-row"><button class="btn-cancel" onclick="closeClubCreate()">Cancel</button><button class="btn-submit" onclick="createClub()">Create</button></div>
+    </div>
+</div>
+<div class="modal-bd" id="segLogModal" onclick="if(event.target===this)closeSegLog()">
+    <div class="modal">
+        <div class="modal-title" id="segLogTitle">Log Effort</div>
+        <div class="modal-sub" id="segLogSub"></div>
+        <div class="form-field"><label class="form-label" id="segLogValLabel">Value</label><input class="form-inp" id="segLogValInp" type="number" min="0.01" step="0.01" placeholder="0"></div>
+        <div class="form-field"><label class="form-label">Note (optional)</label><input class="form-inp" id="segLogNoteInp" placeholder="How did it go?" maxlength="100"></div>
+        <div class="form-row"><button class="btn-cancel" onclick="closeSegLog()">Cancel</button><button class="btn-submit" onclick="submitSegEffort()">Log It</button></div>
+    </div>
+</div>
+<div class="modal-bd" id="segCreateModal" onclick="if(event.target===this)closeSegCreate()">
+    <div class="modal">
+        <div class="modal-title">Create a Segment</div>
+        <div class="form-field"><label class="form-label">Name</label><input class="form-inp" id="csName" placeholder="e.g. 5km Morning Run" maxlength="50"></div>
+        <div class="form-field"><label class="form-label">Description (optional)</label><input class="form-inp" id="csDesc" placeholder="What is this segment?" maxlength="120"></div>
+        <div class="form-field"><label class="form-label">Category</label>
+            <select class="select-inp" id="csCat">
+                <option value="run">🏃 Running</option><option value="gym">💪 Gym</option>
+                <option value="cycle">🚴 Cycling</option><option value="swim">🏊 Swimming</option>
+                <option value="general">⚡ General</option>
+            </select>
+        </div>
+        <div class="form-field"><label class="form-label">Measure by</label>
+            <select class="select-inp" id="csMetric">
+                <option value="time">⏱ Time — fastest wins (minutes)</option>
+                <option value="reps">🔢 Reps / Count — most wins</option>
+                <option value="distance">📏 Distance — furthest wins (km)</option>
+            </select>
+        </div>
+        <div class="form-row"><button class="btn-cancel" onclick="closeSegCreate()">Cancel</button><button class="btn-submit" onclick="createSegment()">Create</button></div>
+    </div>
+</div>
+
+<script>
+/* ── Top-level pane switching ── */
+function showCommunityPane(name) {
+    document.querySelectorAll('.pane').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.merge-tab').forEach(t => t.classList.remove('active'));
+    document.getElementById('pane-' + name).classList.add('active');
+    document.getElementById('ctab-' + name).classList.add('active');
+    if (name === 'compete' && !challengesLoaded) { loadChallenges(); challengesLoaded = true; }
+}
+
+/* ══ SOCIALS ══ */
+const ME = {{ username | tojson }};
+let activeBuddy = null;
+
+const sInp = document.getElementById('searchInp');
+const sDrop = document.getElementById('searchDrop');
+let sT = null;
+sInp.addEventListener('input', () => {
+    clearTimeout(sT);
+    const q = sInp.value.trim();
+    if (q.length < 2) { sDrop.classList.remove('open'); return; }
+    sT = setTimeout(() => doSearch(q), 300);
+});
+document.addEventListener('click', e => { if (!sDrop.contains(e.target) && e.target !== sInp) sDrop.classList.remove('open'); });
+
+async function doSearch(q) {
+    const r = await fetch('/perfect/api/users/search?q=' + encodeURIComponent(q));
+    const d = await r.json();
+    if (!d.results || !d.results.length) {
+        sDrop.innerHTML = '<div style="padding:12px 14px;font-size:11px;color:var(--text-3)">No users found.</div>';
+    } else {
+        sDrop.innerHTML = d.results.map(u => {
+            const btnClass = {none:'add',pending_sent:'sent',pending_recv:'add',accepted:'buddies'}[u.status]||'add';
+            const btnText  = {none:'+ Buddy',pending_sent:'Sent',pending_recv:'Accept',accepted:'View'}[u.status]||'+ Buddy';
+            return `<div class="sd-item">
+                <div class="sd-av">${u.name[0].toUpperCase()}</div>
+                <div class="sd-name">${u.name} <span style="color:var(--text-3);font-size:10px">Lv ${u.level}</span></div>
+                <button class="sd-btn ${btnClass}" onclick="searchAct('${u.username}','${u.status}','${u.name.replace(/'/g,"\\'")}')">${btnText}</button>
+            </div>`;
+        }).join('');
+    }
+    sDrop.classList.add('open');
+}
+
+async function searchAct(username, status, name) {
+    if (status === 'accepted') { openFeed(username, name); sDrop.classList.remove('open'); sInp.value=''; return; }
+    if (status === 'pending_recv') {
+        await fetch('/perfect/api/buddy/respond',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username,action:'accept'})});
+        socShowToast('You are now buddies with ' + name + '!');
+    } else if (status === 'none') {
+        await fetch('/perfect/api/buddy/request',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username})});
+        socShowToast('Buddy request sent to ' + name);
+    }
+    doSearch(sInp.value.trim());
+    loadBuddies();
+}
+
+async function loadBuddies() {
+    const r = await fetch('/perfect/api/buddies');
+    const d = await r.json();
+    if (!d.ok) return;
+    let h = '';
+    if (d.incoming.length) {
+        h += '<div class="bl-label">Requests (' + d.incoming.length + ')</div>';
+        d.incoming.forEach(b => {
+            h += `<div class="req-row">
+                <div class="req-top"><div class="br-av">${b.name[0].toUpperCase()}</div>
+                <div class="br-info"><div class="br-name">${b.name}</div><div class="br-sub">Level ${b.level} · wants to be your buddy</div></div></div>
+                <div class="req-btns">
+                    <button class="req-btn acc" onclick="respond('${b.username}','accept')">Accept</button>
+                    <button class="req-btn dec" onclick="respond('${b.username}','reject')">Decline</button>
+                </div></div>`;
+        });
+    }
+    if (d.outgoing.length) {
+        h += '<div class="bl-label">Sent</div>';
+        d.outgoing.forEach(b => {
+            h += `<div class="buddy-row" style="opacity:.5;cursor:default"><div class="br-av">${b.name[0].toUpperCase()}</div>
+            <div class="br-info"><div class="br-name">${b.name}</div><div class="br-sub">Request pending…</div></div></div>`;
+        });
+    }
+    if (d.buddies.length) {
+        h += '<div class="bl-label">Buddies (' + d.buddies.length + ')</div>';
+        d.buddies.forEach(b => {
+            const act = activeBuddy === b.username ? ' active' : '';
+            h += `<div class="buddy-row${act}" onclick="openFeed('${b.username}','${b.name.replace(/'/g,"\\'")}')">
+                <div class="br-av">${b.name[0].toUpperCase()}</div>
+                <div class="br-info"><div class="br-name">${b.name}</div>
+                <div class="br-sub">Lv ${b.level}${b.streak>0?' · 🔥'+b.streak+'d':''}</div>
+                </div></div>`;
+        });
+    }
+    if (!h) h = '<div class="bl-empty">No buddies yet.<br><span style="font-size:10px">Use the search bar to find people.</span></div>';
+    document.getElementById('buddyScroll').innerHTML = h;
+}
+
+async function respond(username, action) {
+    await fetch('/perfect/api/buddy/respond',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username,action})});
+    loadBuddies();
+}
+
+const REACT_EMOJIS = ['👏','🔥','💪','🏆','❤️'];
+function buildFeedItem(f) {
+    const reactBar = REACT_EMOJIS.map(e => {
+        const r = (f.reactions||[]).find(x=>x.emoji===e);
+        const count = r ? r.count : 0;
+        const active = f.my_react === e ? 'style="border-color:var(--gold);background:var(--gold-dim)"' : '';
+        return `<button class="react-btn" ${active} onclick="doReact(${f.id},'${e}',this)" title="${e}">${e}${count>0?` <span class="react-count">${count}</span>`:''}</button>`;
+    }).join('');
+    const commentsHtml = (f.comments||[]).map(c =>`<div class="comment-item"><span class="comment-who">${escHtml(c.who)}</span> ${escHtml(c.body)}</div>`).join('');
+    return `<div class="feed-card" id="fc${f.id}">
+        <div class="feed-item">
+            <div class="fi-icon">${f.icon}</div>
+            <div style="flex:1"><div class="fi-label">${f.label}</div>${f.note?`<div class="fi-note">${f.note}</div>`:''}</div>
+            <div class="fi-xp">+${f.xp} XP</div>
+            <div class="fi-time">${timeAgo(f.at)}</div>
+        </div>
+        <div class="social-bar">
+            <div class="react-row">${reactBar}</div>
+            <button class="comment-toggle" onclick="toggleComment(${f.id})">💬 Comment</button>
+        </div>
+        ${commentsHtml ? `<div class="comments-wrap">${commentsHtml}</div>` : ''}
+        <div class="comment-form" id="cf${f.id}" style="display:none">
+            <input class="comment-inp" id="ci${f.id}" type="text" placeholder="Write a comment…" maxlength="200" onkeydown="if(event.key==='Enter'){submitComment(${f.id});event.preventDefault()}">
+            <button class="comment-send" onclick="submitComment(${f.id})">Send</button>
+        </div>
+    </div>`;
+}
+
+async function openFeed(username, name) {
+    activeBuddy = username;
+    loadBuddies();
+    const main = document.getElementById('mainPanel');
+    main.innerHTML = '<div style="padding:60px;color:var(--text-3);font-size:12px;letter-spacing:.06em">Loading…</div>';
+    const r = await fetch('/perfect/api/activity/' + username);
+    const d = await r.json();
+    if (!d.ok) { main.innerHTML = '<div style="padding:60px;color:var(--text-3)">Could not load activity.</div>'; return; }
+    const exTypes = d.exercise_types ? d.exercise_types.replace(/,/g,', ') : '';
+    const feedHtml = d.feed.length ? d.feed.map(buildFeedItem).join('') : '<div class="feed-none">No activity yet.</div>';
+    main.innerHTML = `
+        <div class="profile-card">
+            <div class="pc-av">${d.name[0].toUpperCase()}</div>
+            <div><div class="pc-name">${d.name}</div><div class="pc-meta">Goal: ${d.goal}<br>Fitness: ${d.fitness_level}</div></div>
+            <div class="pc-stats">
+                <div><div class="pc-sv">${d.level}</div><div class="pc-sl">Level</div></div>
+                <div><div class="pc-sv">${d.streak}</div><div class="pc-sl">Streak</div></div>
+                <div><div class="pc-sv">${d.xp.toLocaleString()}</div><div class="pc-sl">Total XP</div></div>
+            </div>
+        </div>
+        ${exTypes ? `<div class="info-box"><span>Trains in:<span class="ib-v">${exTypes}</span></span></div>` : ''}
+        <div class="feed-head">Recent Activity</div>
+        <div class="feed-list">${feedHtml}</div>`;
+}
+
+async function doReact(eventId, emoji, btn) {
+    const res = await fetch('/perfect/api/activity/react',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({event_id:eventId,emoji})});
+    const d = await res.json();
+    if (!d.ok) return;
+    const countEl = btn.querySelector('.react-count');
+    if (d.reacted) {
+        btn.style.borderColor='var(--gold)'; btn.style.background='var(--gold-dim)';
+        if (countEl) countEl.textContent=d.count;
+        else if (d.count>0) btn.innerHTML=emoji+` <span class="react-count">${d.count}</span>`;
+    } else {
+        btn.style.borderColor=''; btn.style.background='';
+        if (countEl && d.count===0) countEl.remove();
+        else if (countEl) countEl.textContent=d.count;
+    }
+}
+
+function toggleComment(eventId) {
+    const f = document.getElementById('cf'+eventId);
+    if (!f) return;
+    const vis = f.style.display==='none';
+    f.style.display=vis?'flex':'none';
+    if (vis) document.getElementById('ci'+eventId)?.focus();
+}
+async function submitComment(eventId) {
+    const inp = document.getElementById('ci'+eventId);
+    const body = inp ? inp.value.trim() : '';
+    if (!body) return;
+    inp.value = '';
+    await fetch('/perfect/api/activity/comment',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({event_id:eventId,body})});
+    const wrap = document.querySelector(`#fc${eventId} .comments-wrap`) || (() => {
+        const w=document.createElement('div'); w.className='comments-wrap';
+        document.getElementById('fc'+eventId).querySelector('.social-bar').after(w); return w;
+    })();
+    const div=document.createElement('div'); div.className='comment-item';
+    div.innerHTML=`<span class="comment-who">${escHtml(ME)}</span> ${escHtml(body)}`;
+    wrap.appendChild(div);
+    document.getElementById('cf'+eventId).style.display='none';
+}
+function escHtml(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function timeAgo(s) {
+    if (!s) return '';
+    const diff=(Date.now()-new Date(s.replace(' ','T')+'Z'))/1000;
+    if (diff<60) return 'just now';
+    if (diff<3600) return Math.floor(diff/60)+'m ago';
+    if (diff<86400) return Math.floor(diff/3600)+'h ago';
+    return Math.floor(diff/86400)+'d ago';
+}
+function socShowToast(msg) {
+    const t=document.createElement('div');
+    t.style.cssText='position:fixed;bottom:24px;right:24px;background:var(--elevated);border:1px solid var(--border-h);color:var(--gold);font-family:var(--mono);font-size:12px;padding:10px 18px;z-index:9000;letter-spacing:.04em;pointer-events:none';
+    t.textContent=msg; document.body.appendChild(t);
+    setTimeout(()=>t.remove(),3200);
+}
+
+loadBuddies();
+setInterval(loadBuddies, 20000);
+
+/* ══ COMPETE ══ */
+function showCompeteTab(name, btn) {
+    document.querySelectorAll('.compete-pane').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.ctab').forEach(b => b.classList.remove('active'));
+    document.getElementById('pane-' + name).classList.add('active');
+    btn.classList.add('active');
+    if (name==='clubs'    && !clubsLoaded) loadClubs();
+    if (name==='segments' && !segsLoaded) loadSegs();
+}
+
+const CH_UNIT  = {workouts:'workouts',xp:'XP',checkins:'check-ins',food_logs:'food logs'};
+const CH_MEDAL = ['🥇','🥈','🥉'];
+let challengesLoaded = false;
+
+async function loadChallenges() {
+    const res  = await fetch('/perfect/api/challenges');
+    const data = await res.json();
+    const grid = document.getElementById('challengeGrid');
+    if (!data.ok||!data.challenges.length) { grid.innerHTML='<div style="color:var(--text-3);font-size:12px">No active challenges this month.</div>'; return; }
+    grid.innerHTML = data.challenges.map(ch => {
+        const unit=CH_UNIT[ch.metric]||ch.metric, done=ch.completed;
+        const topRows=ch.top5.map(b=>`<div class="lb-row"><div class="lb-rank">${CH_MEDAL[b.rank-1]||b.rank}</div><div class="lb-name${b.is_me?' me':''}">@${b.username}</div><div class="lb-prog">${b.progress.toLocaleString()} ${unit}</div></div>`).join('');
+        return `<div class="ch-card${done?' completed':''}">
+            ${done?'<div class="ch-done-badge">✓ Completed</div>':''}
+            <div class="ch-title">${ch.title}</div>
+            <div class="ch-desc">${ch.description}</div>
+            <div class="prog-row"><span class="prog-val">${ch.my_progress.toLocaleString()}</span><span class="prog-target">/ ${ch.target.toLocaleString()} ${unit}</span></div>
+            <div class="prog-bar"><div class="prog-fill${done?' done':''}" style="width:${ch.pct}%"></div></div>
+            <div class="lb-head">Leaderboard</div>
+            ${topRows||'<div style="font-size:11px;color:var(--text-3)">No entries yet — be first!</div>'}
+            <div class="lb-more" onclick="openCHLb(${ch.id},'${ch.title}','${unit}')">View full leaderboard ›</div>
+        </div>`;
+    }).join('');
+}
+
+async function openCHLb(cid, title, unit) {
+    document.getElementById('chLbModal').classList.add('open');
+    document.getElementById('chLbTitle').textContent=title;
+    document.getElementById('chLbSub').textContent='All participants';
+    document.getElementById('chLbBody').innerHTML='<div style="font-size:12px;color:var(--text-3)">Loading…</div>';
+    const res  = await fetch('/perfect/api/challenges/'+cid+'/leaderboard');
+    const data = await res.json();
+    if (!data.ok) return;
+    const rows=data.board.filter(b=>b.progress>0);
+    document.getElementById('chLbBody').innerHTML=rows.length
+        ? rows.map(b=>`<div class="full-lb-row"><div class="full-lb-rank">${CH_MEDAL[b.rank-1]||b.rank}</div><div class="full-lb-name${b.is_me?' me':''}">${b.name||'@'+b.username}${b.is_me?' (you)':''}</div><div class="full-lb-bar"><div class="full-lb-bar-fill" style="width:${b.pct}%"></div></div><div class="full-lb-val">${b.progress.toLocaleString()}</div></div>`).join('')
+        : '<div style="font-size:12px;color:var(--text-3)">No entries yet.</div>';
+}
+function closeCHLb() { document.getElementById('chLbModal').classList.remove('open'); }
+
+const CLUB_ICONS  = {login:'☀️',food_log:'🍎',calorie_goal:'🎯',exercise:'🏃',blood_report:'💉'};
+const CLUB_LBLS   = {login:'checked in',food_log:'logged meals',calorie_goal:'hit calorie goal',exercise:'completed a workout',blood_report:'analyzed blood report'};
+const CLUB_MEDALS = ['🥇','🥈','🥉'];
+let clubsLoaded=false, clubCurrentTab='mine', allClubs={my_clubs:[],discover:[]}, activeClubId=null;
+
+async function loadClubs() {
+    if (clubsLoaded) return; clubsLoaded=true;
+    const res=await fetch('/perfect/api/clubs');
+    const data=await res.json();
+    allClubs=data; renderClubList();
+}
+function renderClubList() {
+    const clubs=clubCurrentTab==='mine'?allClubs.my_clubs:allClubs.discover;
+    const el=document.getElementById('clubList');
+    if (!clubs.length) { el.innerHTML=`<div style="padding:14px;font-size:11px;color:var(--text-3)">${clubCurrentTab==='mine'?'You haven\'t joined any clubs yet.':'No clubs to discover.'}</div>`; return; }
+    el.innerHTML=clubs.map(c=>`<div class="club-item${c.id===activeClubId?' active':''}" onclick="selectClub(${c.id})"><div class="club-item-name">${c.name}</div><div class="club-item-meta">${c.member_count} member${c.member_count!==1?'s':''}</div>${clubCurrentTab==='discover'?`<div class="club-item-join" onclick="event.stopPropagation();joinClub(${c.id})">+ Join</div>`:''}</div>`).join('');
+}
+function switchClubTab(tab) {
+    clubCurrentTab=tab;
+    document.getElementById('clubTabMine').classList.toggle('active',tab==='mine');
+    document.getElementById('clubTabDiscover').classList.toggle('active',tab==='discover');
+    renderClubList();
+}
+async function selectClub(id) {
+    activeClubId=id; renderClubList();
+    const main=document.getElementById('clubsMainPanel');
+    main.innerHTML='<div style="padding:40px;font-size:12px;color:var(--text-3)">Loading…</div>';
+    const [detRes,feedRes]=await Promise.all([fetch('/perfect/api/clubs/'+id),fetch('/perfect/api/clubs/'+id+'/feed')]);
+    const det=await detRes.json(), feed=await feedRes.json();
+    if (!det.ok) { main.innerHTML='<div style="padding:40px;font-size:12px;color:var(--text-3)">Club not found.</div>'; return; }
+    const c=det.club,members=det.members,isMem=det.is_member;
+    const feedHtml=feed.ok&&feed.feed.length
+        ? feed.feed.map(e=>`<div class="feed-card"><div class="feed-top"><div class="feed-av">${(e.name||e.username)[0].toUpperCase()}</div><div class="feed-who"><strong>${e.name||'@'+e.username}</strong> ${CLUB_LBLS[e.event_type]||e.event_type}</div><div class="feed-xp">+${e.xp} XP</div><div class="feed-time">${(e.at||'').slice(0,10)}</div></div></div>`).join('')
+        : '<div style="padding:20px;font-size:12px;color:var(--text-3)">No activity yet from club members.</div>';
+    const mbHtml=members.map(m=>`<div class="mb-row"><div class="mb-rank">${CLUB_MEDALS[m.rank-1]||m.rank}</div><div class="mb-name${m.is_me?' me':''}">@${m.username}${m.role==='admin'?' 👑':''}</div><div class="mb-xp">${m.month_xp.toLocaleString()} XP this month</div></div>`).join('');
+    main.innerHTML=`
+        <div class="club-hero">
+            <div class="club-av">${c.name[0].toUpperCase()}</div>
+            <div><div class="club-name">${c.name}</div><div class="club-desc">${c.description||'No description.'}</div></div>
+            <div class="club-actions">${isMem?`<button class="btn-leave" onclick="leaveClub(${c.id})">Leave</button>`:`<button class="btn-join" onclick="joinClub(${c.id})">+ Join</button>`}</div>
+        </div>
+        <div class="detail-cols">
+            <div><div class="section-head">Activity Feed</div>${feedHtml}</div>
+            <div><div class="panel-box"><div class="section-head">Monthly Leaderboard</div>${mbHtml}</div></div>
+        </div>`;
+}
+async function joinClub(id) { await fetch('/perfect/api/clubs/'+id+'/join',{method:'POST'}); clubsLoaded=false; allClubs={my_clubs:[],discover:[]}; await loadClubs(); selectClub(id); }
+async function leaveClub(id) { await fetch('/perfect/api/clubs/'+id+'/leave',{method:'POST'}); activeClubId=null; clubsLoaded=false; allClubs={my_clubs:[],discover:[]}; await loadClubs(); document.getElementById('clubsMainPanel').innerHTML='<div class="empty-state">Select a club to view its feed and members.<br>Or create one and invite your buddies.</div>'; }
+function openClubCreate()  { document.getElementById('clubCreateModal').classList.add('open'); document.getElementById('clubNameInp').focus(); }
+function closeClubCreate() { document.getElementById('clubCreateModal').classList.remove('open'); }
+async function createClub() {
+    const name=document.getElementById('clubNameInp').value.trim(), desc=document.getElementById('clubDescInp').value.trim();
+    if (!name) return;
+    const res=await fetch('/perfect/api/clubs/create',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name,description:desc})});
+    const data=await res.json();
+    closeClubCreate(); document.getElementById('clubNameInp').value=''; document.getElementById('clubDescInp').value='';
+    clubsLoaded=false; allClubs={my_clubs:[],discover:[]}; await loadClubs();
+    if (data.ok) selectClub(data.club_id);
+}
+
+const SEG_MEDALS=['🥇','🥈','🥉'];
+let segsLoaded=false, allSegs=[], activeSegFilter='all', activeSeg=null, activeSegId=null;
+
+async function loadSegs() {
+    if (segsLoaded) return; segsLoaded=true;
+    const res=await fetch('/perfect/api/segments'); const data=await res.json();
+    allSegs=data.segments||[]; renderSegList();
+}
+function renderSegList() {
+    const filtered=activeSegFilter==='all'?allSegs:allSegs.filter(s=>s.category===activeSegFilter);
+    const el=document.getElementById('segList');
+    if (!filtered.length) { el.innerHTML=`<div style="padding:14px;font-size:11px;color:var(--text-3)">${activeSegFilter==='all'?'No segments yet — create one!':'No segments in this category.'}</div>`; return; }
+    el.innerHTML=filtered.map(s=>`<div class="seg-item${s.id===activeSegId?' sel':''}" onclick="selectSeg(${s.id})"><div class="seg-top"><span class="seg-emoji">${s.cat_emoji}</span><span class="seg-name">${s.name}</span></div><div class="seg-meta">${s.athlete_count} athlete${s.athlete_count!==1?'s':''} · ${s.effort_count} effort${s.effort_count!==1?'s':''} · ${s.metric_unit}</div></div>`).join('');
+}
+function setSegFilter(cat, btn) {
+    activeSegFilter=cat;
+    document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active'); renderSegList();
+}
+async function selectSeg(id) {
+    activeSegId=id; renderSegList();
+    const main=document.getElementById('segsMainPanel');
+    main.innerHTML='<div style="padding:40px;font-size:12px;color:var(--text-3)">Loading…</div>';
+    const res=await fetch('/perfect/api/segments/'+id); const data=await res.json();
+    if (!data.ok) { main.innerHTML='<div style="padding:40px;font-size:12px;color:var(--text-3)">Not found.</div>'; return; }
+    activeSeg=data;
+    const seg=data.segment,kom=data.kom,myPb=data.my_pb;
+    const komHtml=kom?`<div class="kom-banner"><div class="kom-crown">👑</div><div><div class="kom-label">King of the Segment</div><div class="kom-name">${kom.name}</div></div><div class="kom-pb">${kom.pb_fmt}</div></div>`:'';
+    const lbRows=data.board.map(b=>`<div class="slb-row"><div class="slb-rank">${SEG_MEDALS[b.rank-1]||b.rank}</div><div class="slb-name${b.is_me?' me':''}">${b.name||'@'+b.username}</div><div class="slb-val">${b.pb_fmt}</div><div class="slb-date">${b.last_at}</div></div>`).join('')||'<div style="font-size:11px;color:var(--text-3);padding:8px 0">No efforts yet — be first!</div>';
+    const histRows=data.my_history.map(h=>`<div class="hist-row"><div class="hist-val">${h.fmt}</div><div class="hist-note">${h.note||''}</div><div class="hist-date">${h.at}</div></div>`).join('')||'<div style="font-size:11px;color:var(--text-3);padding:8px 0">No efforts logged yet.</div>';
+    const delBtn=data.is_mine?`<button class="btn-del" onclick="deleteSeg(${seg.id})">Delete segment</button>`:'';
+    main.innerHTML=`
+        <div class="seg-hero">
+            <div class="seg-hero-icon">${seg.cat_emoji}</div>
+            <div><div class="seg-hero-name">${seg.name}</div><div class="seg-hero-meta">${seg.cat_label} &nbsp;·&nbsp; Measured by: ${seg.metric_label}<br>${seg.description||''}</div></div>
+            <div class="seg-hero-actions"><button class="btn-log" onclick="openSegLog()">+ Log Effort</button>${delBtn}</div>
+        </div>
+        ${komHtml}
+        <div class="detail-cols">
+            <div><div class="section-head">Leaderboard — Personal Bests</div>${lbRows}</div>
+            <div>${myPb?`<div class="pb-card"><div class="pb-label">Your Personal Best</div><div class="pb-val">${myPb.pb_fmt}</div><div class="pb-rank">Rank #${myPb.rank}</div></div>`:''}
+            <div class="panel-box"><div class="section-head">Your History</div>${histRows}</div></div>
+        </div>`;
+}
+function openSegLog() {
+    if (!activeSeg) return;
+    const seg=activeSeg.segment;
+    document.getElementById('segLogTitle').textContent='Log Effort — '+seg.name;
+    document.getElementById('segLogSub').textContent=seg.metric==='time'?'Enter your time. Fastest time wins.':seg.metric==='reps'?'Enter your rep count. Most wins.':'Enter distance in km. Furthest wins.';
+    document.getElementById('segLogValLabel').textContent={'time':'Time (minutes)','reps':'Reps','distance':'Distance (km)'}[seg.metric]||'Value';
+    document.getElementById('segLogValInp').value=''; document.getElementById('segLogNoteInp').value='';
+    document.getElementById('segLogModal').classList.add('open');
+    document.getElementById('segLogValInp').focus();
+}
+function closeSegLog() { document.getElementById('segLogModal').classList.remove('open'); }
+async function submitSegEffort() {
+    const val=parseFloat(document.getElementById('segLogValInp').value);
+    const note=document.getElementById('segLogNoteInp').value.trim();
+    if (!val||val<=0) { document.getElementById('segLogValInp').focus(); return; }
+    const res=await fetch('/perfect/api/segments/'+activeSegId+'/effort',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({value:val,note})});
+    const d=await res.json();
+    closeSegLog();
+    if (d.ok) {
+        compShowToast(d.is_kom?'👑 You are now King of the Segment with '+d.fmt+'!':'Effort logged — '+d.fmt+(d.rank?' · Rank #'+d.rank:''));
+        segsLoaded=false; allSegs=[]; await loadSegs(); selectSeg(activeSegId);
+    }
+}
+async function deleteSeg(id) {
+    if (!confirm('Delete this segment and all its efforts?')) return;
+    await fetch('/perfect/api/segments/'+id+'/delete',{method:'POST'});
+    activeSegId=null; activeSeg=null;
+    document.getElementById('segsMainPanel').innerHTML='<div class="empty-state">Segment deleted.</div>';
+    segsLoaded=false; allSegs=[]; await loadSegs();
+}
+function openSegCreate()  { document.getElementById('segCreateModal').classList.add('open'); document.getElementById('csName').focus(); }
+function closeSegCreate() { document.getElementById('segCreateModal').classList.remove('open'); }
+async function createSegment() {
+    const name=document.getElementById('csName').value.trim(), desc=document.getElementById('csDesc').value.trim();
+    const cat=document.getElementById('csCat').value, metric=document.getElementById('csMetric').value;
+    if (!name) { document.getElementById('csName').focus(); return; }
+    const res=await fetch('/perfect/api/segments/create',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name,description:desc,category:cat,metric})});
+    const d=await res.json();
+    closeSegCreate(); document.getElementById('csName').value=''; document.getElementById('csDesc').value='';
+    segsLoaded=false; allSegs=[]; await loadSegs();
+    if (d.ok) selectSeg(d.segment_id);
+}
+function compShowToast(msg) {
+    const t=document.createElement('div');
+    t.style.cssText='position:fixed;bottom:24px;right:24px;background:var(--elevated);border:1px solid rgba(201,168,76,.5);color:var(--text);font-family:"Courier Prime",monospace;font-size:12px;padding:12px 20px;z-index:9500;letter-spacing:.04em;opacity:0;transition:opacity .2s;max-width:320px;line-height:1.5';
+    t.textContent=msg; document.body.appendChild(t);
+    requestAnimationFrame(()=>t.style.opacity='1');
+    setTimeout(()=>{t.style.opacity='0';setTimeout(()=>t.remove(),250);},4000);
+}
+
+/* Load challenges only when compete pane is opened */
+</script>
+</body>
+</html>

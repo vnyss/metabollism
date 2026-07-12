@@ -2801,6 +2801,34 @@ def perfect_monitor():
     return render_template("perfect/monitor.html", page_active="monitor", **_user_context(session["username"]))
 
 
+@app.route("/perfect/health")
+def perfect_health():
+    if not session.get("username"):
+        return redirect(url_for("login"))
+    return render_template("perfect/health.html", page_active="health", **_user_context(session["username"]))
+
+
+@app.route("/perfect/fitness")
+def perfect_fitness():
+    if not session.get("username"):
+        return redirect(url_for("login"))
+    return render_template("perfect/fitness.html", page_active="fitness", **_user_context(session["username"]))
+
+
+@app.route("/perfect/guidance")
+def perfect_guidance():
+    if not session.get("username"):
+        return redirect(url_for("login"))
+    return render_template("perfect/guidance.html", page_active="guidance", **_user_context(session["username"]))
+
+
+@app.route("/perfect/community")
+def perfect_community():
+    if not session.get("username"):
+        return redirect(url_for("login"))
+    return render_template("perfect/community.html", page_active="community", **_user_context(session["username"]))
+
+
 MONITOR_SYSTEM_PROMPT = """You are a clinical health analyst AI. Analyze blood test results and give a clear, honest health assessment.
 
 Standard reference ranges (MedlinePlus / ICMR):

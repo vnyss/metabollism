@@ -1,0 +1,880 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Health — Too Good</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Courier+Prime:ital,wght@0,400;0,700;1,400&family=Special+Elite&display=swap" rel="stylesheet">
+<script>(function(){
+    var r = document.documentElement;
+    if (localStorage.getItem('tg_mode') === 'light') r.classList.add('light-mode');
+    var sw = localStorage.getItem('tg_sw'); if (sw) r.style.setProperty('--sw', {narrow:'220px',normal:'260px',wide:'320px'}[sw]||'260px');
+    var an = localStorage.getItem('tg_anim'); if (an) r.style.setProperty('--anim', {none:'0ms',normal:'200ms',snappy:'80ms'}[an]||'200ms');
+})();</script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+<style>
+:root {
+    --bg:#0A0A0A; --sidebar:#080808; --surface:#111111; --elevated:#181818;
+    --border:rgba(201,168,76,0.12); --border-h:rgba(201,168,76,0.38);
+    --gold:#C9A84C; --gold-h:#DFC070; --gold-dim:rgba(201,168,76,0.07); --gold-glow:rgba(201,168,76,0.22);
+    --text:#E8DCC8; --text-2:#8A7A62; --text-3:#4A3C2A;
+    --mono:'Courier Prime',monospace; --display:'Special Elite',monospace;
+    --sw:260px; --anim:200ms;
+}
+html.light-mode {
+    --bg:#F5F0E8; --sidebar:#EDE8DF; --surface:#FFFFFF; --elevated:#F0EBE1;
+    --border:rgba(100,80,40,0.14); --border-h:rgba(100,80,40,0.36);
+    --gold:#8B6914; --gold-dim:rgba(139,105,20,0.06); --gold-glow:rgba(139,105,20,0.18);
+    --text:#1A1208; --text-2:#6B5A3E; --text-3:#9A8A72;
+}
+*,*::before,*::after { box-sizing:border-box; margin:0; padding:0; }
+body { background:var(--bg); font-family:var(--mono); color:var(--text); height:100vh; overflow:hidden; -webkit-font-smoothing:antialiased; }
+.app { display:flex; height:100vh; }
+.main { margin-left:var(--sw); flex:1; display:flex; flex-direction:column; height:100vh; overflow:hidden; }
+.merge-tabs { display:flex; border-bottom:1px solid var(--border); flex-shrink:0; }
+.merge-tab { padding:10px 24px; font-family:var(--mono); font-size:11px; letter-spacing:.14em; text-transform:uppercase; color:var(--text-3); background:none; border:none; border-bottom:2px solid transparent; cursor:pointer; margin-bottom:-1px; transition:color .15s,border-color .15s; }
+.merge-tab.active { color:var(--gold); border-bottom-color:var(--gold); }
+.merge-tab:hover { color:var(--text); }
+.pane { display:none; flex:1; min-height:0; flex-direction:column; }
+.pane.active { display:flex; }
+.pane-diary { overflow-y:auto; align-items:center; padding:40px 24px 60px; }
+.pane-diary::-webkit-scrollbar { width:4px; }
+.pane-diary::-webkit-scrollbar-thumb { background:var(--border); }
+.pane-monitor { overflow-y:auto; }
+
+/* DIARY */
+.gate-wrap { display:flex; flex-direction:column; align-items:center; gap:24px; margin-top:48px; text-align:center; }
+.gate-icon { color:var(--gold); opacity:0.75; }
+.gate-title { font-family:var(--display); font-size:22px; color:var(--text); letter-spacing:0.04em; }
+.gate-sub { font-size:12px; color:var(--text-2); line-height:1.7; max-width:300px; }
+.pin-row { display:flex; gap:12px; justify-content:center; }
+.pin-box { width:56px; height:68px; background:var(--elevated); border:2px solid var(--border); color:var(--text); font-family:var(--mono); font-size:32px; text-align:center; outline:none; caret-color:transparent; transition:border-color 0.15s,box-shadow 0.15s; }
+.pin-box:focus { border-color:var(--gold); box-shadow:0 0 0 3px rgba(201,168,76,0.15); }
+.pin-box.filled { border-color:var(--border-h); }
+@keyframes pinShake { 0%,100%{transform:translateX(0)} 11%{transform:translateX(-9px)} 22%{transform:translateX(9px)} 33%{transform:translateX(-9px)} 44%{transform:translateX(9px)} 55%{transform:translateX(-9px)} 66%{transform:translateX(9px)} 77%{transform:translateX(0)} }
+@keyframes pinGlow { 0%,100%{box-shadow:none} 15%{box-shadow:0 0 18px rgba(231,76,60,0.8)} 30%{box-shadow:0 0 4px rgba(231,76,60,0.2)} 45%{box-shadow:0 0 18px rgba(231,76,60,0.8)} 60%{box-shadow:0 0 4px rgba(231,76,60,0.2)} 75%{box-shadow:0 0 18px rgba(231,76,60,0.8)} 90%{box-shadow:0 0 4px rgba(231,76,60,0.2)} }
+.pin-row.wrong { animation:pinShake 0.8s ease; }
+.pin-row.wrong .pin-box { border-color:#e74c3c !important; animation:pinGlow 0.8s ease; }
+.gate-no-pin { background:none; border:none; color:var(--text-3); font-family:var(--mono); font-size:12px; letter-spacing:0.08em; cursor:pointer; padding:6px 12px; transition:color 0.15s; text-decoration:underline; }
+.gate-no-pin:hover { color:var(--text-2); }
+.gate-hint { font-size:11px; color:var(--text-3); font-family:var(--mono); letter-spacing:0.06em; min-height:16px; transition:color 0.2s; }
+.gate-hint.err { color:#e74c3c; }
+.notebook-outer { width:100%; max-width:760px; background:var(--surface); border:1px solid var(--border); display:flex; flex-direction:column; }
+.nb-header { height:52px; display:flex; align-items:center; padding:0 20px; gap:12px; border-bottom:1px solid var(--border); flex-shrink:0; }
+.nb-date-nav { background:none; border:none; color:var(--text-3); font-size:20px; cursor:pointer; padding:0 4px; line-height:1; transition:color 0.15s; }
+.nb-date-nav:hover:not(:disabled) { color:var(--gold); }
+.nb-date-nav:disabled { opacity:0.2; cursor:default; }
+.nb-date-label { font-family:var(--display); font-size:16px; color:var(--text); letter-spacing:0.05em; flex:1; }
+.nb-lock-btn { background:none; border:none; color:var(--text-3); font-family:var(--mono); font-size:10px; letter-spacing:0.1em; cursor:pointer; display:flex; align-items:center; gap:4px; transition:color 0.15s; text-transform:uppercase; }
+.nb-lock-btn:hover { color:var(--gold); }
+.nb-body { flex:1; padding:0 20px; }
+.nb-ta { width:100%; min-height:380px; background:transparent; border:none; outline:none; resize:none; font-family:var(--mono); font-size:15px; line-height:1.85; color:var(--text); padding:16px 0; letter-spacing:0.02em; }
+.nb-ta::placeholder { color:var(--text-3); font-style:italic; }
+.nb-ta:disabled { opacity:0.5; }
+.nb-toolbar { display:flex; align-items:center; gap:10px; padding:10px 20px; border-top:1px solid var(--border); flex-shrink:0; }
+.nb-wave { display:flex; align-items:center; gap:2px; height:22px; opacity:0; transition:opacity 0.2s; pointer-events:none; }
+.nb-wave.active { opacity:1; }
+.nb-wave-bar { width:3px; height:4px; background:var(--gold); border-radius:2px; }
+.nb-wave.active .nb-wave-bar { animation:nbWave 0.8s ease-in-out infinite; }
+.nb-wave.active .nb-wave-bar:nth-child(2) { animation-delay:0.1s; }
+.nb-wave.active .nb-wave-bar:nth-child(3) { animation-delay:0.2s; }
+.nb-wave.active .nb-wave-bar:nth-child(4) { animation-delay:0.3s; }
+.nb-wave.active .nb-wave-bar:nth-child(5) { animation-delay:0.4s; }
+@keyframes nbWave { 0%,100%{height:4px;opacity:0.35} 50%{height:20px;opacity:1} }
+.nb-mic-btn { background:none; border:1px solid var(--border); color:var(--text-3); width:32px; height:32px; cursor:pointer; display:grid; place-items:center; transition:all 0.15s; flex-shrink:0; }
+.nb-mic-btn:hover,.nb-mic-btn.active { border-color:var(--gold); color:var(--gold); background:var(--gold-dim); }
+.nb-chars { font-size:11px; color:var(--text-3); font-family:var(--mono); flex:1; letter-spacing:0.04em; }
+.nb-save-btn { background:var(--gold); border:none; color:#060606; font-family:var(--mono); font-size:12px; letter-spacing:0.08em; font-weight:700; padding:7px 18px; cursor:pointer; transition:background 0.15s; }
+.nb-save-btn:hover { background:var(--gold-h); }
+.nb-lock-diary-btn { background:none; border:1px solid rgba(207,102,121,0.35); color:#CF6679; font-family:var(--mono); font-size:11px; letter-spacing:0.08em; padding:6px 14px; cursor:pointer; display:flex; align-items:center; gap:6px; transition:background 0.15s; }
+.nb-lock-diary-btn:hover { background:rgba(207,102,121,0.08); }
+.nb-saved { font-size:11px; color:var(--text-3); font-family:var(--mono); letter-spacing:0.06em; opacity:0; transition:opacity 0.3s; }
+.nb-saved.show { opacity:1; }
+.nb-ai-bar { display:flex; align-items:center; gap:12px; padding:10px 20px; background:var(--elevated); border-top:1px solid var(--border); flex-shrink:0; }
+.nb-ai-btn { display:flex; align-items:center; gap:7px; background:none; border:1px solid var(--border); color:var(--text-2); font-family:var(--mono); font-size:12px; letter-spacing:0.06em; padding:7px 14px; cursor:pointer; transition:all 0.15s; }
+.nb-ai-btn:hover:not(:disabled) { border-color:var(--border-h); color:var(--gold); background:var(--gold-dim); }
+.nb-ai-btn:disabled { opacity:0.45; cursor:default; }
+.nb-ai-panel { display:none; padding:16px 20px; background:var(--elevated); border-top:1px solid var(--border); font-family:var(--mono); font-size:13px; color:var(--text); line-height:1.8; white-space:pre-wrap; }
+.nb-ai-panel.show { display:block; }
+.nb-ai-thinking { display:flex; gap:5px; align-items:center; }
+.dai-dot { width:6px; height:6px; background:var(--gold); border-radius:50%; animation:daiP 1.2s ease-in-out infinite; }
+.dai-dot:nth-child(2) { animation-delay:0.2s; }
+.dai-dot:nth-child(3) { animation-delay:0.4s; }
+@keyframes daiP { 0%,100%{opacity:0.2;transform:scale(0.8)} 50%{opacity:1;transform:scale(1.2)} }
+.toast { position:fixed; bottom:24px; left:50%; transform:translateX(-50%) translateY(60px); background:var(--elevated); border:1px solid var(--border-h); color:var(--text); font-family:var(--mono); font-size:13px; letter-spacing:0.04em; padding:10px 22px; z-index:9999; opacity:0; transition:opacity 0.25s,transform 0.25s; pointer-events:none; white-space:nowrap; }
+.toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
+@media(max-width:768px) { .main { margin-left:0; } }
+
+/* MONITOR */
+.mon-header { padding:28px 40px 0; display:flex; align-items:center; gap:14px; flex-shrink:0; }
+.mon-header-icon { width:36px; height:36px; background:var(--gold-dim); border:1px solid var(--border); display:flex; align-items:center; justify-content:center; color:var(--gold); flex-shrink:0; }
+.mon-title { font-family:var(--display); font-size:22px; }
+.mon-subtitle { font-size:11px; color:var(--text-3); letter-spacing:.14em; margin-top:2px; text-transform:uppercase; }
+.who-strip { margin:20px 40px 0; display:flex; align-items:center; gap:12px; flex-wrap:wrap; }
+.who-label { font-size:11px; color:var(--text-3); letter-spacing:.1em; }
+.who-btn { padding:6px 16px; font-family:var(--mono); font-size:12px; letter-spacing:.06em; cursor:pointer; border:1px solid var(--border); background:none; color:var(--text-2); transition:all .15s; }
+.who-btn.active { background:var(--gold-dim); border-color:var(--gold); color:var(--gold); }
+.who-fields { display:flex; gap:10px; flex-wrap:wrap; }
+.who-field { display:flex; flex-direction:column; gap:4px; font-size:11px; color:var(--text-3); letter-spacing:.08em; }
+.who-field select,.who-field input { background:var(--surface); border:1px solid var(--border); color:var(--text); font-family:var(--mono); font-size:13px; padding:6px 10px; outline:none; width:140px; }
+.who-field select:focus,.who-field input:focus { border-color:var(--border-h); }
+.profile-badge { font-size:12px; color:var(--text-2); padding:6px 12px; border:1px solid var(--border); background:var(--surface); }
+.mon-tabs { display:flex; margin:20px 40px 0; border-bottom:1px solid var(--border); }
+.mon-tab { padding:9px 20px; font-family:var(--mono); font-size:12px; letter-spacing:.08em; cursor:pointer; border:none; background:none; color:var(--text-3); border-bottom:2px solid transparent; margin-bottom:-1px; transition:all .15s; }
+.mon-tab.active { color:var(--gold); border-bottom-color:var(--gold); }
+.mon-body { padding:20px 40px 40px; display:flex; flex-direction:column; gap:18px; }
+.upload-zone { border:1.5px dashed var(--border); padding:40px 24px; text-align:center; cursor:pointer; transition:all .18s; }
+.upload-zone:hover,.upload-zone.drag { border-color:var(--gold); background:var(--gold-dim); }
+.upload-zone p { font-size:13px; color:var(--text-2); margin-top:10px; }
+.upload-zone span { font-size:11px; color:var(--text-3); display:block; margin-top:4px; }
+#fileInput { display:none; }
+#imgPreviewWrap { display:none; position:relative; }
+#imgPreview { max-width:100%; max-height:300px; border:1px solid var(--border); display:block; }
+.img-clear { position:absolute; top:8px; right:8px; background:rgba(0,0,0,.75); border:1px solid var(--border); color:var(--text-2); padding:4px 10px; font-size:11px; cursor:pointer; font-family:var(--mono); }
+.extract-banner { display:none; padding:10px 14px; background:rgba(82,168,124,.1); border:1px solid rgba(82,168,124,.3); color:#52A87C; font-size:12px; line-height:1.5; }
+.cat-block { border:1px solid var(--border); }
+.cat-head { padding:10px 16px; background:var(--surface); cursor:pointer; display:flex; align-items:center; justify-content:space-between; font-size:12px; letter-spacing:.1em; color:var(--text-2); text-transform:uppercase; user-select:none; }
+.cat-head:hover { color:var(--text); }
+.cat-body { display:none; padding:16px; grid-template-columns:repeat(auto-fill,minmax(190px,1fr)); gap:12px; }
+.cat-body.open { display:grid; }
+.field-wrap { display:flex; flex-direction:column; gap:4px; }
+.field-wrap label { font-size:11px; color:var(--text-3); letter-spacing:.06em; }
+.field-hint { font-size:10px; color:var(--text-3); opacity:.6; }
+.field-wrap input { background:var(--surface); border:1px solid var(--border); color:var(--text); font-family:var(--mono); font-size:13px; padding:7px 10px; outline:none; width:100%; transition:border-color .15s; }
+.field-wrap input:focus { border-color:var(--border-h); }
+.field-wrap input.filled { border-color:rgba(82,168,124,.5); background:rgba(82,168,124,.04); }
+.field-wrap input::placeholder { color:var(--text-3); font-size:11px; }
+.analyze-btn { padding:11px 28px; background:var(--gold); color:#0A0A0A; font-family:var(--mono); font-size:13px; font-weight:700; letter-spacing:.1em; border:none; cursor:pointer; text-transform:uppercase; transition:opacity .15s; }
+.analyze-btn:hover { opacity:.88; }
+.analyze-btn:disabled { opacity:.4; cursor:not-allowed; }
+.loading-ring { display:none; align-items:center; gap:8px; font-size:12px; color:var(--text-3); }
+.loading-ring.show { display:flex; }
+.ring { width:16px; height:16px; border:2px solid var(--border); border-top-color:var(--gold); border-radius:50%; animation:spin .8s linear infinite; }
+@keyframes spin { to{transform:rotate(360deg)} }
+#results { display:none; flex-direction:column; gap:22px; animation:fadeUp .3s ease; }
+@keyframes fadeUp { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
+.overall-card { padding:16px 20px; border:1px solid var(--border); display:flex; align-items:center; gap:16px; }
+.overall-dot { width:14px; height:14px; border-radius:50%; flex-shrink:0; }
+.overall-status { font-family:var(--display); font-size:18px; }
+.overall-assess { font-size:12.5px; color:var(--text-2); line-height:1.65; margin-top:4px; }
+.res-label { font-size:10px; color:var(--text-3); letter-spacing:.2em; text-transform:uppercase; margin-bottom:10px; display:flex; align-items:center; gap:8px; }
+.res-label::after { content:''; flex:1; height:1px; background:var(--border); }
+.flags-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(210px,1fr)); gap:10px; }
+.flag-card { border:1px solid var(--border); padding:12px 14px; }
+.flag-card.low { border-left:3px solid #4A9EFF; }
+.flag-card.high { border-left:3px solid #E05252; }
+.flag-card.borderline { border-left:3px solid #E09A2A; }
+.flag-card.normal { border-left:3px solid #52A87C; }
+.flag-test { font-size:11px; color:var(--text-3); letter-spacing:.06em; }
+.flag-value { font-size:17px; color:var(--text); font-family:var(--display); margin:3px 0; }
+.flag-chip { display:inline-block; font-size:10px; letter-spacing:.1em; padding:2px 7px; text-transform:uppercase; font-weight:700; }
+.flag-card.low .flag-chip { background:rgba(74,158,255,.12); color:#4A9EFF; }
+.flag-card.high .flag-chip { background:rgba(224,82,82,.12); color:#E05252; }
+.flag-card.borderline .flag-chip { background:rgba(224,154,42,.12); color:#E09A2A; }
+.flag-card.normal .flag-chip { background:rgba(82,168,124,.12); color:#52A87C; }
+.flag-range { font-size:10px; color:var(--text-3); margin-top:3px; }
+.flag-impact { font-size:11px; color:var(--text-2); line-height:1.5; margin-top:6px; }
+.flag-sev { font-size:10px; color:var(--text-3); margin-top:2px; text-transform:capitalize; }
+.warnings-list { list-style:none; display:flex; flex-direction:column; gap:6px; }
+.warnings-list li { font-size:12.5px; color:#E05252; padding:8px 12px; border:1px solid rgba(224,82,82,.25); background:rgba(224,82,82,.06); line-height:1.5; }
+.caution-note { font-size:11px; color:var(--text-3); padding:10px 14px; background:var(--surface); border:1px solid var(--border); line-height:1.6; }
+.saved-badge { font-size:11px; color:#52A87C; padding:6px 12px; border:1px solid rgba(82,168,124,.3); background:rgba(82,168,124,.07); display:inline-flex; align-items:center; gap:6px; }
+</style>
+</head>
+<body>
+
+<div class="toast" id="toast"></div>
+
+<div class="app">
+{% include 'perfect/_sidebar.html' %}
+
+<div class="main">
+    <div class="merge-tabs">
+        <button class="merge-tab active" id="htab-diary" onclick="showHealthPane('diary')">Diary</button>
+        <button class="merge-tab" id="htab-monitor" onclick="showHealthPane('monitor')">Blood Monitor</button>
+    </div>
+
+    <!-- ══ DIARY PANE ══ -->
+    <div class="pane pane-diary active" id="pane-diary">
+
+        <div class="gate-wrap" id="gateSetup">
+            <div class="gate-icon">
+                <svg width="38" height="38" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+            </div>
+            <h2 class="gate-title">Welcome to your diary</h2>
+            <p class="gate-sub">Would you like to protect it with a 4-digit PIN?</p>
+            <div id="setupChoices" style="display:flex;flex-direction:column;gap:10px;width:100%;max-width:260px;">
+                <button class="nb-save-btn" style="width:100%;padding:12px;font-size:13px;" onclick="showSetupPin()">Set a 4-digit PIN</button>
+                <button onclick="diaryNoPin()" style="width:100%;padding:12px;background:none;border:1px solid var(--border);color:var(--text-2);font-family:var(--mono);font-size:13px;letter-spacing:0.06em;cursor:pointer;transition:all 0.15s;" onmouseover="this.style.borderColor='var(--border-h)';this.style.color='var(--text)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--text-2)'">Open without PIN</button>
+            </div>
+            <div id="setupPinArea" style="display:none;flex-direction:column;align-items:center;gap:16px;">
+                <div class="pin-row" id="setupPinRow">
+                    <input class="pin-box" type="password" maxlength="1" inputmode="numeric" pattern="[0-9]" data-idx="0">
+                    <input class="pin-box" type="password" maxlength="1" inputmode="numeric" pattern="[0-9]" data-idx="1">
+                    <input class="pin-box" type="password" maxlength="1" inputmode="numeric" pattern="[0-9]" data-idx="2">
+                    <input class="pin-box" type="password" maxlength="1" inputmode="numeric" pattern="[0-9]" data-idx="3">
+                </div>
+                <div class="gate-hint" id="setupHint">Enter a 4-digit PIN</div>
+                <button class="gate-no-pin" onclick="backToChoices()">← Go back</button>
+            </div>
+        </div>
+
+        <div class="gate-wrap" id="gateUnlock" style="display:none">
+            <div class="gate-icon">
+                <svg width="38" height="38" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+            </div>
+            <h2 class="gate-title">Diary is locked</h2>
+            <p class="gate-sub">Enter your 4-digit PIN to open.</p>
+            <div class="pin-row" id="unlockPinRow">
+                <input class="pin-box" type="password" maxlength="1" inputmode="numeric" pattern="[0-9]" data-idx="0">
+                <input class="pin-box" type="password" maxlength="1" inputmode="numeric" pattern="[0-9]" data-idx="1">
+                <input class="pin-box" type="password" maxlength="1" inputmode="numeric" pattern="[0-9]" data-idx="2">
+                <input class="pin-box" type="password" maxlength="1" inputmode="numeric" pattern="[0-9]" data-idx="3">
+            </div>
+            <div class="gate-hint" id="unlockHint"> </div>
+            <button class="gate-no-pin" onclick="resetDiaryLock()">Forgot PIN? Reset lock</button>
+        </div>
+
+        <div class="notebook-outer" id="notebookWrap" style="display:none">
+            <div class="nb-header">
+                <button class="nb-date-nav" id="nbPrevBtn" onclick="diaryChangeDay(-1)" title="Previous day">‹</button>
+                <span class="nb-date-label" id="nbDateLabel">Today</span>
+                <button class="nb-date-nav" id="nbNextBtn" onclick="diaryChangeDay(1)" title="Next day">›</button>
+                <button class="nb-lock-btn" onclick="diaryChangeLock()" id="nbLockBtn">
+                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                    <span id="nbLockLabel">Set PIN</span>
+                </button>
+            </div>
+            <div class="nb-body">
+                <textarea class="nb-ta" id="nbTa" placeholder="Write your thoughts here…" oninput="diaryAutoSave()" onkeydown="if(event.key==='Enter'&&(event.ctrlKey||event.metaKey)){saveDiaryEntry();event.preventDefault();}"></textarea>
+            </div>
+            <div class="nb-toolbar">
+                <div class="nb-wave" id="nbWave">
+                    <div class="nb-wave-bar"></div><div class="nb-wave-bar"></div>
+                    <div class="nb-wave-bar"></div><div class="nb-wave-bar"></div>
+                    <div class="nb-wave-bar"></div>
+                </div>
+                <button class="nb-mic-btn" id="nbMicBtn" onclick="toggleDiaryMic()" title="Dictate">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="9" y="2" width="6" height="11" rx="3"/><path d="M5 10a7 7 0 0 0 14 0"/><line x1="12" y1="21" x2="12" y2="17"/></svg>
+                </button>
+                <span class="nb-chars" id="nbChars">0 chars</span>
+                <span class="nb-saved" id="nbSaved">Saved ✓</span>
+                <button class="nb-lock-diary-btn" id="nbLockDiaryBtn" onclick="diaryLock()" style="display:none">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                    Lock
+                </button>
+                <button class="nb-save-btn" onclick="saveDiaryEntry()">Save</button>
+            </div>
+            <div class="nb-ai-bar">
+                <button class="nb-ai-btn" id="nbAiBtn" onclick="diaryAiReview()">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><path d="M12 1v3M12 20v3M4.22 4.22l2.12 2.12M17.66 17.66l2.12 2.12M1 12h3M20 12h3M4.22 19.78l2.12-2.12M17.66 6.34l2.12-2.12"/></svg>
+                    Let AI review my day
+                </button>
+            </div>
+            <div class="nb-ai-panel" id="nbAiPanel"></div>
+        </div>
+
+    </div><!-- /pane-diary -->
+
+    <!-- ══ MONITOR PANE ══ -->
+    <div class="pane pane-monitor" id="pane-monitor">
+        <div class="mon-header">
+            <div class="mon-header-icon">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+            </div>
+            <div>
+                <div class="mon-title">Blood Monitor</div>
+                <div class="mon-subtitle">Upload a report or enter values — get a health assessment</div>
+            </div>
+        </div>
+
+        <div class="who-strip">
+            <span class="who-label">This report is for:</span>
+            <button class="who-btn active" id="whoMyself" onclick="setWho('myself')">Myself</button>
+            <button class="who-btn" id="whoOther" onclick="setWho('other')">Someone else</button>
+            <div id="myselfBadge" class="profile-badge">
+                {{ gender | capitalize if gender else 'Gender not set' }}, Age {{ age if age else 'not set' }}
+                — <a href="/perfect/settings" style="color:var(--gold);text-decoration:none">Update in settings</a>
+            </div>
+            <div id="otherFields" class="who-fields" style="display:none">
+                <div class="who-field">Gender
+                    <select id="otherGender">
+                        <option value="">Unspecified</option>
+                        <option value="male">Male</option>
+                        <option value="female">Female</option>
+                    </select>
+                </div>
+                <div class="who-field">Age
+                    <input type="number" id="otherAge" placeholder="e.g. 28" min="1" max="120">
+                </div>
+            </div>
+        </div>
+
+        <div class="mon-tabs">
+            <button class="mon-tab active" id="tabUploadBtn" onclick="monitorSwitchTab('upload')">Upload Report</button>
+            <button class="mon-tab" id="tabManualBtn" onclick="monitorSwitchTab('manual')">Enter Values</button>
+        </div>
+
+        <div class="mon-body">
+            <div id="tab-upload">
+                <div class="upload-zone" id="uploadZone"
+                    onclick="document.getElementById('fileInput').click()"
+                    ondragover="event.preventDefault();this.classList.add('drag')"
+                    ondragleave="this.classList.remove('drag')"
+                    ondrop="handleDrop(event)">
+                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--text-3)" stroke-width="1.5" stroke-linecap="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                    <p>Tap to upload your blood report</p>
+                    <span>JPG, PNG — AI reads the values and fills them in automatically</span>
+                </div>
+                <input type="file" id="fileInput" accept="image/*" onchange="handleFileSelect(this)">
+                <div id="imgPreviewWrap">
+                    <img id="imgPreview" src="" alt="Report preview">
+                    <button class="img-clear" onclick="clearImage()">✕ Remove</button>
+                </div>
+                <div class="extract-banner" id="extractBanner"></div>
+            </div>
+
+            <div id="tab-manual" style="display:none;flex-direction:column;gap:14px;">
+                <div class="extract-banner" id="extractBanner2"></div>
+                {% set categories = [
+                    ("Complete Blood Count (CBC)", [
+                        ("hemoglobin","Hemoglobin","g/dL","M:13.5–17.5 / F:12–15.5"),
+                        ("wbc","WBC","×10³/μL","4.5–11.0"),
+                        ("rbc","RBC","M/μL","M:4.5–5.9 / F:4.1–5.1"),
+                        ("platelets","Platelets","×10³/μL","150–400"),
+                        ("hematocrit","Hematocrit","%","M:41–53 / F:36–46"),
+                        ("mcv","MCV","fL","80–100"),
+                        ("mch","MCH","pg","27–33"),
+                    ]),
+                    ("Lipid Panel", [
+                        ("total_cholesterol","Total Cholesterol","mg/dL","<200"),
+                        ("ldl","LDL","mg/dL","<100 optimal"),
+                        ("hdl","HDL","mg/dL","M:>40 / F:>50"),
+                        ("triglycerides","Triglycerides","mg/dL","<150"),
+                    ]),
+                    ("Blood Glucose", [
+                        ("fasting_glucose","Fasting Glucose","mg/dL","70–100"),
+                        ("hba1c","HbA1c","%","<5.7% normal"),
+                        ("postprandial","Postprandial (2h)","mg/dL","<140"),
+                    ]),
+                    ("Liver Function", [
+                        ("alt","ALT","U/L","7–56"),
+                        ("ast","AST","U/L","10–40"),
+                        ("bilirubin_total","Total Bilirubin","mg/dL","0.1–1.2"),
+                        ("albumin","Albumin","g/dL","3.5–5.0"),
+                        ("alp","ALP","U/L","44–147"),
+                        ("ggt","GGT","U/L","M:8–61 / F:5–36"),
+                    ]),
+                    ("Kidney Function", [
+                        ("creatinine","Creatinine","mg/dL","M:0.7–1.3 / F:0.6–1.1"),
+                        ("bun","BUN","mg/dL","7–20"),
+                        ("egfr","eGFR","mL/min/1.73m²",">60"),
+                        ("uric_acid","Uric Acid","mg/dL","M:3.4–7.0 / F:2.4–6.0"),
+                    ]),
+                    ("Thyroid", [
+                        ("tsh","TSH","mIU/L","0.4–4.0"),
+                        ("free_t4","Free T4","ng/dL","0.8–1.8"),
+                        ("free_t3","Free T3","pg/mL","2.3–4.2"),
+                    ]),
+                    ("Vitamins & Minerals", [
+                        ("vitamin_d","Vitamin D","ng/mL","30–100 (<20=deficient)"),
+                        ("vitamin_b12","Vitamin B12","pg/mL","200–900"),
+                        ("iron","Iron","μg/dL","M:65–175 / F:50–170"),
+                        ("ferritin","Ferritin","ng/mL","M:24–336 / F:11–307"),
+                        ("folate","Folate","ng/mL","2.7–17.0"),
+                        ("calcium","Calcium","mg/dL","8.5–10.2"),
+                        ("magnesium","Magnesium","mg/dL","1.7–2.2"),
+                        ("potassium","Potassium","mEq/L","3.5–5.0"),
+                        ("sodium","Sodium","mEq/L","136–145"),
+                    ]),
+                    ("Inflammation", [
+                        ("crp","CRP","mg/L","<1.0 optimal"),
+                        ("esr","ESR","mm/hr","M:0–15 / F:0–20"),
+                    ]),
+                ] %}
+                {% for cat_name, fields in categories %}
+                <div class="cat-block">
+                    <div class="cat-head" onclick="toggleCat(this)">{{ cat_name }}<span>▾</span></div>
+                    <div class="cat-body">
+                        {% for fid, fname, unit, hint in fields %}
+                        <div class="field-wrap">
+                            <label>{{ fname }} <span style="color:var(--text-3);font-size:10px">({{ unit }})</span></label>
+                            <input type="text" id="val_{{ fid }}" placeholder="—" data-label="{{ fname }} ({{ unit }})">
+                            <span class="field-hint">Normal: {{ hint }}</span>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+
+            <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap">
+                <button class="analyze-btn" id="analyzeBtn" onclick="analyze()">Analyze</button>
+                <div class="loading-ring" id="loadingRing"><div class="ring"></div><span id="loadingText">Analyzing…</span></div>
+            </div>
+
+            <div id="results">
+                <div class="overall-card" id="overallCard">
+                    <div class="overall-dot" id="overallDot"></div>
+                    <div>
+                        <div class="overall-status" id="overallStatus"></div>
+                        <div class="overall-assess" id="overallAssess"></div>
+                    </div>
+                </div>
+                <div id="bloodChartWrap" style="display:none">
+                    <div class="res-label" style="margin-bottom:12px">Value vs Normal Range</div>
+                    <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:16px"><canvas id="bloodChartCanvas"></canvas></div>
+                </div>
+                <div id="warningsSection" style="display:none">
+                    <div class="res-label">Urgent Attention</div>
+                    <ul class="warnings-list" id="warningsList"></ul>
+                </div>
+                <div>
+                    <div class="res-label">All Results</div>
+                    <div class="flags-grid" id="flagsGrid"></div>
+                </div>
+                <div class="caution-note" id="cautionNote"></div>
+                <div id="savedBadge" style="display:none">
+                    <span class="saved-badge">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+                        Saved to your profile — the AI will use this when making diet plans
+                    </span>
+                </div>
+            </div>
+
+            <div id="historySection" style="display:flex;flex-direction:column;gap:12px;margin-top:12px">
+                <div class="res-label" style="margin-top:8px">Previous Scans</div>
+                <div style="overflow-x:auto">
+                    <table id="historyTable" style="width:100%;border-collapse:collapse;font-size:12px">
+                        <thead>
+                            <tr style="border-bottom:1px solid var(--border)">
+                                <th style="padding:8px 12px;text-align:left;color:var(--text-3);font-weight:400;letter-spacing:.08em;white-space:nowrap">Date</th>
+                                <th style="padding:8px 12px;text-align:left;color:var(--text-3);font-weight:400;letter-spacing:.08em">Status</th>
+                                <th style="padding:8px 12px;text-align:left;color:var(--text-3);font-weight:400;letter-spacing:.08em">Abnormal</th>
+                                <th style="padding:8px 12px;text-align:left;color:var(--text-3);font-weight:400;letter-spacing:.08em">Assessment</th>
+                            </tr>
+                        </thead>
+                        <tbody id="historyBody"></tbody>
+                    </table>
+                </div>
+                <div id="trendWrap" style="display:none;margin-top:4px">
+                    <div class="res-label" style="margin-bottom:12px">Trends Over Time</div>
+                    <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:16px"><canvas id="trendCanvas"></canvas></div>
+                </div>
+            </div>
+        </div>
+    </div><!-- /pane-monitor -->
+
+</div><!-- /main -->
+</div><!-- /app -->
+
+<script>
+/* ── Globals ── */
+const USERNAME       = {{ username | tojson }};
+const PROFILE_GENDER = {{ gender | tojson }};
+const PROFILE_AGE    = {{ age | tojson }};
+const LS_VALUES      = 'tg_monitor_values_' + USERNAME;
+const LS_RESULT      = 'tg_monitor_last_result_' + USERNAME;
+let forMyself = true;
+let imageB64 = null, imageMime = null;
+
+function showHealthPane(name) {
+    document.querySelectorAll('.pane').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.merge-tab').forEach(t => t.classList.remove('active'));
+    document.getElementById('pane-' + name).classList.add('active');
+    document.getElementById('htab-' + name).classList.add('active');
+}
+
+/* ── Monitor ── */
+function setWho(who) {
+    forMyself = (who === 'myself');
+    document.getElementById('whoMyself').classList.toggle('active', forMyself);
+    document.getElementById('whoOther').classList.toggle('active', !forMyself);
+    document.getElementById('myselfBadge').style.display = forMyself ? '' : 'none';
+    document.getElementById('otherFields').style.display = forMyself ? 'none' : 'flex';
+}
+function getGender() { return forMyself ? PROFILE_GENDER : document.getElementById('otherGender').value; }
+function getAge()    { return forMyself ? PROFILE_AGE    : document.getElementById('otherAge').value; }
+
+function monitorSwitchTab(tab) {
+    document.getElementById('tab-upload').style.cssText = tab === 'upload' ? 'display:flex;flex-direction:column' : 'display:none';
+    document.getElementById('tab-manual').style.display = tab === 'manual' ? 'flex' : 'none';
+    document.getElementById('tabUploadBtn').classList.toggle('active', tab === 'upload');
+    document.getElementById('tabManualBtn').classList.toggle('active', tab === 'manual');
+}
+function toggleCat(head) {
+    const body = head.nextElementSibling;
+    const open = body.classList.toggle('open');
+    head.querySelector('span').textContent = open ? '▴' : '▾';
+    body.style.display = open ? 'grid' : 'none';
+}
+function saveValuesToStorage() {
+    const vals = {};
+    document.querySelectorAll('[id^="val_"]').forEach(inp => { if (inp.value.trim()) vals[inp.id] = inp.value.trim(); });
+    try { localStorage.setItem(LS_VALUES, JSON.stringify(vals)); } catch(e) {}
+}
+function restoreValuesFromStorage() {
+    try {
+        const vals = JSON.parse(localStorage.getItem(LS_VALUES) || '{}');
+        let count = 0;
+        Object.entries(vals).forEach(([id, val]) => {
+            const el = document.getElementById(id);
+            if (el && val) { el.value = val; el.classList.add('filled'); count++; }
+        });
+        if (count > 0) {
+            document.querySelectorAll('.cat-body').forEach(body => {
+                if (Array.from(body.querySelectorAll('input.filled')).length > 0 && !body.classList.contains('open'))
+                    toggleCat(body.previousElementSibling);
+            });
+            showExtractBanner(`${count} saved value${count !== 1 ? 's' : ''} restored. Click Analyze or upload a new report.`, true);
+            monitorSwitchTab('manual');
+        }
+    } catch(e) {}
+}
+function restoreLastResult() {
+    try { const r = JSON.parse(localStorage.getItem(LS_RESULT) || 'null'); if (r) renderResults(r, false); } catch(e) {}
+}
+function handleDrop(e) {
+    e.preventDefault();
+    document.getElementById('uploadZone').classList.remove('drag');
+    const file = e.dataTransfer.files[0];
+    if (file) loadFile(file);
+}
+function handleFileSelect(input) { if (input.files[0]) loadFile(input.files[0]); }
+function loadFile(file) {
+    imageMime = file.type || 'image/jpeg';
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        const dataUrl = e.target.result;
+        imageB64 = dataUrl.split(',')[1];
+        document.getElementById('imgPreview').src = dataUrl;
+        document.getElementById('imgPreviewWrap').style.display = 'block';
+        document.getElementById('uploadZone').style.display = 'none';
+        extractValues();
+    };
+    reader.readAsDataURL(file);
+}
+function clearImage() {
+    imageB64 = null; imageMime = null;
+    document.getElementById('imgPreview').src = '';
+    document.getElementById('imgPreviewWrap').style.display = 'none';
+    document.getElementById('uploadZone').style.display = 'block';
+    document.getElementById('fileInput').value = '';
+    hideBanners();
+}
+async function extractValues() {
+    showExtractBanner('Reading your report…', false);
+    showLoading('Reading report image…');
+    try {
+        const res = await fetch('/perfect/api/monitor/extract', {
+            method:'POST', headers:{'Content-Type':'application/json'},
+            body: JSON.stringify({ image_b64: imageB64, image_mime: imageMime })
+        });
+        const data = await res.json();
+        if (!data.ok || !data.values) throw new Error(data.error || 'No values found');
+        let count = 0;
+        Object.entries(data.values).forEach(([fid, val]) => {
+            const el = document.getElementById('val_' + fid);
+            if (el && val) { el.value = val; el.classList.add('filled'); count++; }
+        });
+        if (count === 0) throw new Error('No recognisable blood values found in the image');
+        document.querySelectorAll('.cat-body').forEach(body => {
+            if (Array.from(body.querySelectorAll('input.filled')).length > 0 && !body.classList.contains('open'))
+                toggleCat(body.previousElementSibling);
+        });
+        saveValuesToStorage();
+        showExtractBanner(`${count} value${count !== 1 ? 's' : ''} extracted. Review below and click Analyze.`, true);
+        monitorSwitchTab('manual');
+    } catch (err) {
+        showExtractBanner('Could not read values automatically — ' + err.message + '. Enter them manually below.', false);
+        monitorSwitchTab('manual');
+    } finally { hideLoading(); }
+}
+function showExtractBanner(msg, success) {
+    ['extractBanner','extractBanner2'].forEach(id => {
+        const el = document.getElementById(id);
+        el.textContent = msg; el.style.display = 'block';
+        el.style.background  = success ? 'rgba(82,168,124,.1)' : 'rgba(224,154,42,.1)';
+        el.style.borderColor = success ? 'rgba(82,168,124,.3)' : 'rgba(224,154,42,.3)';
+        el.style.color       = success ? '#52A87C' : '#E09A2A';
+    });
+}
+function hideBanners() {
+    ['extractBanner','extractBanner2'].forEach(id => { document.getElementById(id).style.display = 'none'; });
+}
+async function analyze() {
+    const isUpload = document.getElementById('tabUploadBtn').classList.contains('active');
+    let values = {};
+    if (!isUpload || !imageB64) {
+        document.querySelectorAll('[id^="val_"]').forEach(inp => { if (inp.value.trim()) values[inp.dataset.label] = inp.value.trim(); });
+        if (!Object.keys(values).length) { alert('Please enter at least one blood test value.'); return; }
+    }
+    showLoading('Analyzing…');
+    document.getElementById('analyzeBtn').disabled = true;
+    document.getElementById('results').style.display = 'none';
+    const payload = { gender: getGender(), age: getAge() };
+    if (isUpload && imageB64) { payload.image_b64 = imageB64; payload.image_mime = imageMime; }
+    else { payload.values = values; }
+    try {
+        const res  = await fetch('/perfect/api/monitor', {
+            method:'POST', headers:{'Content-Type':'application/json'},
+            body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+        if (!data.ok) throw new Error(data.error || 'AI error');
+        saveValuesToStorage();
+        try { localStorage.setItem(LS_RESULT, JSON.stringify(data.result)); } catch(e) {}
+        renderResults(data.result, true);
+        if (window.sbRefreshXP) window.sbRefreshXP(100);
+        if (forMyself && data.result.flags) {
+            const label = new Date().toLocaleDateString('en-IN', {day:'numeric',month:'short',year:'numeric'});
+            const _bh = JSON.parse(localStorage.getItem('tg_blood_' + USERNAME) || '[]');
+            _bh.unshift({ id: Date.now(), scanned_at: new Date().toISOString(), label, result: data.result });
+            if (_bh.length > 100) _bh.splice(100);
+            localStorage.setItem('tg_blood_' + USERNAME, JSON.stringify(_bh));
+            document.getElementById('savedBadge').style.display = 'block';
+            loadHistory();
+        }
+    } catch(err) { alert('Error: ' + err.message); }
+    finally { hideLoading(); document.getElementById('analyzeBtn').disabled = false; }
+}
+const STATUS_COLORS = {'Normal':'#52A87C','Attention Needed':'#E09A2A','Concerning':'#E07A2A','Critical':'#E05252'};
+function renderResults(r, scroll) {
+    const status = r.overall_status || 'Unknown';
+    const color  = STATUS_COLORS[status] || '#8A7A62';
+    document.getElementById('overallDot').style.background = color;
+    document.getElementById('overallStatus').textContent   = status;
+    document.getElementById('overallStatus').style.color   = color;
+    document.getElementById('overallAssess').textContent   = r.assessment || '';
+    const warnings = r.warnings || [];
+    const warnSec  = document.getElementById('warningsSection');
+    if (warnings.length) { document.getElementById('warningsList').innerHTML = warnings.map(w => `<li>${w}</li>`).join(''); warnSec.style.display = 'block'; }
+    else warnSec.style.display = 'none';
+    const flags = r.flags || [];
+    document.getElementById('flagsGrid').innerHTML = flags.length
+        ? flags.map(f => `<div class="flag-card ${f.status}"><div class="flag-test">${f.test}</div><div class="flag-value">${f.value}</div><span class="flag-chip">${f.status}</span>${f.severity&&f.status!=='normal'?`<div class="flag-sev">${f.severity}</div>`:''}<div class="flag-range">Normal: ${f.normal_range||'—'}</div>${f.impact?`<div class="flag-impact">${f.impact}</div>`:''}</div>`).join('')
+        : '<p style="color:var(--text-2);font-size:13px;grid-column:1/-1">No specific flags to show.</p>';
+    document.getElementById('cautionNote').textContent = r.caution || 'This is not medical advice. Consult a healthcare professional.';
+    const results = document.getElementById('results');
+    results.style.display = 'flex'; results.style.flexDirection = 'column';
+    renderChart(r.flags || []);
+    if (scroll) results.scrollIntoView({ behavior:'smooth', block:'start' });
+}
+function loadHistory() {
+    try { const history = JSON.parse(localStorage.getItem('tg_blood_' + USERNAME) || '[]'); renderHistory(history); renderTrendChart(history); } catch(e) {}
+}
+function renderHistory(history) {
+    const body = document.getElementById('historyBody');
+    if (!history.length) { body.innerHTML = `<tr><td colspan="4" style="padding:20px 12px;color:var(--text-3);font-size:12px;text-align:center">No scans yet — analyze a report to see history here.</td></tr>`; return; }
+    body.innerHTML = history.map(h => {
+        const r = h.result || {}, status = r.overall_status || '—', color = STATUS_COLORS[status] || '#8A7A62';
+        const flags = (r.flags||[]).filter(f => f.status !== 'normal');
+        const flagStr = flags.length ? flags.slice(0,3).map(f => `<span style="color:${f.status==='high'?'#E05252':f.status==='low'?'#4A9EFF':'#E09A2A'}">${f.test}</span>`).join(', ')+(flags.length>3?` +${flags.length-3}`:'') : '<span style="color:#52A87C">All normal</span>';
+        const date = h.scanned_at ? h.scanned_at.split('T')[0] : '';
+        const assess = (r.assessment||'').substring(0,80)+((r.assessment||'').length>80?'…':'');
+        return `<tr style="border-bottom:1px solid var(--border);cursor:pointer" onclick="expandHistory(${h.id})">
+            <td style="padding:10px 12px;color:var(--text-3);white-space:nowrap;font-size:11px">${date}</td>
+            <td style="padding:10px 12px;white-space:nowrap"><span style="color:${color};font-weight:700;font-size:11px">${status}</span></td>
+            <td style="padding:10px 12px;font-size:11px">${flagStr}</td>
+            <td style="padding:10px 12px;color:var(--text-2);font-size:11px;line-height:1.4">${assess}</td>
+        </tr>
+        <tr id="hist_expand_${h.id}" style="display:none"><td colspan="4" style="padding:0 12px 14px">
+            <div class="flags-grid" style="margin-top:8px">${(r.flags||[]).map(f=>`<div class="flag-card ${f.status}" style="font-size:11px"><div class="flag-test">${f.test}</div><div class="flag-value" style="font-size:14px">${f.value}</div><span class="flag-chip">${f.status}</span><div class="flag-range">Normal: ${f.normal_range||'—'}</div></div>`).join('')}</div>
+            ${(r.warnings||[]).length?`<div style="color:#E05252;font-size:11px;margin-top:8px">⚠ ${r.warnings.join(' • ')}</div>`:''}
+        </td></tr>`;
+    }).join('');
+}
+function expandHistory(id) { const row = document.getElementById('hist_expand_' + id); if (row) row.style.display = row.style.display === 'none' ? 'table-row' : 'none'; }
+function parseFirstNum(str) { const m = String(str).match(/([\d.]+)/); return m ? parseFloat(m[1]) : null; }
+function parseRange(rangeStr) {
+    if (!rangeStr) return null;
+    const s = rangeStr.split('/')[0].trim();
+    const dash = s.match(/([\d.]+)\s*[–\-—]\s*([\d.]+)/); if (dash) return {min:parseFloat(dash[1]),max:parseFloat(dash[2])};
+    const lt = s.match(/[<≤]\s*([\d.]+)/); if (lt) return {min:0,max:parseFloat(lt[1])};
+    const gt = s.match(/[>≥]\s*([\d.]+)/); if (gt) return {min:parseFloat(gt[1]),max:parseFloat(gt[1])*2};
+    return null;
+}
+let _overviewChart = null;
+function renderChart(flags) {
+    const wrap = document.getElementById('bloodChartWrap');
+    if (!wrap) return;
+    const rows = flags.map(f => {
+        const val = parseFirstNum(f.value), range = parseRange(f.normal_range);
+        if (val===null||!range) return null;
+        const center=(range.min+range.max)/2, half=Math.max((range.max-range.min)/2,0.001);
+        return {f,val,range,pos:Math.max(-3,Math.min(3,(val-center)/half))};
+    }).filter(Boolean);
+    if (!rows.length) { wrap.style.display='none'; return; }
+    wrap.style.display='block';
+    const sc={high:'#E05252',low:'#4A9EFF',borderline:'#E09A2A',normal:'#52A87C'};
+    const labels=rows.map(r=>r.f.test), normalBars=rows.map(()=>[-1,1]);
+    const valueBars=rows.map(r=>[r.pos-0.08,r.pos+0.08]), valueColors=rows.map(r=>sc[r.f.status]||'#8A7A62');
+    if (_overviewChart) _overviewChart.destroy();
+    const canvas=document.getElementById('bloodChartCanvas');
+    canvas.height=Math.max(180,rows.length*38+40);
+    _overviewChart=new Chart(canvas,{type:'bar',data:{labels,datasets:[
+        {label:'Normal Range',data:normalBars,backgroundColor:'rgba(82,168,124,0.15)',borderColor:'rgba(82,168,124,0.4)',borderWidth:1,borderSkipped:false,barPercentage:0.6},
+        {label:'Your Value',data:valueBars,backgroundColor:valueColors.map(c=>c+'CC'),borderColor:valueColors,borderWidth:2,borderSkipped:false,barPercentage:0.6}
+    ]},options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,animation:{duration:600,easing:'easeOutQuart'},
+        scales:{x:{min:-3,max:3,grid:{color:'rgba(201,168,76,0.08)'},ticks:{color:'rgba(138,122,98,0.7)',font:{size:10},callback:v=>({'-3':'← Very Low','-1':'Low',0:'Normal Mid',1:'High',3:'Very High →'})[v]??''}},y:{grid:{display:false},ticks:{color:'rgba(232,220,200,0.85)',font:{size:11}}}},
+        plugins:{legend:{display:false},tooltip:{backgroundColor:'#1A1A1A',borderColor:'rgba(201,168,76,0.3)',borderWidth:1,titleColor:'#E8DCC8',bodyColor:'rgba(232,220,200,0.7)',callbacks:{title:([item])=>rows[item.dataIndex].f.test,label:item=>item.datasetIndex===0?`Normal: ${rows[item.dataIndex].f.normal_range}`:`Value: ${rows[item.dataIndex].f.value} (${rows[item.dataIndex].f.status})`}}}}});
+}
+const TREND_PALETTE=['#C9A84C','#52A87C','#4A9EFF','#E05252','#E09A2A','#A87CE8','#52C8C8','#E87CA8','#8ACF52','#FF8C52'];
+let _trendChart=null;
+function renderTrendChart(history) {
+    const wrap=document.getElementById('trendWrap');
+    if (!wrap||history.length<2) { if(wrap) wrap.style.display='none'; return; }
+    const testMap={};
+    history.slice().reverse().forEach(h => {
+        const r=typeof h.result==='object'?h.result:JSON.parse(h.result||'{}');
+        const date=(h.scanned_at||'').split('T')[0];
+        (r.flags||[]).forEach(f => { const val=parseFirstNum(f.value); if(val===null) return; if(!testMap[f.test]) testMap[f.test]=[]; testMap[f.test].push({date,val}); });
+    });
+    const eligible=Object.entries(testMap).filter(([,pts])=>pts.length>=2);
+    if (!eligible.length) { wrap.style.display='none'; return; }
+    wrap.style.display='block';
+    const allDates=[...new Set(eligible.flatMap(([,pts])=>pts.map(p=>p.date)))].sort();
+    const datasets=eligible.map(([test,pts],i) => {
+        const byDate=Object.fromEntries(pts.map(p=>[p.date,p.val]));
+        return {label:test,data:allDates.map(d=>byDate[d]??null),borderColor:TREND_PALETTE[i%TREND_PALETTE.length],backgroundColor:TREND_PALETTE[i%TREND_PALETTE.length]+'22',pointBackgroundColor:TREND_PALETTE[i%TREND_PALETTE.length],tension:0.35,spanGaps:true,pointRadius:4,pointHoverRadius:6};
+    });
+    if (_trendChart) _trendChart.destroy();
+    _trendChart=new Chart(document.getElementById('trendCanvas'),{type:'line',data:{labels:allDates,datasets},options:{responsive:true,animation:{duration:700},scales:{x:{grid:{color:'rgba(201,168,76,0.08)'},ticks:{color:'rgba(138,122,98,0.7)',font:{size:10}}},y:{grid:{color:'rgba(201,168,76,0.06)'},ticks:{color:'rgba(138,122,98,0.7)',font:{size:10}}}},plugins:{legend:{labels:{color:'rgba(232,220,200,0.8)',font:{size:10},boxWidth:12,padding:10}},tooltip:{backgroundColor:'#1A1A1A',borderColor:'rgba(201,168,76,0.3)',borderWidth:1,titleColor:'#E8DCC8',bodyColor:'rgba(232,220,200,0.7)'}}}});
+}
+function showLoading(msg) { document.getElementById('loadingText').textContent=msg; document.getElementById('loadingRing').classList.add('show'); }
+function hideLoading()     { document.getElementById('loadingRing').classList.remove('show'); }
+
+/* ── Diary (IIFE) ── */
+(function () {
+    let _date = new Date().toISOString().slice(0,10);
+    let _unlocked=false, _setupPin='', _setupStep=1;
+    let _mic=null, _micOn=false, _micFinal='', _saveTimer=null;
+
+    function toast(msg) { const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),2800); }
+    function todayISO() { return new Date().toISOString().slice(0,10); }
+    async function sha256(str) { const buf=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(str)); return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join(''); }
+    function getPinData()  { return JSON.parse(localStorage.getItem('tg_diary_pin_'+USERNAME)||'null'); }
+    function savePinData(d){ localStorage.setItem('tg_diary_pin_'+USERNAME,JSON.stringify(d)); }
+    function getDiaryEntries() { return JSON.parse(localStorage.getItem('tg_diary_'+USERNAME)||'{}'); }
+    function saveDiaryEntries(e){ localStorage.setItem('tg_diary_'+USERNAME,JSON.stringify(e)); }
+    function fmtDate(iso) {
+        const today=todayISO(), yest=new Date(Date.now()-864e5).toISOString().slice(0,10);
+        if (iso===today) return 'Today'; if (iso===yest) return 'Yesterday';
+        return new Date(iso+'T12:00:00').toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric'});
+    }
+    function showView(v) {
+        document.getElementById('gateSetup').style.display    = v==='setup'    ? '' : 'none';
+        document.getElementById('gateUnlock').style.display   = v==='unlock'   ? '' : 'none';
+        document.getElementById('notebookWrap').style.display = v==='notebook' ? '' : 'none';
+        if (v==='setup')    { _setupStep=1; _setupPin=''; backToChoices(); }
+        if (v==='unlock')   focusPinRow('unlockPinRow');
+        if (v==='notebook') loadEntry();
+    }
+    window.showSetupPin = function () {
+        document.getElementById('setupChoices').style.display='none';
+        document.getElementById('setupPinArea').style.display='flex';
+        document.getElementById('setupHint').textContent='Enter a 4-digit PIN';
+        document.getElementById('setupHint').classList.remove('err');
+        focusPinRow('setupPinRow');
+    };
+    window.backToChoices = function () {
+        document.getElementById('setupChoices').style.display='flex';
+        document.getElementById('setupPinArea').style.display='none';
+        _setupStep=1; _setupPin='';
+    };
+    window.resetDiaryLock = async function () {
+        if (!confirm('This will remove your PIN. Your diary entries will stay safe.')) return;
+        savePinData({enabled:false,hash:null}); _unlocked=false; _setupStep=1; _setupPin=''; showView('setup');
+    };
+    function focusPinRow(rowId) { const boxes=document.querySelectorAll(`#${rowId} .pin-box`); boxes.forEach(b=>b.value=''); setTimeout(()=>boxes[0]&&boxes[0].focus(),80); }
+    function wirePinRow(rowId, onComplete) {
+        const row=document.getElementById(rowId), boxes=Array.from(row.querySelectorAll('.pin-box'));
+        boxes.forEach((box,i) => {
+            box.addEventListener('keydown',e=>{ if(e.key==='Backspace'&&!box.value&&i>0){boxes[i-1].value='';boxes[i-1].classList.remove('filled');boxes[i-1].focus();e.preventDefault();} if(e.key==='ArrowLeft'&&i>0){boxes[i-1].focus();e.preventDefault();} if(e.key==='ArrowRight'&&i<3){boxes[i+1].focus();e.preventDefault();} });
+            box.addEventListener('input',e=>{ const val=box.value.replace(/\D/g,'').slice(-1); box.value=val; box.classList.toggle('filled',!!val); if(val&&i<3) boxes[i+1].focus(); if(val&&i===3){const pin=boxes.map(b=>b.value).join(''); if(pin.length===4) onComplete(pin,row,boxes);} });
+            box.addEventListener('paste',e=>{ e.preventDefault(); const text=(e.clipboardData||window.clipboardData).getData('text').replace(/\D/g,'').slice(0,4); text.split('').forEach((ch,j)=>{if(boxes[j]){boxes[j].value=ch;boxes[j].classList.add('filled');}}); if(text.length===4) onComplete(text,row,boxes); else if(text.length<4&&boxes[text.length]) boxes[text.length].focus(); });
+        });
+    }
+    function shakePinRow(row,boxes,onDone) { boxes.forEach(b=>{b.value='';b.classList.remove('filled');}); row.classList.remove('wrong'); void row.offsetWidth; row.classList.add('wrong'); setTimeout(()=>{row.classList.remove('wrong');if(onDone)onDone();},900); }
+    wirePinRow('setupPinRow', async (pin,row,boxes) => {
+        if (_setupStep===1) { _setupPin=pin; _setupStep=2; document.getElementById('setupHint').textContent='Confirm your PIN'; document.getElementById('setupHint').classList.remove('err'); boxes.forEach(b=>{b.value='';b.classList.remove('filled');}); setTimeout(()=>boxes[0].focus(),60); }
+        else { if(pin===_setupPin){const h=await sha256(pin);savePinData({enabled:true,hash:h});_unlocked=true;showView('notebook');toast('PIN set. Diary unlocked.');}else{document.getElementById('setupHint').textContent='PINs don\'t match — try again';document.getElementById('setupHint').classList.add('err');shakePinRow(row,boxes,()=>{_setupStep=1;_setupPin='';document.getElementById('setupHint').textContent='Enter a 4-digit PIN';document.getElementById('setupHint').classList.remove('err');setTimeout(()=>boxes[0].focus(),60);});} }
+    });
+    window.diaryNoPin = async function () { savePinData({enabled:false,hash:null}); _unlocked=true; showView('notebook'); };
+    wirePinRow('unlockPinRow', async (pin,row,boxes) => {
+        const pd=getPinData(), h=await sha256(pin);
+        if (pd&&pd.hash===h){_unlocked=true;showView('notebook');}
+        else{document.getElementById('unlockHint').textContent='Wrong PIN';document.getElementById('unlockHint').classList.add('err');shakePinRow(row,boxes,()=>{document.getElementById('unlockHint').textContent=' ';document.getElementById('unlockHint').classList.remove('err');setTimeout(()=>document.querySelector('#unlockPinRow .pin-box').focus(),60);});}
+    });
+    async function loadEntry() {
+        const ta=document.getElementById('nbTa');
+        ta.value=''; ta.disabled=true;
+        document.getElementById('nbDateLabel').textContent=fmtDate(_date);
+        document.getElementById('nbNextBtn').disabled=_date>=todayISO();
+        document.getElementById('nbAiPanel').classList.remove('show');
+        try { ta.value=getDiaryEntries()[_date]||''; } catch {}
+        ta.disabled=false;
+        ta.style.height='auto'; ta.style.height=Math.max(380,ta.scrollHeight)+'px';
+        document.getElementById('nbChars').textContent=ta.value.length+' chars';
+    }
+    window.saveDiaryEntry = async function (silent) {
+        if (!_unlocked) return;
+        const ta=document.getElementById('nbTa'), _entries=getDiaryEntries(), _text=ta.value;
+        if (_text.trim()) _entries[_date]=_text; else delete _entries[_date];
+        saveDiaryEntries(_entries);
+        if (!silent){const n=document.getElementById('nbSaved');n.classList.add('show');setTimeout(()=>n.classList.remove('show'),1800);}
+    };
+    window.diaryAutoSave = function () {
+        clearTimeout(_saveTimer); _saveTimer=setTimeout(()=>window.saveDiaryEntry(true),1500);
+        const ta=document.getElementById('nbTa'); ta.style.height='auto'; ta.style.height=Math.max(380,ta.scrollHeight)+'px';
+        document.getElementById('nbChars').textContent=ta.value.length+' chars';
+    };
+    window.diaryChangeDay = function (delta) {
+        window.saveDiaryEntry(true);
+        const d=new Date(_date+'T12:00:00'); d.setDate(d.getDate()+delta);
+        const next=d.toISOString().slice(0,10); if(next>todayISO()) return;
+        _date=next; loadEntry();
+    };
+    window.diaryChangeLock = function () { window.saveDiaryEntry(true); _unlocked=false; showView('setup'); };
+    window.diaryLock       = function () { window.saveDiaryEntry(true); _unlocked=false; showView('unlock'); };
+    window.toggleDiaryMic  = function () {
+        if (_micOn){stopMic();return;}
+        const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+        if (!SR){toast('Mic not supported in this browser.');return;}
+        _mic=new SR(); _mic.continuous=true; _mic.interimResults=true; _mic.lang='en-US';
+        _micFinal=document.getElementById('nbTa').value;
+        _mic.onresult=e=>{let interim='';for(let i=e.resultIndex;i<e.results.length;i++){if(e.results[i].isFinal)_micFinal+=e.results[i][0].transcript+' ';else interim+=e.results[i][0].transcript;}const ta=document.getElementById('nbTa');ta.value=_micFinal+interim;ta.style.height='auto';ta.style.height=Math.max(380,ta.scrollHeight)+'px';document.getElementById('nbChars').textContent=ta.value.length+' chars';};
+        _mic.onerror=()=>stopMic(); _mic.onend=()=>{if(_micOn)_mic.start();}; _mic.start(); _micOn=true;
+        document.getElementById('nbMicBtn').classList.add('active'); document.getElementById('nbWave').classList.add('active');
+    };
+    function stopMic(){_micOn=false;if(_mic){_mic.onend=null;_mic.stop();_mic=null;}document.getElementById('nbMicBtn').classList.remove('active');document.getElementById('nbWave').classList.remove('active');window.saveDiaryEntry(true);}
+    window.diaryAiReview = async function () {
+        const diaryText=document.getElementById('nbTa').value.trim();
+        const btn=document.getElementById('nbAiBtn'), panel=document.getElementById('nbAiPanel');
+        let context='';
+        try{const logs=JSON.parse(localStorage.getItem('toogood_daily_logs_'+USERNAME))||[];const todayLog=logs.find(l=>l.date===_date);if(todayLog){context+='\n\n📊 TODAY\'S LOG:\n';if(todayLog.calories)context+=`• Calories: ${todayLog.calories} kcal\n`;if(todayLog.protein)context+=`• Protein: ${todayLog.protein}g\n`;if(todayLog.carbs)context+=`• Carbs: ${todayLog.carbs}g\n`;if(todayLog.fat)context+=`• Fat: ${todayLog.fat}g\n`;if(todayLog.steps)context+=`• Steps: ${todayLog.steps}\n`;if(todayLog.workout)context+=`• Workout: ${todayLog.workout}\n`;if(todayLog.hunger)context+=`• Hunger level: ${todayLog.hunger}/10\n`;if(todayLog.energy)context+=`• Energy level: ${todayLog.energy}/10\n`;if(todayLog.weight)context+=`• Weight: ${todayLog.weight} kg\n`;if(todayLog.foods&&todayLog.foods.length)context+=`• Foods eaten: ${todayLog.foods.map(f=>f.name+(f.serving?' ('+f.serving+')':'')).join(', ')}\n`;}}catch{}
+        try{const sessions=JSON.parse(localStorage.getItem(`toogood_sessions_${USERNAME}`))||[];const todayMsgs=[];sessions.forEach(sess=>{(sess.messages||[]).forEach(m=>{if(m.role==='user'&&(sess.updatedAt||'').slice(0,10)===_date)todayMsgs.push(m.content);});});if(todayMsgs.length){context+='\n\n💬 QUESTIONS YOU ASKED THE AI TODAY:\n';todayMsgs.slice(-5).forEach(q=>{context+=`• ${q.slice(0,120)}\n`;});}}catch{}
+        const message='Please review my day and give thoughtful, personal feedback based on everything below.'+(diaryText?`\n\n📔 MY DIARY ENTRY:\n${diaryText}`:'')+context+'\n\nBe warm, personal and encouraging. Point out what went well and any gentle suggestions.';
+        if (!diaryText&&!context){toast('Write a diary entry or log something first.');return;}
+        btn.disabled=true; panel.innerHTML='<div class="nb-ai-thinking"><div class="dai-dot"></div><div class="dai-dot"></div><div class="dai-dot"></div></div>'; panel.classList.add('show');
+        try{const res=await fetch('/perfect/api/assistant',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({history:[],message,diary_review:true})});const data=await res.json();const reply=data.reply||'No response from AI.';panel.innerHTML='';const txt=document.createElement('div');txt.style.cssText='white-space:pre-wrap;margin-bottom:14px;';txt.textContent=reply;panel.appendChild(txt);const addBtn=document.createElement('button');addBtn.textContent='Add to today\'s record';addBtn.style.cssText='display:inline-flex;align-items:center;gap:6px;background:var(--gold);border:none;color:#060606;font-family:var(--mono);font-size:12px;font-weight:700;letter-spacing:0.08em;padding:7px 16px;cursor:pointer;';addBtn.onclick=async function(){const ta=document.getElementById('nbTa');const sep='\n\n— AI Review —\n';ta.value=(ta.value.trim()?ta.value.trim()+sep:sep)+reply;ta.style.height='auto';ta.style.height=Math.max(380,ta.scrollHeight)+'px';await window.saveDiaryEntry(false);addBtn.textContent='Added ✓';addBtn.disabled=true;addBtn.style.opacity='0.6';};panel.appendChild(addBtn);}catch{panel.textContent='Could not reach the AI. Check your connection and try again.';}
+        btn.disabled=false;
+    };
+    (function(){const SK=`toogood_sessions_${USERNAME}`;function shortTitle(t){return t.length>28?t.slice(0,27)+'…':t;}function render(){const sessions=(()=>{try{return JSON.parse(localStorage.getItem(SK))||[];}catch{return[];}})();const el=document.getElementById('sbAiSessions');if(!el)return;if(!sessions.length){el.innerHTML='<div style="padding:6px 14px 6px 38px;font-size:12px;color:var(--text-3);font-style:italic;">No sessions yet</div>';return;}el.innerHTML=sessions.slice(0,8).map(s=>`<a class="sb-sub-item" href="/perfect/ai" onclick="sessionStorage.setItem('aiLoadSession','${s.id}')" title="${s.title}" style="padding-left:38px;">${shortTitle(s.title)}</a>`).join('');}window.toggleAiSessions=function(btn){const sub=document.getElementById('sbAiSub');const chev=document.getElementById('sbAiChevron');const open=sub.classList.toggle('open');chev.classList.toggle('flipped',open);if(open)render();};render();})();
+    (async()=>{try{const pd=getPinData();const setupDone=pd!==null;const enabled=pd&&pd.enabled;const lockLabel=document.getElementById('nbLockLabel');if(lockLabel)lockLabel.textContent=enabled?'Change PIN':'Set PIN';const lockDiaryBtn=document.getElementById('nbLockDiaryBtn');if(lockDiaryBtn)lockDiaryBtn.style.display=enabled?'':'none';if(!setupDone)showView('setup');else if(enabled)showView('unlock');else{_unlocked=true;showView('notebook');}}catch{showView('setup');}})();
+})();
+
+/* ── Monitor init ── */
+document.addEventListener('DOMContentLoaded', () => {
+    monitorSwitchTab('upload');
+    const first = document.querySelector('#pane-monitor .cat-head');
+    if (first) toggleCat(first);
+    restoreValuesFromStorage();
+    restoreLastResult();
+    loadHistory();
+});
+</script>
+</body>
+</html>
