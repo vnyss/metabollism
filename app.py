@@ -2073,90 +2073,17 @@ def api_account_email():
 
 @app.route("/perfect/api/diary/lock", methods=["GET", "POST"])
 def diary_lock():
-    username = _api_user()
-    if not username:
-        return jsonify({"ok": False}), 401
-    conn = get_db_connection()
-
+    # Diary PIN and entries are now stored client-side in localStorage.
     if request.method == "GET":
-        row = conn.execute(
-            "SELECT diary_pin_enabled, diary_pin_hash FROM users WHERE username=?", (username,)
-        ).fetchone()
-        conn.close()
-        if not row:
-            return jsonify({"ok": True, "setup_done": False, "enabled": False})
-        setup_done = row["diary_pin_hash"] is not None or row["diary_pin_enabled"] == 0
-        return jsonify({"ok": True, "setup_done": setup_done, "enabled": bool(row["diary_pin_enabled"])})
-
-    d = request.get_json(silent=True) or {}
-    action = d.get("action")
-
-    if action == "setup":
-        enabled = bool(d.get("enabled"))
-        pin = (d.get("pin") or "")
-        if enabled:
-            if not (len(pin) == 4 and pin.isdigit()):
-                conn.close()
-                return jsonify({"ok": False, "error": "PIN must be 4 digits"}), 400
-            pin_hash = generate_password_hash(pin)
-        else:
-            pin_hash = None
-        conn.execute(
-            "UPDATE users SET diary_pin_enabled=?, diary_pin_hash=? WHERE username=?",
-            (1 if enabled else 0, pin_hash, username)
-        )
-        conn.commit()
-        conn.close()
-        return jsonify({"ok": True})
-
-    if action == "verify":
-        pin = (d.get("pin") or "")
-        row = conn.execute(
-            "SELECT diary_pin_hash FROM users WHERE username=?", (username,)
-        ).fetchone()
-        conn.close()
-        if row and row["diary_pin_hash"] and check_password_hash(row["diary_pin_hash"], pin):
-            return jsonify({"ok": True, "valid": True})
-        return jsonify({"ok": True, "valid": False})
-
-    conn.close()
-    return jsonify({"ok": False, "error": "unknown action"}), 400
+        return jsonify({"ok": True, "setup_done": True, "enabled": False})
+    return jsonify({"ok": True, "valid": True})
 
 
 @app.route("/perfect/api/diary/entry", methods=["GET", "POST"])
 def diary_entry():
-    username = _api_user()
-    if not username:
-        return jsonify({"ok": False}), 401
-    conn = get_db_connection()
+    # Diary entries are now stored client-side in localStorage.
     if request.method == "GET":
-        date = request.args.get("date", "")
-        if not date:
-            return jsonify({"ok": False, "error": "date required"}), 400
-        row = conn.execute(
-            "SELECT entry FROM diary_entries WHERE username=? AND date=?", (username, date)
-        ).fetchone()
-        conn.close()
-        return jsonify({"ok": True, "entry": b64_decode(row["entry"]) if row else ""})
-    # POST -- save entry
-    d = request.get_json(silent=True) or {}
-    date  = (d.get("date") or "").strip()
-    entry = (d.get("entry") or "").strip()[:20000]
-    if not date:
-        conn.close()
-        return jsonify({"ok": False, "error": "date required"}), 400
-    if entry:
-        conn.execute(
-            "INSERT INTO diary_entries (username, date, entry) VALUES (?,?,?) "
-            "ON CONFLICT(username, date) DO UPDATE SET entry=excluded.entry",
-            (username, date, b64_encode(entry))
-        )
-    else:
-        conn.execute(
-            "DELETE FROM diary_entries WHERE username=? AND date=?", (username, date)
-        )
-    conn.commit()
-    conn.close()
+        return jsonify({"ok": True, "entry": ""})
     return jsonify({"ok": True})
 
 
@@ -2742,31 +2669,7 @@ exercise_schedule: ONLY include when the user stated specific clock times. Map e
 
 @app.route("/perfect/api/save-exercise-times", methods=["POST"])
 def save_exercise_times():
-    """Save per-exercise schedule times to DB so the nutrition AI can reference them."""
-    username = _api_user()
-    if not username:
-        return jsonify({"ok": False, "error": "not logged in"}), 401
-    data = request.get_json(silent=True) or {}
-    times_dict = data.get("times", {})  # {exerciseName: {startH, endH}}
-    if not isinstance(times_dict, dict):
-        return jsonify({"ok": False, "error": "invalid data"}), 400
-
-    import json as _json
-    conn = get_db_connection()
-    row = conn.execute("SELECT exercise_schedule_json FROM users WHERE username=?", (username,)).fetchone()
-    try:
-        existing = _json.loads((row["exercise_schedule_json"] if row else None) or "{}")
-    except Exception:
-        existing = {}
-
-    for ex, times in times_dict.items():
-        if isinstance(times, dict) and "startH" in times and "endH" in times:
-            existing[ex.lower().strip()] = {"startH": times["startH"], "endH": times["endH"]}
-
-    conn.execute("UPDATE users SET exercise_schedule_json=? WHERE username=?",
-                 (_json.dumps(existing), username))
-    conn.commit()
-    conn.close()
+    # Exercise schedule is now stored client-side in localStorage.
     return jsonify({"ok": True})
 
 
@@ -2795,41 +2698,16 @@ def _user_context(username):
 def perfect_exercise():
     if not session.get("username"):
         return redirect(url_for("login"))
-    conn = get_db_connection()
-    row = conn.execute(
-        "SELECT day_schedule_json FROM users WHERE username=?",
-        (session["username"],)
-    ).fetchone()
-    conn.close()
-    day_schedule_json = (row["day_schedule_json"] or "null") if row else "null"
     return render_template(
         "perfect/exercise.html",
         page_active="exercise",
-        day_schedule_json=day_schedule_json,
         **_user_context(session["username"])
     )
 
 
 @app.route("/perfect/api/save-day-schedule", methods=["POST"])
 def save_day_schedule():
-    username = _api_user()
-    if not username:
-        return jsonify({"ok": False}), 401
-    import json as _json
-    data = request.get_json(silent=True) or {}
-    sched = data.get("schedule")  # dict: {dayName: {active, exercises: [{name,startH,endH}]}}
-    pool  = data.get("pool", [])  # list of exercise names
-    if not isinstance(sched, dict):
-        return jsonify({"ok": False, "error": "invalid schedule"}), 400
-    conn = get_db_connection()
-    # Derive exercise_types from pool
-    ex_types = ",".join(p.strip() for p in pool if p.strip()) or None
-    conn.execute(
-        "UPDATE users SET day_schedule_json=?, exercise_types=? WHERE username=?",
-        (_json.dumps(sched), ex_types, username)
-    )
-    conn.commit()
-    conn.close()
+    # Exercise day schedule is now stored client-side in localStorage.
     return jsonify({"ok": True})
 
 
@@ -3648,68 +3526,19 @@ def perfect_food_photo_extract():
 
 @app.route("/perfect/api/monitor/save", methods=["POST"])
 def perfect_monitor_save():
-    username = _api_user()
-    if not username:
-        return jsonify({"error": "Not logged in"}), 401
-    data = request.get_json(force=True) or {}
-    report_json = data.get("report")
-    label       = data.get("label", "")
-    if not report_json:
-        return jsonify({"error": "No report data"}), 400
-    report_str = json.dumps(report_json)
-    conn = get_db_connection()
-    conn.execute(
-        "UPDATE users SET blood_report_json = ? WHERE username = ?",
-        (report_str, username)
-    )
-    conn.execute(
-        "INSERT INTO blood_scan_history (username, label, result_json) VALUES (?, ?, ?)",
-        (username, label, report_str)
-    )
-    conn.commit()
-    conn.close()
+    # Blood scan history is now stored client-side in localStorage.
     return jsonify({"ok": True})
 
 
 @app.route("/perfect/api/monitor/history", methods=["GET"])
 def perfect_monitor_history():
-    username = _api_user()
-    if not username:
-        return jsonify({"error": "Not logged in"}), 401
-    conn = get_db_connection()
-    rows = conn.execute(
-        "SELECT id, scanned_at, label, result_json FROM blood_scan_history "
-        "WHERE username = ? ORDER BY scanned_at DESC LIMIT 50",
-        (username,)
-    ).fetchall()
-    conn.close()
-    history = []
-    for row in rows:
-        try:
-            result = json.loads(row["result_json"])
-        except Exception:
-            result = {}
-        history.append({
-            "id":         row["id"],
-            "scanned_at": row["scanned_at"],
-            "label":      row["label"] or "",
-            "result":     result,
-        })
-    return jsonify({"ok": True, "history": history})
+    # Blood scan history is now stored client-side in localStorage.
+    return jsonify({"ok": True, "history": []})
 
 
 @app.route("/perfect/api/monitor/clear", methods=["POST"])
 def perfect_monitor_clear():
-    username = _api_user()
-    if not username:
-        return jsonify({"error": "Not logged in"}), 401
-    conn = get_db_connection()
-    conn.execute(
-        "UPDATE users SET blood_report_json = NULL WHERE username = ?",
-        (username,)
-    )
-    conn.commit()
-    conn.close()
+    # Blood scan history is now stored client-side in localStorage.
     return jsonify({"ok": True})
 
 

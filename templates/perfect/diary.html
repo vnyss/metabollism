@@ -304,13 +304,14 @@
     }
     function todayISO() { return new Date().toISOString().slice(0, 10); }
 
-    async function apiGet(url) {
-        const r = await fetch(url); return r.json();
+    async function sha256(str) {
+        const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
+        return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2,'0')).join('');
     }
-    async function apiPost(url, body) {
-        const r = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
-        return r.json();
-    }
+    function getPinData()  { return JSON.parse(localStorage.getItem('tg_diary_pin_' + USERNAME) || 'null'); }
+    function savePinData(d){ localStorage.setItem('tg_diary_pin_' + USERNAME, JSON.stringify(d)); }
+    function getDiaryEntries() { return JSON.parse(localStorage.getItem('tg_diary_' + USERNAME) || '{}'); }
+    function saveDiaryEntries(e){ localStorage.setItem('tg_diary_' + USERNAME, JSON.stringify(e)); }
 
     function fmtDate(iso) {
         const today = todayISO();
@@ -347,7 +348,7 @@
 
     window.resetDiaryLock = async function () {
         if (!confirm('This will remove your PIN. Your diary entries will stay safe.')) return;
-        await apiPost('/perfect/api/diary/lock', { action: 'setup', enabled: false });
+        savePinData({ enabled: false, hash: null });
         _unlocked = false; _setupStep = 1; _setupPin = '';
         showView('setup');
     };
@@ -412,7 +413,8 @@
             setTimeout(() => boxes[0].focus(), 60);
         } else {
             if (pin === _setupPin) {
-                await apiPost('/perfect/api/diary/lock', { action: 'setup', enabled: true, pin });
+                const h = await sha256(pin);
+                savePinData({ enabled: true, hash: h });
                 _unlocked = true;
                 showView('notebook');
                 toast('PIN set. Diary unlocked.');
@@ -430,14 +432,16 @@
     });
 
     window.diaryNoPin = async function () {
-        await apiPost('/perfect/api/diary/lock', { action: 'setup', enabled: false });
+        savePinData({ enabled: false, hash: null });
         _unlocked = true;
         showView('notebook');
     };
 
     /* ── Unlock flow ── */
     wirePinRow('unlockPinRow', async (pin, row, boxes) => {
-        const res = await apiPost('/perfect/api/diary/lock', { action: 'verify', pin });
+        const pd = getPinData();
+        const h  = await sha256(pin);
+        const res = { valid: pd && pd.hash === h };
         if (res.valid) {
             _unlocked = true;
             showView('notebook');
@@ -461,8 +465,8 @@
         document.getElementById('nbNextBtn').disabled = _date >= todayISO();
         document.getElementById('nbAiPanel').classList.remove('show');
         try {
-            const res = await apiGet(`/perfect/api/diary/entry?date=${_date}`);
-            ta.value = res.entry || '';
+            const entries = getDiaryEntries();
+            ta.value = entries[_date] || '';
         } catch {}
         ta.disabled = false;
         ta.style.height = 'auto';
@@ -473,7 +477,10 @@
     window.saveDiaryEntry = async function (silent) {
         if (!_unlocked) return;
         const ta = document.getElementById('nbTa');
-        await apiPost('/perfect/api/diary/entry', { date: _date, entry: ta.value });
+        const _entries = getDiaryEntries();
+        const _text = ta.value;
+        if (_text.trim()) _entries[_date] = _text; else delete _entries[_date];
+        saveDiaryEntries(_entries);
         if (!silent) {
             const n = document.getElementById('nbSaved');
             n.classList.add('show');
@@ -678,13 +685,15 @@
     /* ── Init ── */
     (async () => {
         try {
-            const lock = await apiGet('/perfect/api/diary/lock');
+            const pd = getPinData();
+            const setupDone = pd !== null;
+            const enabled   = pd && pd.enabled;
             const lockLabel = document.getElementById('nbLockLabel');
-            if (lockLabel) lockLabel.textContent = lock.enabled ? 'Change PIN' : 'Set PIN';
+            if (lockLabel) lockLabel.textContent = enabled ? 'Change PIN' : 'Set PIN';
             const lockDiaryBtn = document.getElementById('nbLockDiaryBtn');
-            if (lockDiaryBtn) lockDiaryBtn.style.display = lock.enabled ? '' : 'none';
-            if (!lock.setup_done)  showView('setup');
-            else if (lock.enabled) showView('unlock');
+            if (lockDiaryBtn) lockDiaryBtn.style.display = enabled ? '' : 'none';
+            if (!setupDone) showView('setup');
+            else if (enabled) showView('unlock');
             else { _unlocked = true; showView('notebook'); }
         } catch {
             showView('setup');

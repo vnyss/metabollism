@@ -1101,6 +1101,9 @@ const _U          = {{ user.username | tojson }};
 const STORAGE_KEY = `toogood_sessions_${_U}`;
 const HIDDEN_KEY  = `tg_hidden_${_U}`;
 const ACTIVE_KEY  = `tg_active_${_U}`;
+async function _sha256(s){const b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(s));return Array.from(new Uint8Array(b)).map(x=>x.toString(16).padStart(2,'0')).join('');}
+function _getPinData(){return JSON.parse(localStorage.getItem('tg_diary_pin_'+_U)||'null');}
+function _savePinData(d){localStorage.setItem('tg_diary_pin_'+_U,JSON.stringify(d));}
 
 const THEMES = {
     gold:   { '--gold': '#C9A84C', '--gold-h': '#DFC070', '--gold-dim': 'rgba(201,168,76,0.07)',  '--border': 'rgba(201,168,76,0.12)',  '--border-h': 'rgba(201,168,76,0.38)' },
@@ -1357,17 +1360,11 @@ async function clearBloodReport() {
     const btn = document.getElementById('clearBloodBtn');
     btn.disabled = true;
     btn.textContent = 'Clearing…';
-    try {
-        const res = await fetch('/perfect/api/monitor/clear', { method: 'POST' });
-        const data = await res.json();
-        if (data.ok) {
-            btn.textContent = 'Cleared ✓';
-            setTimeout(() => { btn.disabled = false; btn.textContent = 'Clear blood report data'; }, 2500);
-        } else {
-            alert(data.error || 'Could not clear');
-            btn.disabled = false; btn.textContent = 'Clear blood report data';
-        }
-    } catch { alert('Network error'); btn.disabled = false; btn.textContent = 'Clear blood report data'; }
+    localStorage.removeItem('tg_blood_' + _U);
+    localStorage.removeItem('tg_monitor_values_' + _U);
+    localStorage.removeItem('tg_monitor_last_result_' + _U);
+    btn.textContent = 'Cleared ✓';
+    setTimeout(() => { btn.disabled = false; btn.textContent = 'Clear blood report data'; }, 2500);
 }
 
 function confirmLogout() {
@@ -1457,25 +1454,19 @@ let _pinStep = 'new';  // 'verify' | 'new' | 'confirm'
 let _pinHasPin = false;
 
 async function initDiaryPin() {
-    try {
-        const res = await fetch('/perfect/api/diary/lock');
-        const d = await res.json();
-        _pinHasPin = d.enabled;
-        const desc = document.getElementById('diaryPinDesc');
-        const btns = document.getElementById('diaryPinBtns');
-        if (!desc || !btns) return;
-        if (_pinHasPin) {
-            desc.textContent = 'PIN is set. Your diary requires a PIN to open.';
-            btns.innerHTML = `
-                <button class="btn-save" style="padding:7px 14px;font-size:11px" onclick="openPinModal('change')">Change PIN</button>
-                <button class="btn-danger" style="padding:7px 14px;font-size:11px" onclick="openPinModal('remove')">Remove PIN</button>`;
-        } else {
-            desc.textContent = 'No PIN set. Your diary opens without a PIN.';
-            btns.innerHTML = `<button class="btn-save" style="padding:7px 14px;font-size:11px" onclick="openPinModal('set')">Set PIN</button>`;
-        }
-    } catch(e) {
-        const desc = document.getElementById('diaryPinDesc');
-        if (desc) desc.textContent = 'Could not load PIN status.';
+    const pd = _getPinData();
+    _pinHasPin = !!(pd && pd.enabled);
+    const desc = document.getElementById('diaryPinDesc');
+    const btns = document.getElementById('diaryPinBtns');
+    if (!desc || !btns) return;
+    if (_pinHasPin) {
+        desc.textContent = 'PIN is set. Your diary requires a PIN to open.';
+        btns.innerHTML = `
+            <button class="btn-save" style="padding:7px 14px;font-size:11px" onclick="openPinModal('change')">Change PIN</button>
+            <button class="btn-danger" style="padding:7px 14px;font-size:11px" onclick="openPinModal('remove')">Remove PIN</button>`;
+    } else {
+        desc.textContent = 'No PIN set. Your diary opens without a PIN.';
+        btns.innerHTML = `<button class="btn-save" style="padding:7px 14px;font-size:11px" onclick="openPinModal('set')">Set PIN</button>`;
     }
 }
 
@@ -1547,32 +1538,21 @@ async function pinModalNext() {
         const pin = pinRowVal('pv');
         if (pin.length !== 4) { err.textContent = 'Enter all 4 digits.'; return; }
         btn.disabled = true; btn.textContent = 'Checking…';
-        try {
-            const res = await fetch('/perfect/api/diary/lock', {
-                method: 'POST', headers: {'Content-Type':'application/json'},
-                body: JSON.stringify({action:'verify', pin})
-            });
-            const d = await res.json();
-            if (!d.valid) {
-                err.textContent = 'Incorrect PIN. Try again.';
-                pinRowClear('pv');
-                document.getElementById('pv0').focus();
-                btn.disabled = false; btn.textContent = _pinStep === 'verify_remove' ? 'Remove PIN' : 'Verify';
-                return;
-            }
-        } catch { err.textContent = 'Network error. Try again.'; btn.disabled = false; return; }
+        const pd = _getPinData();
+        const h  = await _sha256(pin);
+        if (!pd || pd.hash !== h) {
+            err.textContent = 'Incorrect PIN. Try again.';
+            pinRowClear('pv');
+            document.getElementById('pv0').focus();
+            btn.disabled = false; btn.textContent = _pinStep === 'verify_remove' ? 'Remove PIN' : 'Verify';
+            return;
+        }
 
         if (_pinStep === 'verify_remove') {
-            // Remove PIN
-            try {
-                await fetch('/perfect/api/diary/lock', {
-                    method: 'POST', headers: {'Content-Type':'application/json'},
-                    body: JSON.stringify({action:'setup', enabled: false})
-                });
-                document.getElementById('pinModalBackdrop').classList.remove('open');
-                showToast('Diary PIN removed');
-                initDiaryPin();
-            } catch { err.textContent = 'Network error. Try again.'; }
+            _savePinData({ enabled: false, hash: null });
+            document.getElementById('pinModalBackdrop').classList.remove('open');
+            showToast('Diary PIN removed');
+            initDiaryPin();
             btn.disabled = false; btn.textContent = 'Remove PIN';
             return;
         }
@@ -1609,20 +1589,11 @@ async function pinModalNext() {
             return;
         }
         btn.disabled = true; btn.textContent = 'Saving…';
-        try {
-            const res = await fetch('/perfect/api/diary/lock', {
-                method: 'POST', headers: {'Content-Type':'application/json'},
-                body: JSON.stringify({action:'setup', enabled: true, pin})
-            });
-            const d = await res.json();
-            if (d.ok) {
-                document.getElementById('pinModalBackdrop').classList.remove('open');
-                showToast(_pinMode === 'set' ? 'Diary PIN set' : 'Diary PIN changed');
-                initDiaryPin();
-            } else {
-                err.textContent = d.error || 'Something went wrong.';
-            }
-        } catch { err.textContent = 'Network error. Try again.'; }
+        const newHash = await _sha256(pin);
+        _savePinData({ enabled: true, hash: newHash });
+        document.getElementById('pinModalBackdrop').classList.remove('open');
+        showToast(_pinMode === 'set' ? 'Diary PIN set' : 'Diary PIN changed');
+        initDiaryPin();
         btn.disabled = false; btn.textContent = 'Save PIN';
     }
 }

@@ -531,10 +531,10 @@ async function analyze() {
 
         if (forMyself && data.result.flags) {
             const label = new Date().toLocaleDateString('en-IN', {day:'numeric',month:'short',year:'numeric'});
-            await fetch('/perfect/api/monitor/save', {
-                method:'POST', headers:{'Content-Type':'application/json'},
-                body: JSON.stringify({ report: data.result, label })
-            });
+            const _bh = JSON.parse(localStorage.getItem('tg_blood_' + USERNAME) || '[]');
+            _bh.unshift({ id: Date.now(), scanned_at: new Date().toISOString(), label, result: data.result });
+            if (_bh.length > 100) _bh.splice(100);
+            localStorage.setItem('tg_blood_' + USERNAME, JSON.stringify(_bh));
             document.getElementById('savedBadge').style.display = 'block';
             loadHistory();
         }
@@ -586,11 +586,9 @@ function renderResults(r, scroll) {
 }
 
 // ── History ────────────────────────────────────────────────────────
-async function loadHistory() {
+function loadHistory() {
     try {
-        const res  = await fetch('/perfect/api/monitor/history');
-        const data = await res.json();
-        const history = (data.ok && data.history) ? data.history : [];
+        const history = JSON.parse(localStorage.getItem('tg_blood_' + USERNAME) || '[]');
         renderHistory(history);
         renderTrendChart(history);
     } catch(e) {}

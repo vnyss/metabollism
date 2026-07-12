@@ -191,8 +191,9 @@
 
 <script>
 const DAYS   = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
-const EX_TYPES_RAW = {{ (exercise_types or '') | tojson }};
-const DAY_SCHED_RAW = {{ day_schedule_json | safe }};
+const USERNAME_EX   = {{ username | tojson }};
+const EX_TYPES_RAW  = {{ (exercise_types or '') | tojson }};
+const DAY_SCHED_RAW = JSON.parse(localStorage.getItem('tg_schedule_' + USERNAME_EX) || 'null');
 
 // ── State ─────────────────────────────────────────────────────────────────────
 let pool = [];      // [{name}]
@@ -481,34 +482,10 @@ async function saveSchedule() {
     btn.disabled = true; btn.textContent = 'Saving…';
 
     try {
-        const res = await fetch('/perfect/api/save-day-schedule', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ schedule, pool: pool.map(p => p.name) })
-        });
-        const data = await res.json();
-        if (data.ok) {
-            const ind = document.getElementById('savedIndicator');
-            ind.classList.add('show');
-            setTimeout(() => ind.classList.remove('show'), 2500);
-
-            // Also push exercise_schedule_json for nutrition AI
-            const exTimes = {};
-            Object.values(schedule).forEach(d => {
-                if (!d.active) return;
-                (d.exercises || []).forEach(e => {
-                    const key = e.name.toLowerCase().trim();
-                    if (!exTimes[key]) exTimes[key] = { startH: e.startH, endH: e.endH };
-                });
-            });
-            if (Object.keys(exTimes).length) {
-                fetch('/perfect/api/save-exercise-times', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ times: exTimes })
-                }).catch(() => {});
-            }
-        }
+        localStorage.setItem('tg_schedule_' + USERNAME_EX, JSON.stringify(schedule));
+        const ind = document.getElementById('savedIndicator');
+        ind.classList.add('show');
+        setTimeout(() => ind.classList.remove('show'), 2500);
     } catch {}
 
     btn.disabled = false; btn.textContent = 'Save changes';
