@@ -33,9 +33,9 @@ export const spacing = {
 
 export const radius = {
   none: 0,
-  sm:   2,
-  md:   6,
-  lg:   12,
+  sm:   6,
+  md:   12,
+  lg:   20,
 };
 
 // Common shared styles
@@ -48,7 +48,13 @@ export const common = {
     backgroundColor: colors.surface,
     borderWidth: 1,
     borderColor: colors.border,
+    borderRadius: 14,
     padding: spacing.md,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 12,
+    elevation: 4,
   },
   label: {
     color: colors.text2,
@@ -58,13 +64,14 @@ export const common = {
     marginBottom: spacing.xs,
   },
   goldBar: {
-    width: 40,
+    width: 36,
     height: 2,
     backgroundColor: colors.gold,
     marginBottom: spacing.md,
+    borderRadius: 2,
   },
   input: {
-    backgroundColor: 'transparent',
+    backgroundColor: 'rgba(22,22,22,0.8)',
     borderBottomWidth: 1,
     borderBottomColor: colors.borderInput,
     color: colors.text,
@@ -78,14 +85,34 @@ export const common = {
   },
   button: {
     backgroundColor: colors.gold,
-    paddingVertical: 13,
+    paddingVertical: 14,
     paddingHorizontal: 24,
     alignItems: 'center',
+    borderRadius: 10,
+    shadowColor: colors.gold,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.25,
+    shadowRadius: 10,
+    elevation: 4,
   },
   buttonText: {
     color: '#080808',
     fontSize: 12,
     fontWeight: '700',
+    letterSpacing: 2,
+    textTransform: 'uppercase',
+  },
+  buttonSecondary: {
+    borderWidth: 1,
+    borderColor: 'rgba(201,168,76,0.3)',
+    paddingVertical: 14,
+    paddingHorizontal: 24,
+    alignItems: 'center',
+    borderRadius: 10,
+  },
+  buttonSecondaryText: {
+    color: colors.text2,
+    fontSize: 12,
     letterSpacing: 2,
     textTransform: 'uppercase',
   },

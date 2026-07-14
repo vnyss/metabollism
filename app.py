@@ -2829,6 +2829,13 @@ def perfect_community():
     return render_template("perfect/community.html", page_active="community", **_user_context(session["username"]))
 
 
+@app.route("/perfect/recipe")
+def perfect_recipe():
+    if not session.get("username"):
+        return redirect(url_for("login"))
+    return render_template("perfect/recipe.html", page_active="recipe", **_user_context(session["username"]))
+
+
 MONITOR_SYSTEM_PROMPT = """You are a clinical health analyst AI. Analyze blood test results and give a clear, honest health assessment.
 
 Standard reference ranges (MedlinePlus / ICMR):

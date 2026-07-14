@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Recipe Builder — Too Good</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Courier+Prime:ital,wght@0,400;0,700;1,400&family=Special+Elite&display=swap" rel="stylesheet">
+<script>(function(){
+  var r=document.documentElement;
+  if(localStorage.getItem('tg_mode')==='light')r.classList.add('light-mode');
+  var fs=localStorage.getItem('tg_fontsize');if(fs)r.style.setProperty('--fs',{sm:'12px',md:'14px',lg:'16px'}[fs]||'14px');
+  var cr=localStorage.getItem('tg_corner');if(cr)r.style.setProperty('--radius',{sharp:'0px',soft:'6px',rounded:'14px'}[cr]||'6px');
+  var sw=localStorage.getItem('tg_sw');if(sw)r.style.setProperty('--sw',{narrow:'220px',normal:'260px',wide:'320px'}[sw]||'260px');
+})();</script>
+<style>
+:root{
+  --bg:#080808;--sidebar:#060606;--surface:#0F0F0F;--elevated:#161616;
+  --border:rgba(201,168,76,.12);--border-h:rgba(201,168,76,.38);
+  --gold:#C9A84C;--gold-h:#DFC070;--gold-dim:rgba(201,168,76,.07);
+  --text:#EDE3CE;--text-2:#9A8B72;--text-3:#554430;
+  --green:#4CAF82;--red:#CF6679;
+  --mono:'Courier Prime',monospace;--display:'Special Elite',monospace;
+  --sw:260px;--fs:14px;--radius:6px;
+}
+html.light-mode{--bg:#F5F0E8;--sidebar:#EDE8DF;--surface:#fff;--elevated:#F0EBE1;--border:rgba(100,80,40,.14);--border-h:rgba(100,80,40,.36);--gold-dim:rgba(201,168,76,.10);--text:#1A1208;--text-2:#6B5A3E;--text-3:#9A8A72}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{background:var(--bg);font-family:var(--mono);color:var(--text);height:100vh;overflow:hidden;-webkit-font-smoothing:antialiased;font-size:var(--fs);line-height:1.7}
+.app{display:flex;height:100vh}
+.main{margin-left:var(--sw);flex:1;height:100vh;overflow-y:auto;display:flex;flex-direction:column}
+.main::-webkit-scrollbar{width:4px}
+.main::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
+
+/* ── Page header ── */
+.page-header{padding:40px 56px 0;flex-shrink:0}
+.page-eyebrow{font-size:9px;color:var(--text-3);letter-spacing:.28em;text-transform:uppercase;margin-bottom:10px}
+.page-title{font-family:var(--display);font-size:28px;color:var(--text);letter-spacing:.04em;margin-bottom:6px}
+.page-sub{font-size:13px;color:var(--text-2);letter-spacing:.02em}
+
+/* ── Layout ── */
+.recipe-body{display:flex;gap:28px;padding:32px 56px 60px;flex:1;min-height:0}
+.recipe-left{flex:1;display:flex;flex-direction:column;gap:20px;min-width:0}
+.recipe-right{width:320px;flex-shrink:0;display:flex;flex-direction:column;gap:20px}
+
+/* ── Cards ── */
+.r-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:24px 28px}
+.r-card-title{font-size:10px;color:var(--gold);letter-spacing:.28em;text-transform:uppercase;margin-bottom:16px}
+
+/* ── Recipe name input ── */
+.recipe-name-input{width:100%;background:transparent;border:none;border-bottom:1px solid var(--border);color:var(--text);font-family:var(--display);font-size:22px;padding:8px 0;outline:none;transition:border-color .18s;letter-spacing:.04em}
+.recipe-name-input:focus{border-bottom-color:var(--gold)}
+.recipe-name-input::placeholder{color:var(--text-3)}
+
+/* ── Add ingredient row ── */
+.add-row{display:flex;gap:10px;align-items:flex-end}
+.field{display:flex;flex-direction:column;gap:6px}
+.field-label{font-size:9px;color:var(--text-3);letter-spacing:.2em;text-transform:uppercase}
+.r-input{background:var(--elevated);border:none;border-bottom:1px solid var(--border);color:var(--text);font-family:var(--mono);font-size:13px;padding:8px 4px;outline:none;transition:border-color .18s;width:100%}
+.r-input:focus{border-bottom-color:var(--gold)}
+.r-input::placeholder{color:var(--text-3)}
+.field-name{flex:2}
+.field-qty{width:70px}
+.field-unit{width:70px}
+.field-cal{width:80px}
+.field-p{width:64px}
+.field-c{width:64px}
+.field-f{width:64px}
+.add-btn{padding:9px 18px;background:var(--gold);border:none;color:#080808;font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;cursor:pointer;transition:background .18s,transform .12s;border-radius:8px;white-space:nowrap;flex-shrink:0;align-self:flex-end}
+.add-btn:hover{background:var(--gold-h);transform:translateY(-1px)}
+.add-btn:active{transform:translateY(0)}
+
+/* ── Ingredient list ── */
+.ing-list{min-height:60px}
+.ing-empty{font-size:12px;color:var(--text-3);font-style:italic;padding:16px 0;text-align:center}
+.ing-row{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid rgba(201,168,76,.06);font-size:13px;color:var(--text-2);transition:background .12s}
+.ing-row:hover{background:var(--gold-dim);border-radius:6px;padding-left:6px;padding-right:6px}
+.ing-name{flex:1;color:var(--text)}
+.ing-qty{color:var(--text-3);font-size:11px;min-width:60px}
+.ing-cal{color:var(--gold);font-family:var(--display);font-size:13px;min-width:56px;text-align:right}
+.ing-p,.ing-c,.ing-f{color:var(--text-3);font-size:11px;min-width:46px;text-align:right}
+.ing-del{background:none;border:none;color:var(--text-3);cursor:pointer;font-size:14px;padding:2px 6px;transition:color .15s;border-radius:4px}
+.ing-del:hover{color:var(--red)}
+.ing-header{display:flex;align-items:center;gap:10px;padding:0 0 8px;border-bottom:1px solid var(--border);font-size:9px;color:var(--text-3);letter-spacing:.16em;text-transform:uppercase}
+.ing-header .ing-name{flex:1}
+
+/* ── Totals card ── */
+.totals-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.total-item{display:flex;flex-direction:column;gap:3px}
+.total-label{font-size:9px;color:var(--text-3);letter-spacing:.18em;text-transform:uppercase}
+.total-val{font-family:var(--display);font-size:22px;color:var(--text)}
+.total-val.gold{color:var(--gold)}
+.macro-bar-wrap{height:3px;background:rgba(201,168,76,.1);border-radius:2px;margin-top:4px}
+.macro-bar{height:100%;border-radius:2px;transition:width .4s ease}
+
+/* ── Action buttons ── */
+.action-row{display:flex;flex-direction:column;gap:10px}
+.save-btn{width:100%;padding:13px;background:var(--gold);border:none;color:#080808;font-family:var(--mono);font-size:12px;letter-spacing:.12em;text-transform:uppercase;cursor:pointer;transition:all .2s;border-radius:10px;font-weight:700}
+.save-btn:hover{background:var(--gold-h);transform:translateY(-1px);box-shadow:0 6px 20px rgba(201,168,76,.3)}
+.save-btn:active{transform:translateY(0)}
+.ai-btn{width:100%;padding:12px;background:none;border:1px solid var(--border);color:var(--text-2);font-family:var(--mono);font-size:12px;letter-spacing:.1em;text-transform:uppercase;cursor:pointer;transition:all .2s;border-radius:10px;display:flex;align-items:center;justify-content:center;gap:8px}
+.ai-btn:hover{border-color:var(--border-h);color:var(--gold);transform:translateY(-1px)}
+.clear-btn{width:100%;padding:10px;background:none;border:none;color:var(--text-3);font-family:var(--mono);font-size:11px;letter-spacing:.08em;cursor:pointer;transition:color .15s;text-transform:uppercase}
+.clear-btn:hover{color:var(--red)}
+
+/* ── Saved recipes ── */
+.saved-list{max-height:260px;overflow-y:auto}
+.saved-empty{font-size:11px;color:var(--text-3);font-style:italic;padding:8px 0;text-align:center}
+.saved-item{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid rgba(201,168,76,.06);cursor:pointer;transition:background .12s}
+.saved-item:hover{background:var(--gold-dim);border-radius:6px;padding-left:6px}
+.saved-name{flex:1;font-size:13px;color:var(--text)}
+.saved-cal{font-family:var(--display);font-size:13px;color:var(--gold)}
+.saved-del{background:none;border:none;color:var(--text-3);cursor:pointer;font-size:12px;padding:2px 5px;transition:color .15s}
+.saved-del:hover{color:var(--red)}
+
+/* ── AI panel ── */
+.ai-panel{position:fixed;inset:0;z-index:400;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,.72);backdrop-filter:blur(4px)}
+.ai-panel.open{display:flex}
+.ai-box{background:var(--elevated);border:1px solid var(--border-h);border-radius:16px;width:min(600px,90vw);max-height:70vh;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 24px 80px rgba(0,0,0,.6)}
+.ai-box-head{padding:18px 22px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.ai-box-title{font-family:var(--display);font-size:16px;color:var(--text)}
+.ai-close{background:none;border:1px solid var(--border);color:var(--text-3);width:28px;height:28px;border-radius:6px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:14px;transition:all .15s}
+.ai-close:hover{border-color:var(--border-h);color:var(--text)}
+.ai-messages{flex:1;overflow-y:auto;padding:18px 22px;display:flex;flex-direction:column;gap:14px}
+.ai-msg{font-size:13px;color:var(--text-2);line-height:1.65;padding:12px 16px;border-radius:10px}
+.ai-msg.ai{background:var(--surface);border:1px solid var(--border);color:var(--text)}
+.ai-msg.user{background:rgba(201,168,76,.09);border:1px solid rgba(201,168,76,.18);color:var(--text);text-align:right}
+.ai-input-row{padding:14px 22px;border-top:1px solid var(--border);display:flex;gap:10px;flex-shrink:0}
+.ai-input{flex:1;background:var(--surface);border:1px solid var(--border);color:var(--text);font-family:var(--mono);font-size:13px;padding:10px 14px;border-radius:8px;outline:none;transition:border-color .18s}
+.ai-input:focus{border-color:var(--border-h)}
+.ai-send{padding:10px 18px;background:var(--gold);border:none;color:#080808;font-family:var(--mono);font-size:11px;letter-spacing:.1em;cursor:pointer;border-radius:8px;transition:all .18s;font-weight:700}
+.ai-send:hover{background:var(--gold-h)}
+
+/* ── Toast ── */
+.r-toast{position:fixed;bottom:28px;right:28px;background:var(--elevated);border:1px solid rgba(201,168,76,.45);color:var(--gold);font-family:var(--mono);font-size:12px;padding:10px 20px;z-index:9000;letter-spacing:.05em;pointer-events:none;opacity:0;transition:opacity .2s,transform .2s;transform:translateY(6px);border-radius:8px}
+.r-toast.show{opacity:1;transform:translateY(0)}
+</style>
+</head>
+<body>
+<div class="app">
+{% include 'perfect/_sidebar.html' %}
+<div class="main">
+  <div class="page-header">
+    <div class="page-eyebrow">Kitchen · Nutrition</div>
+    <div class="page-title">Recipe Builder</div>
+    <div class="page-sub">Build custom recipes and track exact macros.</div>
+  </div>
+
+  <div class="recipe-body">
+    <!-- LEFT: Builder -->
+    <div class="recipe-left">
+
+      <!-- Recipe name -->
+      <div class="r-card">
+        <div class="r-card-title">Recipe Name</div>
+        <input class="recipe-name-input" id="recipeName" type="text" placeholder="e.g. Chicken & Rice Bowl">
+      </div>
+
+      <!-- Add ingredient -->
+      <div class="r-card">
+        <div class="r-card-title">Add Ingredient</div>
+        <div class="add-row">
+          <div class="field field-name">
+            <span class="field-label">Name</span>
+            <input class="r-input" id="ingName" type="text" placeholder="e.g. Brown rice">
+          </div>
+          <div class="field field-qty">
+            <span class="field-label">Amount</span>
+            <input class="r-input" id="ingQty" type="number" placeholder="100" min="0">
+          </div>
+          <div class="field field-unit">
+            <span class="field-label">Unit</span>
+            <input class="r-input" id="ingUnit" type="text" placeholder="g">
+          </div>
+          <div class="field field-cal">
+            <span class="field-label">Calories</span>
+            <input class="r-input" id="ingCal" type="number" placeholder="0" min="0">
+          </div>
+          <div class="field field-p">
+            <span class="field-label">Protein g</span>
+            <input class="r-input" id="ingP" type="number" placeholder="0" min="0" step="0.1">
+          </div>
+          <div class="field field-c">
+            <span class="field-label">Carbs g</span>
+            <input class="r-input" id="ingC" type="number" placeholder="0" min="0" step="0.1">
+          </div>
+          <div class="field field-f">
+            <span class="field-label">Fat g</span>
+            <input class="r-input" id="ingF" type="number" placeholder="0" min="0" step="0.1">
+          </div>
+          <button class="add-btn" onclick="addIngredient()">+ Add</button>
+        </div>
+      </div>
+
+      <!-- Ingredient list -->
+      <div class="r-card" style="flex:1">
+        <div class="r-card-title">Ingredients</div>
+        <div class="ing-header">
+          <span class="ing-name">Ingredient</span>
+          <span class="ing-qty">Amount</span>
+          <span class="ing-cal" style="text-align:right">Kcal</span>
+          <span class="ing-p">P</span>
+          <span class="ing-c">C</span>
+          <span class="ing-f">F</span>
+          <span style="width:32px"></span>
+        </div>
+        <div class="ing-list" id="ingList">
+          <div class="ing-empty">No ingredients yet. Add one above.</div>
+        </div>
+      </div>
+
+    </div><!-- /recipe-left -->
+
+    <!-- RIGHT: Totals + saved -->
+    <div class="recipe-right">
+
+      <!-- Nutrition totals -->
+      <div class="r-card">
+        <div class="r-card-title">Nutrition Totals</div>
+        <div class="totals-grid">
+          <div class="total-item">
+            <span class="total-label">Calories</span>
+            <span class="total-val gold" id="totalCal">0</span>
+          </div>
+          <div class="total-item">
+            <span class="total-label">Protein</span>
+            <span class="total-val" id="totalP">0g</span>
+            <div class="macro-bar-wrap"><div class="macro-bar" id="barP" style="width:0%;background:#4CAF82"></div></div>
+          </div>
+          <div class="total-item">
+            <span class="total-label">Carbs</span>
+            <span class="total-val" id="totalC">0g</span>
+            <div class="macro-bar-wrap"><div class="macro-bar" id="barC" style="width:0%;background:#C9A84C"></div></div>
+          </div>
+          <div class="total-item">
+            <span class="total-label">Fat</span>
+            <span class="total-val" id="totalF">0g</span>
+            <div class="macro-bar-wrap"><div class="macro-bar" id="barF" style="width:0%;background:#CF6679"></div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Servings -->
+      <div class="r-card">
+        <div class="r-card-title">Servings</div>
+        <div style="display:flex;align-items:center;gap:14px">
+          <div class="field" style="flex:1">
+            <span class="field-label">Number of servings</span>
+            <input class="r-input" id="servings" type="number" value="1" min="1" oninput="renderTotals()">
+          </div>
+          <div style="text-align:right">
+            <div style="font-size:9px;color:var(--text-3);letter-spacing:.18em;text-transform:uppercase;margin-bottom:4px">Per serving</div>
+            <div style="font-family:var(--display);font-size:18px;color:var(--gold)" id="calPerServing">0 kcal</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Actions -->
+      <div class="r-card">
+        <div class="r-card-title">Actions</div>
+        <div class="action-row">
+          <button class="save-btn" onclick="saveRecipe()">Save Recipe</button>
+          <button class="ai-btn" onclick="openAI()">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><path d="M12 1v3M12 20v3M4.22 4.22l2.12 2.12M17.66 17.66l2.12 2.12M1 12h3M20 12h3M4.22 19.78l2.12-2.12M17.66 6.34l2.12-2.12"/></svg>
+            AI Suggest Recipe
+          </button>
+          <button class="clear-btn" onclick="clearRecipe()">Clear all</button>
+        </div>
+      </div>
+
+      <!-- Saved recipes -->
+      <div class="r-card" style="flex:1">
+        <div class="r-card-title">Saved Recipes</div>
+        <div class="saved-list" id="savedList">
+          <div class="saved-empty">No saved recipes yet.</div>
+        </div>
+      </div>
+
+    </div><!-- /recipe-right -->
+  </div><!-- /recipe-body -->
+</div><!-- /main -->
+</div><!-- /app -->
+
+<!-- AI Panel -->
+<div class="ai-panel" id="aiPanel">
+  <div class="ai-box">
+    <div class="ai-box-head">
+      <span class="ai-box-title">AI Recipe Suggester</span>
+      <button class="ai-close" onclick="closeAI()">✕</button>
+    </div>
+    <div class="ai-messages" id="aiMessages">
+      <div class="ai-msg ai">Hi! Tell me what ingredients you have or what kind of recipe you want and I'll suggest something healthy that fits your macros.</div>
+    </div>
+    <div class="ai-input-row">
+      <input class="ai-input" id="aiInput" type="text" placeholder="e.g. Give me a high-protein breakfast recipe..." onkeydown="if(event.key==='Enter')sendAI()">
+      <button class="ai-send" onclick="sendAI()">Send</button>
+    </div>
+  </div>
+</div>
+
+<div class="r-toast" id="rToast"></div>
+
+<script>
+const USERNAME = {{ username | tojson }};
+const STORAGE_KEY = 'tg_recipes_' + USERNAME;
+
+let ingredients = [];
+
+/* ── Ingredient management ── */
+function addIngredient() {
+  const name = document.getElementById('ingName').value.trim();
+  if (!name) { toast('Enter an ingredient name.'); return; }
+  const ing = {
+    name,
+    qty:  parseFloat(document.getElementById('ingQty').value) || 0,
+    unit: document.getElementById('ingUnit').value.trim() || 'g',
+    cal:  parseFloat(document.getElementById('ingCal').value) || 0,
+    p:    parseFloat(document.getElementById('ingP').value)   || 0,
+    c:    parseFloat(document.getElementById('ingC').value)   || 0,
+    f:    parseFloat(document.getElementById('ingF').value)   || 0,
+  };
+  ingredients.push(ing);
+  ['ingName','ingQty','ingUnit','ingCal','ingP','ingC','ingF'].forEach(id => {
+    const el = document.getElementById(id);
+    el.value = id === 'ingUnit' ? 'g' : '';
+  });
+  document.getElementById('ingName').focus();
+  renderList();
+  renderTotals();
+}
+
+function removeIngredient(i) {
+  ingredients.splice(i, 1);
+  renderList();
+  renderTotals();
+}
+
+function renderList() {
+  const list = document.getElementById('ingList');
+  if (!ingredients.length) {
+    list.innerHTML = '<div class="ing-empty">No ingredients yet. Add one above.</div>';
+    return;
+  }
+  list.innerHTML = ingredients.map((ing, i) => `
+    <div class="ing-row">
+      <span class="ing-name">${esc(ing.name)}</span>
+      <span class="ing-qty">${ing.qty} ${esc(ing.unit)}</span>
+      <span class="ing-cal">${Math.round(ing.cal)}</span>
+      <span class="ing-p">${ing.p.toFixed(1)}g</span>
+      <span class="ing-c">${ing.c.toFixed(1)}g</span>
+      <span class="ing-f">${ing.f.toFixed(1)}g</span>
+      <button class="ing-del" onclick="removeIngredient(${i})" title="Remove">✕</button>
+    </div>
+  `).join('');
+}
+
+function renderTotals() {
+  const totals = ingredients.reduce((acc, ing) => ({
+    cal: acc.cal + ing.cal,
+    p:   acc.p   + ing.p,
+    c:   acc.c   + ing.c,
+    f:   acc.f   + ing.f,
+  }), { cal:0, p:0, c:0, f:0 });
+
+  const servings = Math.max(1, parseFloat(document.getElementById('servings').value) || 1);
+  const totalMacros = totals.p + totals.c + totals.f;
+
+  document.getElementById('totalCal').textContent = Math.round(totals.cal);
+  document.getElementById('totalP').textContent   = totals.p.toFixed(1) + 'g';
+  document.getElementById('totalC').textContent   = totals.c.toFixed(1) + 'g';
+  document.getElementById('totalF').textContent   = totals.f.toFixed(1) + 'g';
+  document.getElementById('calPerServing').textContent = Math.round(totals.cal / servings) + ' kcal';
+
+  document.getElementById('barP').style.width = totalMacros > 0 ? (totals.p / totalMacros * 100) + '%' : '0%';
+  document.getElementById('barC').style.width = totalMacros > 0 ? (totals.c / totalMacros * 100) + '%' : '0%';
+  document.getElementById('barF').style.width = totalMacros > 0 ? (totals.f / totalMacros * 100) + '%' : '0%';
+}
+
+/* ── Save / load ── */
+function saveRecipe() {
+  if (!ingredients.length) { toast('Add at least one ingredient.'); return; }
+  const name = document.getElementById('recipeName').value.trim() || 'Untitled Recipe';
+  const servings = Math.max(1, parseFloat(document.getElementById('servings').value) || 1);
+  const totals = ingredients.reduce((a, i) => ({ cal:a.cal+i.cal, p:a.p+i.p, c:a.c+i.c, f:a.f+i.f }), {cal:0,p:0,c:0,f:0});
+  const recipe = { id: Date.now(), name, servings, ingredients: [...ingredients], totals };
+  const saved = getSaved();
+  saved.unshift(recipe);
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(saved));
+  renderSaved();
+  toast('Recipe saved!');
+}
+
+function getSaved() {
+  try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || []; } catch { return []; }
+}
+
+function loadRecipe(recipe) {
+  document.getElementById('recipeName').value = recipe.name;
+  document.getElementById('servings').value   = recipe.servings;
+  ingredients = [...recipe.ingredients];
+  renderList();
+  renderTotals();
+  toast('Recipe loaded: ' + recipe.name);
+}
+
+function deleteSaved(id, e) {
+  e.stopPropagation();
+  const saved = getSaved().filter(r => r.id !== id);
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(saved));
+  renderSaved();
+  toast('Recipe deleted.');
+}
+
+function renderSaved() {
+  const saved = getSaved();
+  const el = document.getElementById('savedList');
+  if (!saved.length) { el.innerHTML = '<div class="saved-empty">No saved recipes yet.</div>'; return; }
+  el.innerHTML = saved.map(r => `
+    <div class="saved-item" onclick="loadRecipe(${JSON.stringify(r).replace(/"/g,'&quot;')})">
+      <span class="saved-name">${esc(r.name)}</span>
+      <span class="saved-cal">${Math.round(r.totals.cal)} kcal</span>
+      <button class="saved-del" onclick="deleteSaved(${r.id},event)" title="Delete">✕</button>
+    </div>
+  `).join('');
+}
+
+function clearRecipe() {
+  ingredients = [];
+  document.getElementById('recipeName').value = '';
+  document.getElementById('servings').value = '1';
+  renderList();
+  renderTotals();
+}
+
+/* ── AI panel ── */
+function openAI()  { document.getElementById('aiPanel').classList.add('open'); document.getElementById('aiInput').focus(); }
+function closeAI() { document.getElementById('aiPanel').classList.remove('open'); }
+
+document.getElementById('aiPanel').addEventListener('click', function(e) {
+  if (e.target === this) closeAI();
+});
+
+async function sendAI() {
+  const input = document.getElementById('aiInput');
+  const msg   = input.value.trim();
+  if (!msg) return;
+
+  const msgEl = document.getElementById('aiMessages');
+  msgEl.innerHTML += `<div class="ai-msg user">${esc(msg)}</div>`;
+  input.value = '';
+  msgEl.scrollTop = msgEl.scrollHeight;
+
+  const thinking = document.createElement('div');
+  thinking.className = 'ai-msg ai';
+  thinking.textContent = '…';
+  msgEl.appendChild(thinking);
+  msgEl.scrollTop = msgEl.scrollHeight;
+
+  try {
+    const totals = ingredients.reduce((a,i)=>({cal:a.cal+i.cal,p:a.p+i.p,c:a.c+i.c,f:a.f+i.f}),{cal:0,p:0,c:0,f:0});
+    const context = ingredients.length
+      ? `Current recipe has: ${ingredients.map(i=>i.name).join(', ')}. Total: ${Math.round(totals.cal)} kcal, ${totals.p.toFixed(1)}g protein.`
+      : '';
+    const res  = await fetch('/perfect/api/assistant', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ message: (context ? context + '\n\n' : '') + msg, session_id:'recipe-ai' })
+    });
+    const data = await res.json();
+    thinking.textContent = data.reply || 'Sorry, I could not respond.';
+  } catch {
+    thinking.textContent = 'Could not reach the AI. Please try again.';
+  }
+  msgEl.scrollTop = msgEl.scrollHeight;
+}
+
+/* ── Helpers ── */
+function esc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+function toast(msg) {
+  const el = document.getElementById('rToast');
+  el.textContent = msg;
+  el.classList.add('show');
+  clearTimeout(el._t);
+  el._t = setTimeout(() => el.classList.remove('show'), 2400);
+}
+
+// Enter key in add form
+document.getElementById('ingF').addEventListener('keydown', e => { if (e.key === 'Enter') addIngredient(); });
+
+renderSaved();
+</script>
+</body>
+</html>

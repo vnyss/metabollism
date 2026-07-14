@@ -90,7 +90,7 @@ const styles = StyleSheet.create({
   navRight: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
   navLink: { paddingHorizontal: spacing.sm },
   navLinkText: { fontFamily: fonts.mono, color: colors.text2, fontSize: 12, letterSpacing: 1.5, textTransform: 'uppercase' },
-  navBtn: { backgroundColor: colors.gold, paddingHorizontal: spacing.md, paddingVertical: 7 },
+  navBtn: { backgroundColor: colors.gold, paddingHorizontal: spacing.md, paddingVertical: 7, borderRadius: 8 },
   navBtnText: { fontFamily: fonts.mono, color: '#080808', fontSize: 11, fontWeight: '700', letterSpacing: 1.5, textTransform: 'uppercase' },
 
   hero: { paddingHorizontal: spacing.lg, paddingTop: spacing.xxl, paddingBottom: spacing.xl },
@@ -100,9 +100,9 @@ const styles = StyleSheet.create({
   heroSub: { fontFamily: fonts.mono, color: colors.text2, fontSize: 13, lineHeight: 22, letterSpacing: 0.3, marginBottom: spacing.xl },
   heroBtns: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm },
 
-  btnPrimary: { backgroundColor: colors.gold, paddingVertical: 13, paddingHorizontal: spacing.lg },
+  btnPrimary: { backgroundColor: colors.gold, paddingVertical: 14, paddingHorizontal: spacing.lg, borderRadius: 10, shadowColor: colors.gold, shadowOffset:{width:0,height:4}, shadowOpacity:0.3, shadowRadius:10, elevation:4 },
   btnPrimaryText: { fontFamily: fonts.mono, color: '#080808', fontSize: 13, fontWeight: '700', letterSpacing: 1 },
-  btnSecondary: { borderWidth: 1, borderColor: colors.border, paddingVertical: 13, paddingHorizontal: spacing.lg },
+  btnSecondary: { borderWidth: 1, borderColor: 'rgba(201,168,76,0.3)', paddingVertical: 14, paddingHorizontal: spacing.lg, borderRadius: 10 },
   btnSecondaryText: { fontFamily: fonts.mono, color: colors.text2, fontSize: 13, letterSpacing: 1 },
 
   section: { paddingHorizontal: spacing.lg, paddingTop: spacing.xl },
@@ -112,6 +112,12 @@ const styles = StyleSheet.create({
   featureCard: {
     borderWidth: 1, borderColor: colors.border, padding: spacing.md,
     marginBottom: spacing.md, backgroundColor: colors.surface,
+    borderRadius: 14,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.25,
+    shadowRadius: 10,
+    elevation: 3,
   },
   featureTag: { fontFamily: fonts.mono, color: colors.gold, fontSize: 9, letterSpacing: 2.5, textTransform: 'uppercase', marginBottom: spacing.xs },
   featureTitle: { fontFamily: fonts.display, color: colors.text, fontSize: 18, marginBottom: spacing.xs },
@@ -119,7 +125,9 @@ const styles = StyleSheet.create({
 
   ctaSection: {
     margin: spacing.lg, padding: spacing.xl, borderWidth: 1,
-    borderColor: colors.border, backgroundColor: colors.surface, alignItems: 'center',
+    borderColor: 'rgba(201,168,76,0.25)', backgroundColor: colors.surface,
+    alignItems: 'center', borderRadius: 20,
+    shadowColor: colors.gold, shadowOffset:{width:0,height:4}, shadowOpacity:0.08, shadowRadius:20, elevation:4,
   },
   ctaTitle: { fontFamily: fonts.display, color: colors.text, fontSize: 24, textAlign: 'center' },
   ctaSub: { fontFamily: fonts.mono, color: colors.text2, fontSize: 13, letterSpacing: 0.3, marginTop: spacing.sm, textAlign: 'center' },

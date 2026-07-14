@@ -1,267 +1,455 @@
 /* ═══════════════════════════════════════════════════════════
-   Too Good — Global UI polish
+   Too Good — Global UI polish v2
    Loaded via _sidebar.html · applies to every /perfect/* page
    ═══════════════════════════════════════════════════════════ */
 
 /* ── Keyframes ────────────────────────────────────────────── */
-@keyframes tgFadeUp   { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
+@keyframes tgFadeUp   { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:translateY(0)} }
 @keyframes tgFadeIn   { from{opacity:0} to{opacity:1} }
-@keyframes tgScaleIn  { from{opacity:0;transform:scale(.96)} to{opacity:1;transform:scale(1)} }
-@keyframes tgSlideR   { from{opacity:0;transform:translateX(-8px)} to{opacity:1;transform:translateX(0)} }
+@keyframes tgScaleIn  { from{opacity:0;transform:scale(.95)} to{opacity:1;transform:scale(1)} }
 @keyframes tgBarGrow  { from{transform:scaleX(0)} to{transform:scaleX(1)} }
-@keyframes tgLogoGlow { 0%,100%{filter:drop-shadow(0 0 0px rgba(201,168,76,0))} 55%{filter:drop-shadow(0 0 7px rgba(201,168,76,.45))} }
-@keyframes tgGoldPulse{ 0%,100%{box-shadow:0 0 0 0 rgba(201,168,76,0)} 50%{box-shadow:0 0 14px 2px rgba(201,168,76,.12)} }
+@keyframes tgLogoGlow { 0%,100%{filter:drop-shadow(0 0 0px rgba(201,168,76,0))} 55%{filter:drop-shadow(0 0 8px rgba(201,168,76,.5))} }
+@keyframes tgGoldPulse{ 0%,100%{box-shadow:0 0 0 0 rgba(201,168,76,0)} 50%{box-shadow:0 0 16px 3px rgba(201,168,76,.13)} }
 @keyframes tgSpinner  { to{transform:rotate(360deg)} }
+@keyframes tgSlide    { from{opacity:0;transform:translateX(-10px)} to{opacity:1;transform:translateX(0)} }
 
-/* ── Page & pane entrance ─────────────────────────────────── */
-.main {
-    animation: tgFadeUp .38s cubic-bezier(.22,1,.36,1) both;
-}
-.pane.active {
-    animation: tgFadeUp .28s cubic-bezier(.22,1,.36,1) both;
-}
-.section {
-    animation: tgFadeUp .4s cubic-bezier(.22,1,.36,1) both;
-}
-.section:nth-child(2) { animation-delay:.07s }
-.section:nth-child(3) { animation-delay:.14s }
-.section:nth-child(4) { animation-delay:.21s }
-.section:nth-child(5) { animation-delay:.28s }
+/* ══════════════════════════════════════════════════════════
+   SIDEBAR — complete modern redesign
+   ══════════════════════════════════════════════════════════ */
 
-/* ── Scrollbars (global thin gold) ────────────────────────── */
-::-webkit-scrollbar            { width:3px; height:3px }
-::-webkit-scrollbar-track      { background:transparent }
-::-webkit-scrollbar-thumb      { background:rgba(201,168,76,.16); border-radius:2px }
-::-webkit-scrollbar-thumb:hover{ background:rgba(201,168,76,.32) }
-
-/* ── Sidebar enhancements ─────────────────────────────────── */
+.sidebar {
+    background: #050505 !important;
+    border-right: 1px solid rgba(201,168,76,.08) !important;
+    box-shadow: 4px 0 24px rgba(0,0,0,.4) !important;
+}
+.sb-top {
+    padding: 20px 16px 16px !important;
+    border-bottom: 1px solid rgba(201,168,76,.07) !important;
+}
+.sb-brand {
+    margin-bottom: 16px !important;
+}
+.sb-brand-name {
+    font-size: 16px !important;
+    letter-spacing: .08em !important;
+    background: linear-gradient(135deg, var(--gold) 0%, #f0d080 60%, var(--gold) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
 .sb-logo {
-    animation: tgLogoGlow 6s ease-in-out infinite;
+    animation: tgLogoGlow 5s ease-in-out infinite;
+}
+.new-chat-btn {
+    background: rgba(201,168,76,.06) !important;
+    border: 1px solid rgba(201,168,76,.18) !important;
+    border-radius: 8px !important;
+    color: var(--text-2) !important;
+    padding: 9px 14px !important;
+    transition: all .2s ease !important;
+    font-size: 12px !important;
+    letter-spacing: .08em !important;
+}
+.new-chat-btn:hover {
+    background: rgba(201,168,76,.12) !important;
+    border-color: rgba(201,168,76,.38) !important;
+    color: var(--gold) !important;
+    transform: translateY(-1px) !important;
+    box-shadow: 0 4px 14px rgba(201,168,76,.12) !important;
+}
+
+/* Nav items */
+.sb-nav { padding: 12px 8px 8px !important; }
+.sb-section-label {
+    font-size: 9px !important;
+    letter-spacing: .28em !important;
+    padding: 16px 10px 6px !important;
+    color: rgba(201,168,76,.35) !important;
 }
 .sb-item {
-    border-left: 2px solid transparent;
-    padding-left: 12px !important;
-    transition: background .18s ease, color .18s ease, border-color .2s ease !important;
-    position: relative;
+    border-radius: 8px !important;
+    margin: 1px 0 !important;
+    padding: 9px 12px !important;
+    color: #8a7d68 !important;
+    font-size: 12.5px !important;
+    letter-spacing: .03em !important;
+    gap: 10px !important;
+    transition: all .18s ease !important;
+    border: 1px solid transparent !important;
 }
-.sb-item:hover  { border-left-color: rgba(201,168,76,.3) !important }
-.sb-item.active { border-left-color: var(--gold) !important }
+.sb-item:hover {
+    background: rgba(201,168,76,.07) !important;
+    color: #ede3ce !important;
+    border-color: rgba(201,168,76,.1) !important;
+}
+.sb-item.active {
+    background: rgba(201,168,76,.1) !important;
+    color: var(--gold) !important;
+    border-color: rgba(201,168,76,.2) !important;
+    box-shadow: 0 2px 10px rgba(201,168,76,.08) !important;
+}
 .sb-item svg {
-    transition: transform .18s ease, opacity .18s ease;
+    opacity: .6;
+    transition: opacity .18s, transform .18s !important;
 }
-.sb-item:hover svg { transform: scale(1.1) }
-.new-chat-btn {
-    transition: border-color .18s, color .18s, background .18s, transform .15s !important;
-    border-radius: var(--radius);
+.sb-item:hover svg, .sb-item.active svg {
+    opacity: 1;
+    transform: scale(1.1);
 }
-.new-chat-btn:hover { transform: translateY(-1px) !important }
-.new-chat-btn:active{ transform: translateY(0)   !important }
 
-/* Profile popup smooth open */
-.profile-popup.open {
-    animation: tgFadeUp .18s ease both;
+/* Sub items */
+.sb-sub-item {
+    border-radius: 6px !important;
+    margin: 1px 0 !important;
+    padding: 6px 12px 6px 38px !important;
+    font-size: 12px !important;
+    transition: all .15s ease !important;
+}
+.sb-sub-item:hover {
+    background: rgba(201,168,76,.06) !important;
+    color: var(--text) !important;
+}
+
+/* Profile button */
+.sb-bottom {
+    border-top: 1px solid rgba(201,168,76,.07) !important;
+    padding: 10px !important;
 }
 .profile-btn {
-    transition: background .15s ease, transform .12s ease !important;
+    border-radius: 10px !important;
+    padding: 10px 12px !important;
+    transition: background .18s ease !important;
 }
-.profile-btn:hover { transform: none }
+.profile-btn:hover {
+    background: rgba(201,168,76,.07) !important;
+}
+.profile-avatar {
+    border-radius: 8px !important;
+    width: 32px !important; height: 32px !important;
+}
+.profile-name { font-size: 13px !important; }
 
-/* XP ring entrance */
-#xpRingFloat {
-    animation: tgScaleIn .45s cubic-bezier(.22,1,.36,1) .4s both;
+/* Profile popup */
+.profile-popup {
+    border-radius: 12px !important;
+    border: 1px solid rgba(201,168,76,.2) !important;
+    background: #0e0e0e !important;
+    box-shadow: 0 16px 48px rgba(0,0,0,.6) !important;
+    bottom: calc(100% + 8px) !important;
+    left: 10px !important; right: 10px !important;
 }
+.profile-popup.open {
+    animation: tgFadeUp .2s cubic-bezier(.22,1,.36,1) both;
+}
+.pp-btn { border-radius: 6px !important; margin: 2px 8px !important; width: calc(100% - 16px) !important; }
 
-/* ── Merge tabs (health / fitness / guidance / community) ─── */
-.merge-tabs {
-    display: flex !important;
-    border-bottom: 1px solid var(--border) !important;
-    padding: 0 36px !important;
-    background: var(--sidebar) !important;
-    gap: 0 !important;
-}
-.merge-tab {
-    position: relative;
-    padding: 13px 22px 12px !important;
-    font-family: var(--mono) !important;
-    font-size: 11px !important;
-    letter-spacing: .12em !important;
-    text-transform: uppercase !important;
-    background: none !important;
-    border: none !important;
-    color: var(--text-3) !important;
-    cursor: pointer;
-    transition: color .2s ease !important;
-    outline: none;
-}
-.merge-tab::after {
-    content: '';
-    position: absolute;
-    bottom: -1px; left: 50%; right: 50%;
-    height: 2px;
-    background: var(--gold);
-    transition: left .28s cubic-bezier(.22,1,.36,1), right .28s cubic-bezier(.22,1,.36,1);
-    border-radius: 1px 1px 0 0;
-}
-.merge-tab:hover { color: var(--text-2) !important }
-.merge-tab.active { color: var(--gold) !important }
-.merge-tab.active::after { left: 16%; right: 16% }
+/* ══════════════════════════════════════════════════════════
+   MAIN CONTENT — breathing room & polish
+   ══════════════════════════════════════════════════════════ */
 
-/* ── Cards ────────────────────────────────────────────────── */
-.chart-card,
-.prog-card,
-.log-card,
-.adapt-card,
-.feed-card {
-    transition: border-color .22s ease, box-shadow .22s ease !important;
-}
-.chart-card:hover {
-    border-color: rgba(201,168,76,.22) !important;
-    box-shadow: 0 4px 24px rgba(0,0,0,.28) !important;
-}
-.prog-card {
-    transition: border-color .22s, transform .2s !important;
-}
-.prog-card:hover {
-    border-color: rgba(201,168,76,.24) !important;
-    transform: translateY(-2px) !important;
-}
-.adapt-card { animation: tgGoldPulse 4s ease-in-out 1s 2 }
-
-/* Progress bars animate on load */
-.prog-bar-fill {
-    transform-origin: left;
-    animation: tgBarGrow .9s cubic-bezier(.22,1,.36,1) .3s both !important;
+.main {
+    animation: tgFadeUp .4s cubic-bezier(.22,1,.36,1) both;
+    background: var(--bg) !important;
 }
 
-/* ── Buttons ──────────────────────────────────────────────── */
-.hero-btn {
-    transition: background .2s ease, border-color .2s ease, color .2s ease, transform .15s ease, box-shadow .2s ease !important;
-    border-radius: var(--radius) !important;
-}
-.hero-btn.primary:hover {
-    transform: translateY(-2px) !important;
-    box-shadow: 0 6px 22px rgba(201,168,76,.3) !important;
-}
-.hero-btn.primary:active { transform: translateY(0) !important; box-shadow: none !important }
-.hero-btn.secondary:hover { transform: translateY(-1px) !important }
-.hero-btn.secondary:active{ transform: translateY(0)   !important }
+/* ── Scrollbars ── */
+::-webkit-scrollbar            { width:4px; height:4px }
+::-webkit-scrollbar-track      { background:transparent }
+::-webkit-scrollbar-thumb      { background:rgba(201,168,76,.15); border-radius:3px }
+::-webkit-scrollbar-thumb:hover{ background:rgba(201,168,76,.3) }
 
-.log-save-btn,
-.food-btn {
-    transition: background .18s, color .18s, border-color .18s, transform .12s !important;
-    border-radius: var(--radius) !important;
+/* ── Sections stagger in ── */
+.section {
+    animation: tgFadeUp .45s cubic-bezier(.22,1,.36,1) both;
 }
-.log-save-btn:hover  { transform: translateY(-1px) !important }
-.log-save-btn:active { transform: translateY(0)    !important }
+.section:nth-child(1) { animation-delay:.04s }
+.section:nth-child(2) { animation-delay:.1s  }
+.section:nth-child(3) { animation-delay:.17s }
+.section:nth-child(4) { animation-delay:.24s }
+.section:nth-child(5) { animation-delay:.31s }
 
-/* Back-to-top button */
-.back-to-top {
-    border-radius: 50% !important;
-    transition: opacity .25s ease, transform .25s ease, background .18s ease !important;
-    box-shadow: 0 4px 14px rgba(0,0,0,.4) !important;
-}
-.back-to-top:hover {
-    transform: translateY(-2px) !important;
-    box-shadow: 0 6px 20px rgba(201,168,76,.25) !important;
-}
-
-/* ── Inputs & sliders ─────────────────────────────────────── */
-.log-input, input, textarea, select {
-    transition: border-color .18s ease !important;
-}
-input[type=range]::-webkit-slider-thumb {
-    transition: transform .15s ease !important;
-    border-radius: 50% !important;
-}
-input[type=range]::-webkit-slider-thumb:active {
-    transform: scale(1.25) !important;
-}
-
-/* ── Badges ───────────────────────────────────────────────── */
-.adapt-badge {
-    border-radius: var(--radius) !important;
-}
-.adapt-badge.warn {
-    animation: tgGoldPulse 3.5s ease-in-out infinite;
-}
-
-/* ── Sidebar sub menu smooth ──────────────────────────────── */
-.sb-sub {
-    transition: max-height .3s cubic-bezier(.22,1,.36,1) !important;
-}
-
-/* ── Hero section subtle gradient shimmer ─────────────────── */
-.hero::before {
-    background: radial-gradient(ellipse 65% 55% at 58% 38%,
-        rgba(201,168,76,.045) 0%, transparent 68%) !important;
-    animation: tgFadeIn 1.2s ease .2s both;
-}
-
-/* ── Level-up overlay: blur backdrop ─────────────────────── */
-#lvlUpOverlay {
-    backdrop-filter: blur(6px) saturate(1.2);
-    -webkit-backdrop-filter: blur(6px) saturate(1.2);
-}
-
-/* ── Modals: scale-in ─────────────────────────────────────── */
-#chartModalCard {
-    animation: tgScaleIn .22s cubic-bezier(.22,1,.36,1) both;
-}
-
-/* ── Score / XP ring ──────────────────────────────────────── */
-#xpRingArc {
-    transition: stroke-dashoffset 1.4s cubic-bezier(.22,1,.36,1) !important;
-}
-
-/* ── Section headers ──────────────────────────────────────── */
+/* Section title accent */
 .section-title {
+    font-size: 21px !important;
     position: relative;
     display: inline-block;
 }
 .section-title::after {
     content: '';
     position: absolute;
-    bottom: -4px; left: 0;
-    width: 28px; height: 1px;
+    bottom: -5px; left: 0;
+    width: 32px; height: 2px;
     background: var(--gold);
-    opacity: .55;
-    border-radius: 1px;
+    opacity: .5;
+    border-radius: 2px;
 }
 
-/* ── Food items on dashboard ──────────────────────────────── */
+/* ── Cards: rounded modern look ── */
+.chart-card,
+.prog-card,
+.log-card,
+.adapt-card,
+.feed-card {
+    border-radius: 14px !important;
+    border: 1px solid rgba(201,168,76,.1) !important;
+    background: rgba(15,15,15,.9) !important;
+    backdrop-filter: blur(8px) !important;
+    transition: border-color .22s ease, box-shadow .22s ease, transform .2s ease !important;
+}
+.chart-card:hover {
+    border-color: rgba(201,168,76,.22) !important;
+    box-shadow: 0 8px 32px rgba(0,0,0,.35), 0 0 0 1px rgba(201,168,76,.1) !important;
+    transform: translateY(-2px) !important;
+}
+.prog-card:hover {
+    border-color: rgba(201,168,76,.22) !important;
+    transform: translateY(-3px) !important;
+    box-shadow: 0 8px 28px rgba(0,0,0,.3) !important;
+}
+.adapt-card {
+    border-radius: 14px !important;
+    border-left: 3px solid var(--gold) !important;
+}
+
+/* Progress bars */
+.prog-bar-wrap {
+    border-radius: 4px !important;
+    height: 3px !important;
+    background: rgba(201,168,76,.1) !important;
+}
+.prog-bar-fill {
+    border-radius: 4px !important;
+    transform-origin: left;
+    animation: tgBarGrow 1s cubic-bezier(.22,1,.36,1) .3s both !important;
+}
+
+/* ── Buttons ── */
+.hero-btn {
+    border-radius: 9px !important;
+    font-size: 12px !important;
+    letter-spacing: .1em !important;
+    padding: 12px 26px !important;
+    transition: all .2s cubic-bezier(.22,1,.36,1) !important;
+}
+.hero-btn.primary {
+    background: linear-gradient(135deg, var(--gold) 0%, #ddb84a 100%) !important;
+    border: none !important;
+    box-shadow: 0 2px 12px rgba(201,168,76,.25) !important;
+}
+.hero-btn.primary:hover {
+    transform: translateY(-2px) !important;
+    box-shadow: 0 8px 28px rgba(201,168,76,.35) !important;
+    background: linear-gradient(135deg, #ddb84a 0%, var(--gold) 100%) !important;
+}
+.hero-btn.primary:active { transform: translateY(0) !important; box-shadow: 0 2px 8px rgba(201,168,76,.2) !important }
+.hero-btn.secondary {
+    border-color: rgba(201,168,76,.22) !important;
+    border-radius: 9px !important;
+}
+.hero-btn.secondary:hover {
+    border-color: rgba(201,168,76,.45) !important;
+    background: rgba(201,168,76,.07) !important;
+    transform: translateY(-1px) !important;
+}
+
+.log-save-btn {
+    border-radius: 9px !important;
+    background: linear-gradient(135deg, var(--gold) 0%, #ddb84a 100%) !important;
+    border: none !important;
+    padding: 11px 30px !important;
+    letter-spacing: .1em !important;
+    box-shadow: 0 2px 12px rgba(201,168,76,.2) !important;
+    transition: all .2s ease !important;
+}
+.log-save-btn:hover {
+    transform: translateY(-2px) !important;
+    box-shadow: 0 6px 22px rgba(201,168,76,.32) !important;
+}
+.log-save-btn:active { transform: translateY(0) !important }
+
+.food-btn {
+    border-radius: 7px !important;
+    transition: all .18s ease !important;
+}
+.food-btn:hover {
+    background: rgba(201,168,76,.07) !important;
+    border-color: rgba(201,168,76,.3) !important;
+    transform: translateY(-1px) !important;
+}
+
+.back-to-top {
+    border-radius: 50% !important;
+    box-shadow: 0 4px 20px rgba(0,0,0,.5) !important;
+    background: linear-gradient(135deg, var(--gold), #ddb84a) !important;
+    transition: all .25s ease !important;
+}
+.back-to-top:hover {
+    transform: translateY(-3px) !important;
+    box-shadow: 0 8px 28px rgba(201,168,76,.35) !important;
+}
+
+/* ── Inputs ── */
+.log-input, input:not([type=range]):not([type=checkbox]), textarea {
+    background: rgba(22,22,22,.8) !important;
+    border-bottom: 1px solid rgba(201,168,76,.15) !important;
+    border-radius: 0 !important;
+    transition: border-color .18s ease !important;
+}
+.log-input:focus,
+input:not([type=range]):not([type=checkbox]):focus,
+textarea:focus {
+    border-bottom-color: var(--gold) !important;
+    outline: none !important;
+}
+
+/* Range sliders */
+input[type=range] {
+    height: 3px !important;
+    border-radius: 3px !important;
+    background: rgba(201,168,76,.12) !important;
+    accent-color: var(--gold);
+}
+input[type=range]::-webkit-slider-thumb {
+    border-radius: 50% !important;
+    width: 16px !important; height: 16px !important;
+    box-shadow: 0 2px 8px rgba(201,168,76,.3) !important;
+    transition: transform .15s ease !important;
+}
+input[type=range]::-webkit-slider-thumb:hover { transform: scale(1.2) !important }
+
+/* ── Log card ── */
+.log-card { padding: 32px 36px !important }
+.log-date { letter-spacing: .22em !important; font-size: 10px !important }
+
+/* ── Food items ── */
 .food-item {
-    transition: background .15s ease;
-    border-radius: calc(var(--radius) / 2);
-    padding-left: 4px;
-    padding-right: 4px;
+    border-radius: 7px !important;
+    padding: 8px 10px !important;
+    margin: 2px 0 !important;
+    border-bottom: none !important;
+    transition: background .15s ease !important;
 }
-.food-item:hover { background: var(--gold-dim) }
+.food-item:hover { background: rgba(201,168,76,.06) !important }
 
-/* ── Meal table rows ──────────────────────────────────────── */
-.meal-table tr {
-    transition: background .15s ease;
+/* ── Hero section ── */
+.hero { padding: 0 80px !important }
+.hero::before {
+    background: radial-gradient(ellipse 70% 60% at 60% 40%,
+        rgba(201,168,76,.055) 0%, transparent 68%) !important;
+    animation: tgFadeIn 1.5s ease .1s both;
 }
-.meal-table tbody tr:hover td {
-    background: var(--gold-dim);
-}
-
-/* ── Generic hover lift utility ───────────────────────────── */
-.tg-lift {
-    transition: transform .18s ease, box-shadow .18s ease;
-}
-.tg-lift:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 24px rgba(0,0,0,.3);
+.hero-greeting {
+    font-size: clamp(34px, 4.5vw, 64px) !important;
+    line-height: 1.12 !important;
+    letter-spacing: .015em !important;
 }
 
-/* ── Spinner utility ──────────────────────────────────────── */
-.tg-spin {
-    display: inline-block;
-    animation: tgSpinner .7s linear infinite;
+/* ── Panes in merged pages ── */
+.pane.active {
+    animation: tgFadeUp .3s cubic-bezier(.22,1,.36,1) both;
 }
 
-/* ── Light mode overrides ─────────────────────────────────── */
-html.light-mode .merge-tab.active::after { background: var(--gold) }
+/* ══════════════════════════════════════════════════════════
+   MERGE TABS — Claude-style underline tabs
+   ══════════════════════════════════════════════════════════ */
+
+.merge-tabs {
+    display: flex !important;
+    border-bottom: 1px solid rgba(201,168,76,.1) !important;
+    padding: 0 36px !important;
+    background: rgba(6,6,6,.95) !important;
+    gap: 4px !important;
+    backdrop-filter: blur(8px) !important;
+    flex-shrink: 0 !important;
+}
+.merge-tab {
+    position: relative !important;
+    padding: 14px 24px 13px !important;
+    font-family: var(--mono) !important;
+    font-size: 11px !important;
+    letter-spacing: .12em !important;
+    text-transform: uppercase !important;
+    background: none !important;
+    border: none !important;
+    color: rgba(237,227,206,.35) !important;
+    cursor: pointer !important;
+    transition: color .22s ease !important;
+    outline: none !important;
+}
+.merge-tab::after {
+    content: '' !important;
+    position: absolute !important;
+    bottom: -1px !important;
+    left: 20% !important; right: 80% !important;
+    height: 2px !important;
+    background: var(--gold) !important;
+    border-radius: 2px 2px 0 0 !important;
+    transition: left .3s cubic-bezier(.22,1,.36,1), right .3s cubic-bezier(.22,1,.36,1) !important;
+}
+.merge-tab:hover { color: rgba(237,227,206,.65) !important }
+.merge-tab.active { color: var(--gold) !important }
+.merge-tab.active::after { left: 10% !important; right: 10% !important }
+
+/* ══════════════════════════════════════════════════════════
+   MISC POLISH
+   ══════════════════════════════════════════════════════════ */
+
+/* XP ring */
+#xpRingFloat {
+    animation: tgScaleIn .5s cubic-bezier(.22,1,.36,1) .5s both;
+}
+#xpRingArc {
+    transition: stroke-dashoffset 1.5s cubic-bezier(.22,1,.36,1) !important;
+}
+
+/* Level-up overlay */
+#lvlUpOverlay {
+    backdrop-filter: blur(8px) saturate(1.3) !important;
+    -webkit-backdrop-filter: blur(8px) saturate(1.3) !important;
+}
+
+/* Adapt badges */
+.adapt-badge { border-radius: 6px !important }
+.adapt-badge.warn { animation: tgGoldPulse 3.5s ease-in-out infinite }
+
+/* Chart modal */
+#chartModalCard {
+    border-radius: 16px !important;
+    border: 1px solid rgba(201,168,76,.15) !important;
+    background: #0d0d0d !important;
+    box-shadow: 0 24px 80px rgba(0,0,0,.7) !important;
+    animation: tgScaleIn .22s cubic-bezier(.22,1,.36,1) both;
+}
+.chart-modal-close { border-radius: 6px !important }
+
+/* Meal table rows */
+.meal-table tr { transition: background .15s ease }
+.meal-table tbody tr:hover td { background: rgba(201,168,76,.04) }
+
+/* Spinner */
+.tg-spin { display:inline-block; animation: tgSpinner .7s linear infinite }
+
+/* ── Light mode tweaks ── */
+html.light-mode .sidebar {
+    background: #ede8df !important;
+    box-shadow: 4px 0 24px rgba(0,0,0,.08) !important;
+}
+html.light-mode .sb-item.active {
+    background: rgba(201,168,76,.12) !important;
+    box-shadow: 0 2px 8px rgba(201,168,76,.1) !important;
+}
+html.light-mode .chart-card,
+html.light-mode .prog-card,
+html.light-mode .log-card,
+html.light-mode .adapt-card {
+    background: #fff !important;
+    border-color: rgba(100,80,40,.1) !important;
+}
+html.light-mode .hero-btn.primary {
+    box-shadow: 0 2px 12px rgba(201,168,76,.3) !important;
+}
+html.light-mode #lvlUpOverlay {
+    backdrop-filter: blur(8px) brightness(1.05) !important;
+}
 html.light-mode ::-webkit-scrollbar-thumb { background: rgba(100,80,40,.18) }
 html.light-mode ::-webkit-scrollbar-thumb:hover { background: rgba(100,80,40,.32) }
-html.light-mode #lvlUpOverlay { backdrop-filter: blur(6px) brightness(1.05) }
