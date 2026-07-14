@@ -1,0 +1,267 @@
+/* ═══════════════════════════════════════════════════════════
+   Too Good — Global UI polish
+   Loaded via _sidebar.html · applies to every /perfect/* page
+   ═══════════════════════════════════════════════════════════ */
+
+/* ── Keyframes ────────────────────────────────────────────── */
+@keyframes tgFadeUp   { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
+@keyframes tgFadeIn   { from{opacity:0} to{opacity:1} }
+@keyframes tgScaleIn  { from{opacity:0;transform:scale(.96)} to{opacity:1;transform:scale(1)} }
+@keyframes tgSlideR   { from{opacity:0;transform:translateX(-8px)} to{opacity:1;transform:translateX(0)} }
+@keyframes tgBarGrow  { from{transform:scaleX(0)} to{transform:scaleX(1)} }
+@keyframes tgLogoGlow { 0%,100%{filter:drop-shadow(0 0 0px rgba(201,168,76,0))} 55%{filter:drop-shadow(0 0 7px rgba(201,168,76,.45))} }
+@keyframes tgGoldPulse{ 0%,100%{box-shadow:0 0 0 0 rgba(201,168,76,0)} 50%{box-shadow:0 0 14px 2px rgba(201,168,76,.12)} }
+@keyframes tgSpinner  { to{transform:rotate(360deg)} }
+
+/* ── Page & pane entrance ─────────────────────────────────── */
+.main {
+    animation: tgFadeUp .38s cubic-bezier(.22,1,.36,1) both;
+}
+.pane.active {
+    animation: tgFadeUp .28s cubic-bezier(.22,1,.36,1) both;
+}
+.section {
+    animation: tgFadeUp .4s cubic-bezier(.22,1,.36,1) both;
+}
+.section:nth-child(2) { animation-delay:.07s }
+.section:nth-child(3) { animation-delay:.14s }
+.section:nth-child(4) { animation-delay:.21s }
+.section:nth-child(5) { animation-delay:.28s }
+
+/* ── Scrollbars (global thin gold) ────────────────────────── */
+::-webkit-scrollbar            { width:3px; height:3px }
+::-webkit-scrollbar-track      { background:transparent }
+::-webkit-scrollbar-thumb      { background:rgba(201,168,76,.16); border-radius:2px }
+::-webkit-scrollbar-thumb:hover{ background:rgba(201,168,76,.32) }
+
+/* ── Sidebar enhancements ─────────────────────────────────── */
+.sb-logo {
+    animation: tgLogoGlow 6s ease-in-out infinite;
+}
+.sb-item {
+    border-left: 2px solid transparent;
+    padding-left: 12px !important;
+    transition: background .18s ease, color .18s ease, border-color .2s ease !important;
+    position: relative;
+}
+.sb-item:hover  { border-left-color: rgba(201,168,76,.3) !important }
+.sb-item.active { border-left-color: var(--gold) !important }
+.sb-item svg {
+    transition: transform .18s ease, opacity .18s ease;
+}
+.sb-item:hover svg { transform: scale(1.1) }
+.new-chat-btn {
+    transition: border-color .18s, color .18s, background .18s, transform .15s !important;
+    border-radius: var(--radius);
+}
+.new-chat-btn:hover { transform: translateY(-1px) !important }
+.new-chat-btn:active{ transform: translateY(0)   !important }
+
+/* Profile popup smooth open */
+.profile-popup.open {
+    animation: tgFadeUp .18s ease both;
+}
+.profile-btn {
+    transition: background .15s ease, transform .12s ease !important;
+}
+.profile-btn:hover { transform: none }
+
+/* XP ring entrance */
+#xpRingFloat {
+    animation: tgScaleIn .45s cubic-bezier(.22,1,.36,1) .4s both;
+}
+
+/* ── Merge tabs (health / fitness / guidance / community) ─── */
+.merge-tabs {
+    display: flex !important;
+    border-bottom: 1px solid var(--border) !important;
+    padding: 0 36px !important;
+    background: var(--sidebar) !important;
+    gap: 0 !important;
+}
+.merge-tab {
+    position: relative;
+    padding: 13px 22px 12px !important;
+    font-family: var(--mono) !important;
+    font-size: 11px !important;
+    letter-spacing: .12em !important;
+    text-transform: uppercase !important;
+    background: none !important;
+    border: none !important;
+    color: var(--text-3) !important;
+    cursor: pointer;
+    transition: color .2s ease !important;
+    outline: none;
+}
+.merge-tab::after {
+    content: '';
+    position: absolute;
+    bottom: -1px; left: 50%; right: 50%;
+    height: 2px;
+    background: var(--gold);
+    transition: left .28s cubic-bezier(.22,1,.36,1), right .28s cubic-bezier(.22,1,.36,1);
+    border-radius: 1px 1px 0 0;
+}
+.merge-tab:hover { color: var(--text-2) !important }
+.merge-tab.active { color: var(--gold) !important }
+.merge-tab.active::after { left: 16%; right: 16% }
+
+/* ── Cards ────────────────────────────────────────────────── */
+.chart-card,
+.prog-card,
+.log-card,
+.adapt-card,
+.feed-card {
+    transition: border-color .22s ease, box-shadow .22s ease !important;
+}
+.chart-card:hover {
+    border-color: rgba(201,168,76,.22) !important;
+    box-shadow: 0 4px 24px rgba(0,0,0,.28) !important;
+}
+.prog-card {
+    transition: border-color .22s, transform .2s !important;
+}
+.prog-card:hover {
+    border-color: rgba(201,168,76,.24) !important;
+    transform: translateY(-2px) !important;
+}
+.adapt-card { animation: tgGoldPulse 4s ease-in-out 1s 2 }
+
+/* Progress bars animate on load */
+.prog-bar-fill {
+    transform-origin: left;
+    animation: tgBarGrow .9s cubic-bezier(.22,1,.36,1) .3s both !important;
+}
+
+/* ── Buttons ──────────────────────────────────────────────── */
+.hero-btn {
+    transition: background .2s ease, border-color .2s ease, color .2s ease, transform .15s ease, box-shadow .2s ease !important;
+    border-radius: var(--radius) !important;
+}
+.hero-btn.primary:hover {
+    transform: translateY(-2px) !important;
+    box-shadow: 0 6px 22px rgba(201,168,76,.3) !important;
+}
+.hero-btn.primary:active { transform: translateY(0) !important; box-shadow: none !important }
+.hero-btn.secondary:hover { transform: translateY(-1px) !important }
+.hero-btn.secondary:active{ transform: translateY(0)   !important }
+
+.log-save-btn,
+.food-btn {
+    transition: background .18s, color .18s, border-color .18s, transform .12s !important;
+    border-radius: var(--radius) !important;
+}
+.log-save-btn:hover  { transform: translateY(-1px) !important }
+.log-save-btn:active { transform: translateY(0)    !important }
+
+/* Back-to-top button */
+.back-to-top {
+    border-radius: 50% !important;
+    transition: opacity .25s ease, transform .25s ease, background .18s ease !important;
+    box-shadow: 0 4px 14px rgba(0,0,0,.4) !important;
+}
+.back-to-top:hover {
+    transform: translateY(-2px) !important;
+    box-shadow: 0 6px 20px rgba(201,168,76,.25) !important;
+}
+
+/* ── Inputs & sliders ─────────────────────────────────────── */
+.log-input, input, textarea, select {
+    transition: border-color .18s ease !important;
+}
+input[type=range]::-webkit-slider-thumb {
+    transition: transform .15s ease !important;
+    border-radius: 50% !important;
+}
+input[type=range]::-webkit-slider-thumb:active {
+    transform: scale(1.25) !important;
+}
+
+/* ── Badges ───────────────────────────────────────────────── */
+.adapt-badge {
+    border-radius: var(--radius) !important;
+}
+.adapt-badge.warn {
+    animation: tgGoldPulse 3.5s ease-in-out infinite;
+}
+
+/* ── Sidebar sub menu smooth ──────────────────────────────── */
+.sb-sub {
+    transition: max-height .3s cubic-bezier(.22,1,.36,1) !important;
+}
+
+/* ── Hero section subtle gradient shimmer ─────────────────── */
+.hero::before {
+    background: radial-gradient(ellipse 65% 55% at 58% 38%,
+        rgba(201,168,76,.045) 0%, transparent 68%) !important;
+    animation: tgFadeIn 1.2s ease .2s both;
+}
+
+/* ── Level-up overlay: blur backdrop ─────────────────────── */
+#lvlUpOverlay {
+    backdrop-filter: blur(6px) saturate(1.2);
+    -webkit-backdrop-filter: blur(6px) saturate(1.2);
+}
+
+/* ── Modals: scale-in ─────────────────────────────────────── */
+#chartModalCard {
+    animation: tgScaleIn .22s cubic-bezier(.22,1,.36,1) both;
+}
+
+/* ── Score / XP ring ──────────────────────────────────────── */
+#xpRingArc {
+    transition: stroke-dashoffset 1.4s cubic-bezier(.22,1,.36,1) !important;
+}
+
+/* ── Section headers ──────────────────────────────────────── */
+.section-title {
+    position: relative;
+    display: inline-block;
+}
+.section-title::after {
+    content: '';
+    position: absolute;
+    bottom: -4px; left: 0;
+    width: 28px; height: 1px;
+    background: var(--gold);
+    opacity: .55;
+    border-radius: 1px;
+}
+
+/* ── Food items on dashboard ──────────────────────────────── */
+.food-item {
+    transition: background .15s ease;
+    border-radius: calc(var(--radius) / 2);
+    padding-left: 4px;
+    padding-right: 4px;
+}
+.food-item:hover { background: var(--gold-dim) }
+
+/* ── Meal table rows ──────────────────────────────────────── */
+.meal-table tr {
+    transition: background .15s ease;
+}
+.meal-table tbody tr:hover td {
+    background: var(--gold-dim);
+}
+
+/* ── Generic hover lift utility ───────────────────────────── */
+.tg-lift {
+    transition: transform .18s ease, box-shadow .18s ease;
+}
+.tg-lift:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 24px rgba(0,0,0,.3);
+}
+
+/* ── Spinner utility ──────────────────────────────────────── */
+.tg-spin {
+    display: inline-block;
+    animation: tgSpinner .7s linear infinite;
+}
+
+/* ── Light mode overrides ─────────────────────────────────── */
+html.light-mode .merge-tab.active::after { background: var(--gold) }
+html.light-mode ::-webkit-scrollbar-thumb { background: rgba(100,80,40,.18) }
+html.light-mode ::-webkit-scrollbar-thumb:hover { background: rgba(100,80,40,.32) }
+html.light-mode #lvlUpOverlay { backdrop-filter: blur(6px) brightness(1.05) }
